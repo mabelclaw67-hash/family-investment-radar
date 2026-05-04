@@ -1,0 +1,16 @@
+# Local environment variables — never commit real passwords or secrets
+.env
+.env.local
+.env.*.local
+
+# Node (if tools are ever added)
+node_modules/
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
+*.swp
+
+# Build output
+dist/
