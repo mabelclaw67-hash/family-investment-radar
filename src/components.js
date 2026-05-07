@@ -1,3 +1,4 @@
+// deploy marker: force Netlify rebuild after market index display fix
 import { NAV_ITEMS, SHEET_CONFIG } from "./config.js";
 import { get } from "./data/dashboardMapper.js";
 import { deriveActionLabel, displayMarketValue, displayValue, HOLDING_FILTERS } from "./data/holdingsMapper.js";
