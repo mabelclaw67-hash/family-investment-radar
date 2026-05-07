@@ -1,27 +1,21 @@
 import {
   addDecisionLog,
   addWatchItem,
-  generateResearchPack,
-  loadDailyPortfolioIntelligenceSource,
   loadDashboardSource,
   loadDecisionLogPageSource,
   loadHoldingsPageSource,
-  loadResearchPackRows,
   loadWatchlistPageSource,
   refreshMarketData,
   refreshNews,
-  saveNotebookLmAnalysis,
 } from "./data/googleSheets.js";
 import { buildDashboardModel } from "./data/dashboardMapper.js";
 import { buildHoldingsModel } from "./data/holdingsMapper.js";
 import { buildWatchlistModel } from "./data/watchlistMapper.js";
 import { buildDecisionLogModel } from "./data/decisionLogMapper.js";
-import { buildDailyPortfolioIntelligenceModel } from "./data/dailyPortfolioMapper.js";
 import {
   AlertsPanel,
   AppShell,
   DecisionLogPage,
-  DailyPortfolioIntelligencePage,
   ErrorState,
   Header,
   HoldingsPage,
@@ -29,13 +23,11 @@ import {
   LiveUpdatesPanel,
   LoadingState,
   MarketSection,
-  ResearchPackResultHtml,
-  ResearchPacksPage,
   SummaryCards,
   WatchlistPage,
   WatchlistPopupHtml,
 } from "./components.js";
-import { SITE_PASSWORD, SITE_PASSWORD_CONFIGURED } from "./config.js";
+import { SITE_PASSWORD } from "./config.js";
 
 const app = document.querySelector("#app");
 const AUTH_KEY = "fir_auth_v1";
@@ -43,38 +35,11 @@ const AUTH_KEY = "fir_auth_v1";
 // ── Password Gate ─────────────────────────────────────────────────────────────
 
 function checkAuth() {
-  return localStorage.getItem(AUTH_KEY) === "ok";
-}
-
-function showSetupError() {
-  app.innerHTML = `
-    <div class="pw-gate-wrapper">
-      <div class="pw-gate-box">
-        <div class="pw-brand">⚠</div>
-        <h2 class="pw-title">配置错误 / Setup Error</h2>
-        <p class="pw-subtitle">Family Investment Radar</p>
-        <div class="pw-form" style="text-align:left;">
-          <p class="pw-hint" style="color:var(--orange);">
-            未检测到访问密码环境变量 / Site password env variable is missing.
-          </p>
-          <p class="pw-hint">
-            请在 Netlify → Site settings → Environment variables 中设置：<br/>
-            Please set this in Netlify → Site settings → Environment variables:
-          </p>
-          <code style="display:block;background:#111;color:#eee;padding:10px;border-radius:6px;font-size:12px;margin:8px 0;">
-            VITE_SITE_PASSWORD=&lt;your password&gt;
-          </code>
-          <p class="pw-hint">
-            本地开发请在项目根目录 <code>.env</code> 中加入相同变量，然后重新构建。<br/>
-            For local dev, add the same variable to a <code>.env</code> file in the project root and rebuild.
-          </p>
-        </div>
-      </div>
-    </div>
-  `;
+  return sessionStorage.getItem(AUTH_KEY) === "ok";
 }
 
 function showPasswordGate() {
+  const isDevMode = SITE_PASSWORD === "CHANGE_ME_BEFORE_DEPLOY";
   app.innerHTML = `
     <div class="pw-gate-wrapper">
       <div class="pw-gate-box">
@@ -94,6 +59,7 @@ function showPasswordGate() {
           <div id="pw-error" class="pw-error" hidden>
             密码不正确 / Incorrect password
           </div>
+          ${isDevMode ? `<p class="pw-hint" style="color:var(--orange);font-size:11px;">开发模式：密码为占位符，输入任意内容即可 / Dev mode: placeholder password, any input accepted</p>` : ""}
           <button type="submit" class="pw-submit">进入 / Enter</button>
         </form>
       </div>
@@ -103,8 +69,9 @@ function showPasswordGate() {
   document.getElementById("pw-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const val = document.getElementById("pw-input").value;
-    if (val === SITE_PASSWORD) {
-      localStorage.setItem(AUTH_KEY, "ok");
+    const correct = isDevMode || val === SITE_PASSWORD;
+    if (correct) {
+      sessionStorage.setItem(AUTH_KEY, "ok");
       bootstrap();
     } else {
       const errEl = document.getElementById("pw-error");
@@ -119,7 +86,7 @@ function bindGlobalActions() {
   const logoutBtn = document.querySelector("[data-action='logout']");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
-      localStorage.removeItem(AUTH_KEY);
+      sessionStorage.removeItem(AUTH_KEY);
       showPasswordGate();
     });
   }
@@ -133,15 +100,9 @@ const state = {
   watchlistSource: null,
   decisionLogSource: null,
   decisionLogFilter: "all",
-  researchPackRows: [],
-  dailyPortfolioSource: null,
 };
 
 async function bootstrap() {
-  if (!SITE_PASSWORD_CONFIGURED) {
-    showSetupError();
-    return;
-  }
   if (!checkAuth()) {
     showPasswordGate();
     return;
@@ -175,22 +136,10 @@ async function renderCurrentPage() {
     return;
   }
 
-  if (state.page === "daily-portfolio") {
-    state.dailyPortfolioSource = await loadDailyPortfolioIntelligenceSource();
-    renderDailyPortfolioIntelligence();
-    return;
-  }
-
   if (state.page === "decisions") {
     const source = await loadDecisionLogPageSource();
     state.decisionLogSource = source;
     renderDecisionLog();
-    return;
-  }
-
-  if (state.page === "research-packs") {
-    state.researchPackRows = await loadResearchPackRows();
-    renderResearchPacks();
     return;
   }
 
@@ -208,14 +157,13 @@ function renderDashboard(dashboard) {
       ${LiveUpdatesPanel(dashboard.news)}
       ${AlertsPanel(dashboard.alerts)}
     </section>
-    ${SummaryCards(dashboard.summaries, dashboard.marketData)}
+    ${SummaryCards(dashboard.summaries)}
     <footer class="footer">
       本平台提供信息与监控服务，不构成投资建议或任何买卖推荐。投资有风险，请根据自身情况谨慎决策。
     </footer>
   `, "dashboard");
   bindRefreshNewsButton();
   bindRefreshMarketButton();
-  bindPriorityAlertResearchButtons();
   bindGlobalActions();
 }
 
@@ -277,45 +225,6 @@ function bindRefreshMarketButton() {
   });
 }
 
-function bindPriorityAlertResearchButtons() {
-  app.querySelectorAll("[data-alert-research]").forEach((button) => {
-    button.addEventListener("click", async (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      button.disabled = true;
-      const originalText = button.textContent;
-      button.textContent = "生成中...";
-
-      try {
-        const result = await generateResearchPack({
-          topic: button.dataset.topic || button.dataset.ticker || "Priority Alert",
-          owner: button.dataset.owner || "",
-          relatedTicker: button.dataset.ticker || "",
-          relatedWatchId: button.dataset.watchId || "",
-          sourceContext: "Priority Alert High Attention",
-        });
-        button.textContent = result.packId ? `已生成 ${result.packId}` : "已生成";
-        if (!button.parentElement.querySelector("[data-view-research-packs]")) {
-          const viewLink = document.createElement("a");
-          viewLink.className = "small-research-link";
-          viewLink.href = `#/research-packs?packId=${encodeURIComponent(result.packId || "")}`;
-          viewLink.dataset.viewResearchPacks = "1";
-          viewLink.textContent = "查看研究包";
-          button.insertAdjacentElement("afterend", viewLink);
-        }
-        window.open(result.docUrl, "_blank", "noopener,noreferrer");
-      } catch (err) {
-        console.warn(err);
-        button.disabled = false;
-        button.textContent = "生成失败";
-        setTimeout(() => {
-          button.textContent = originalText;
-        }, 2400);
-      }
-    });
-  });
-}
-
 function renderHoldings() {
   const holdings = buildHoldingsModel(
     state.holdingsSource,
@@ -345,15 +254,6 @@ function bindHoldingsInteractions() {
       renderHoldings();
     });
   });
-}
-
-function renderDailyPortfolioIntelligence() {
-  const model = buildDailyPortfolioIntelligenceModel(state.dailyPortfolioSource ?? {
-    holdings: [],
-    dailyHoldingIntelligence: [],
-  });
-  app.innerHTML = AppShell(DailyPortfolioIntelligencePage(model), "daily-portfolio");
-  bindGlobalActions();
 }
 
 function renderWatchlist() {
@@ -457,8 +357,6 @@ function openWatchlistPopup(id) {
     });
   }
 
-  bindPopupResearchPack(overlay);
-
   const onKey = (event) => {
     if (event.key === "Escape") {
       overlay.remove();
@@ -466,152 +364,6 @@ function openWatchlistPopup(id) {
     }
   };
   document.addEventListener("keydown", onKey);
-}
-
-function bindPopupResearchPack(overlay) {
-  const generateBtn = overlay.querySelector("#btn-popup-generate-research-pack");
-  const statusEl = overlay.querySelector("#research-pack-status");
-  const resultEl = overlay.querySelector("#research-pack-result");
-  if (!generateBtn || !statusEl || !resultEl) return;
-
-  generateBtn.addEventListener("click", async () => {
-    generateBtn.disabled = true;
-    statusEl.textContent = "正在生成研究包...";
-    statusEl.className = "news-refresh-status loading";
-
-    try {
-      const result = await generateResearchPack({
-        topic: generateBtn.dataset.topic || generateBtn.dataset.ticker || "Research Topic",
-        owner: generateBtn.dataset.owner || "",
-        relatedTicker: generateBtn.dataset.ticker || "",
-        relatedWatchId: generateBtn.dataset.watchId || "",
-        sourceContext: generateBtn.dataset.sourceContext || "Watchlist Quick Research",
-      });
-      statusEl.textContent = result.packId ? `已生成 ${result.packId}` : "Google Doc 已生成";
-      statusEl.className = "news-refresh-status success";
-      resultEl.innerHTML = ResearchPackResultHtml(result);
-      resultEl.hidden = false;
-      bindResearchPackResultActions(resultEl);
-    } catch (err) {
-      statusEl.textContent = "生成失败：" + (err.message || "未知错误");
-      statusEl.className = "news-refresh-status error";
-      generateBtn.disabled = false;
-    }
-  });
-}
-
-function bindResearchPackResultActions(container) {
-  const copyBtn = container.querySelector("#btn-copy-notebook-prompt");
-  const promptEl = container.querySelector("#notebook-prompt-text");
-  if (copyBtn && promptEl) {
-    copyBtn.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(promptEl.value);
-        copyBtn.textContent = "已复制 / Copied";
-      } catch (err) {
-        promptEl.select();
-        copyBtn.textContent = "请手动复制 / Select text";
-      }
-    });
-  }
-
-  const saveBtn = container.querySelector("#btn-save-notebook-analysis");
-  const statusEl = container.querySelector("#notebook-save-status");
-  const form = container.querySelector(".research-pack-analysis-form");
-  if (!saveBtn || !statusEl || !form) return;
-
-  saveBtn.addEventListener("click", async () => {
-    saveBtn.disabled = true;
-    statusEl.textContent = "正在保存分析...";
-    statusEl.className = "news-refresh-status loading";
-
-    try {
-      await saveNotebookLmAnalysis({
-        packId: form.dataset.packId || "",
-        notebookLmConclusion: container.querySelector("#notebook-analysis-text")?.value || "",
-        investmentSteps: container.querySelector("#notebook-steps-text")?.value || "",
-        decisionStatus: container.querySelector("#notebook-decision-status")?.value || "Review",
-        notes: container.querySelector("#notebook-notes-text")?.value || "",
-      });
-      statusEl.textContent = "NotebookLM 分析已保存 / NotebookLM analysis saved";
-      statusEl.className = "news-refresh-status success";
-    } catch (err) {
-      statusEl.textContent = "保存失败：" + (err.message || "未知错误");
-      statusEl.className = "news-refresh-status error";
-      saveBtn.disabled = false;
-    }
-  });
-}
-
-function renderResearchPacks() {
-  const highlightedPackId = getHashParam("packId");
-  app.innerHTML = AppShell(ResearchPacksPage(state.researchPackRows, highlightedPackId), "research-packs");
-  bindResearchPackPageActions();
-  bindGlobalActions();
-  if (highlightedPackId) {
-    const target = app.querySelector(`[data-rp-id="${CSS.escape(highlightedPackId)}"]`);
-    target?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }
-}
-
-function bindResearchPackPageActions() {
-  app.querySelectorAll("[data-copy-rp-prompt]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const prompt = button.dataset.prompt || "";
-      try {
-        await navigator.clipboard.writeText(prompt);
-        button.textContent = "已复制 / Copied";
-      } catch (err) {
-        button.textContent = "复制失败 / Copy failed";
-      }
-    });
-  });
-
-  app.querySelectorAll("[data-rp-form]").forEach((form) => {
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const statusEl = form.querySelector("[data-rp-save-status]");
-      const submitBtn = form.querySelector("button[type='submit']");
-      const formData = new FormData(form);
-      const packId = String(form.dataset.packId || "").trim();
-
-      if (!packId) {
-        if (statusEl) {
-          statusEl.textContent = "缺少 Pack ID";
-          statusEl.className = "news-refresh-status error";
-        }
-        return;
-      }
-
-      if (submitBtn) submitBtn.disabled = true;
-      if (statusEl) {
-        statusEl.textContent = "正在保存分析...";
-        statusEl.className = "news-refresh-status loading";
-      }
-
-      try {
-        await saveNotebookLmAnalysis({
-          packId,
-          notebookLmConclusion: String(formData.get("notebookLmConclusion") || "").trim(),
-          investmentSteps: String(formData.get("investmentSteps") || "").trim(),
-          decisionStatus: String(formData.get("decisionStatus") || "Review").trim(),
-          notes: String(formData.get("notes") || "").trim(),
-        });
-        if (statusEl) {
-          statusEl.textContent = "NotebookLM 分析已保存 / NotebookLM analysis saved";
-          statusEl.className = "news-refresh-status success";
-        }
-        state.researchPackRows = await loadResearchPackRows();
-        renderResearchPacks();
-      } catch (err) {
-        if (statusEl) {
-          statusEl.textContent = "保存失败：" + (err.message || "未知错误");
-          statusEl.className = "news-refresh-status error";
-        }
-        if (submitBtn) submitBtn.disabled = false;
-      }
-    });
-  });
 }
 
 function renderDecisionLog() {
@@ -712,29 +464,16 @@ function bindDecisionLogInteractions() {
 
 function getPageFromUrl() {
   if (window.location.pathname.includes("/holdings"))  return "holdings";
-  if (window.location.pathname.includes("/daily-portfolio")) return "daily-portfolio";
   if (window.location.pathname.includes("/watchlist")) return "watchlist";
   if (window.location.pathname.includes("/decisions")) return "decisions";
-  if (window.location.pathname.includes("/research-packs")) return "research-packs";
   const hashPage = window.location.hash.replace(/^#\/?/, "").split("?")[0];
   if (hashPage === "holdings")  return "holdings";
-  if (hashPage === "daily-portfolio") return "daily-portfolio";
   if (hashPage === "watchlist") return "watchlist";
   if (hashPage === "decisions") return "decisions";
-  if (hashPage === "research-packs") return "research-packs";
   return "dashboard";
 }
 
-function getHashParam(name) {
-  const query = window.location.hash.split("?")[1] || "";
-  return new URLSearchParams(query).get(name) || "";
-}
-
 window.addEventListener("hashchange", () => {
-  if (!SITE_PASSWORD_CONFIGURED) {
-    showSetupError();
-    return;
-  }
   if (!checkAuth()) {
     showPasswordGate();
     return;

@@ -5,10 +5,11 @@ import { deriveActionLabel, displayMarketValue, displayValue, HOLDING_FILTERS } 
 const MOBILE_TABS = [
   ["首页", "⌂", "dashboard"],
   ["持仓", "▣", "holdings"],
-  ["简报", "▥", "daily-portfolio"],
   ["观察", "◇", "watchlist"],
-  ["研究", "□", "research-packs"],
+  ["记录", "□", "decisions"],
 ];
+
+const DATA_UNAVAILABLE = "Data unavailable / 暂无数据";
 
 export function AppShell(content, currentPage = "dashboard") {
   return `
@@ -91,9 +92,10 @@ export function MarketSection(marketData) {
   const bySymbol = {};
   rows.forEach((r) => { bySymbol[get(r, "代码 / Symbol")] = r; });
 
-  const spy    = bySymbol["SPY"];
-  const qqq    = bySymbol["QQQ"];
-  const canada = bySymbol["XIC.TO"] || bySymbol["XIU.TO"];
+  const dow = buildIndexDisplayItem(bySymbol, "^DJI", "Dow Jones Industrial Average");
+  const nasdaq = buildIndexDisplayItem(bySymbol, "^IXIC", "Nasdaq Composite Index");
+  const sp500 = buildIndexDisplayItem(bySymbol, "^GSPC", "S&P 500 Index");
+  const tsx = buildIndexDisplayItem(bySymbol, "^GSPTSE", "S&P/TSX Composite Index");
 
   return `
     <section class="market-grid">
@@ -105,15 +107,15 @@ export function MarketSection(marketData) {
             <span id="market-refresh-status" class="news-refresh-status"></span>
           </div>
         </div>
-        ${marketQuoteRows([spy, qqq])}
-        <p class="market-proxy-note">代理ETF，仅供参考 · Proxy ETFs, not true indices · 不构成投资建议</p>
+        ${marketQuoteRows([dow, nasdaq, sp500])}
+        <p class="market-proxy-note">仅显示真实指数。若当前数据源未返回可用指数值，则显示 Data unavailable / 暂无数据。</p>
       </article>
       <article class="market-card">
         <div class="panel-title compact">
           <h2>加股走势 <span>/ Canada Market</span></h2>
         </div>
-        ${marketQuoteRows([canada])}
-        <p class="market-proxy-note">代理ETF，仅供参考 · Proxy ETF, not true index · 不构成投资建议</p>
+        ${marketQuoteRows([tsx])}
+        <p class="market-proxy-note">指数与持仓分开显示。ETF / 股票不混入市场指数区。</p>
       </article>
     </section>
   `;
@@ -122,17 +124,17 @@ export function MarketSection(marketData) {
 function marketQuoteRows(rowList) {
   const valid = rowList.filter(Boolean);
   if (!valid.length) {
-    return `<div class="market-empty">行情数据待更新 / Market data pending<br><small>Run marketDataFetchJob or click Refresh</small></div>`;
+    return `<div class="market-empty">行情数据待更新 / Market data pending<br><small>Only real index rows are shown here.</small></div>`;
   }
   return `<div class="market-quotes">${valid.map(marketQuoteRow).join("")}</div>`;
 }
 
 function marketQuoteRow(row) {
-  const symbol = get(row, "代码 / Symbol");
-  const price  = get(row, "当前水平 / Current Level");
-  const change = get(row, "日变动% / Daily Change %");
-  const date   = get(row, "日期 / Date");
-  const label  = get(row, "备注 / Notes") || symbol;
+  const symbol = row.symbol || DATA_UNAVAILABLE;
+  const price  = row.value || DATA_UNAVAILABLE;
+  const change = row.change || DATA_UNAVAILABLE;
+  const date   = row.date || DATA_UNAVAILABLE;
+  const label  = row.label || symbol;
 
   const up   = change.startsWith("+");
   const down = change.startsWith("-");
@@ -146,7 +148,7 @@ function marketQuoteRow(row) {
         <small class="mq-label">${escapeHtml(label)}</small>
       </div>
       <div class="mq-right">
-        <span class="mq-price">$${escapeHtml(price)}</span>
+        <span class="mq-price">${escapeHtml(price)}</span>
         <span class="mq-change">${arrow} ${escapeHtml(change)}</span>
         <small class="mq-date">${escapeHtml(date)}</small>
       </div>
@@ -188,13 +190,12 @@ export function AlertsPanel(alerts) {
   `;
 }
 
-export function SummaryCards(summaries, marketData) {
+export function SummaryCards(summaries) {
   return `
     <section class="summary-grid">
       ${SummaryTable("家庭总览", "Family Summary", summaries.family)}
-      ${SummaryList("Mabel 稳健投资", "Mabel Conservative View", summaries.mabel)}
-      ${SummaryList("Victor 主动投资雷达", "Victor Investment Radar", summaries.victor)}
-      ${MarketSummaryCard(marketData)}
+      ${SummaryList("Mabel 稳健投资（组合摘要）", "Mabel Portfolio Summary", summaries.mabel)}
+      ${SummaryList("Victor 主动投资雷达（组合摘要）", "Victor Portfolio Summary", summaries.victor)}
       ${SummaryList("观察清单速览", "Watchlist Snapshot", summaries.watchlist)}
       ${SummaryList("决策提醒", "Decision Reminder", summaries.reminders)}
     </section>
@@ -295,30 +296,14 @@ function formatNewsTime(raw) {
 
 function alertItem(row) {
   const status = get(row, "人工处理状态 / Human Review Status") || get(row, "需要行动 / Action Needed") || "Review";
-  const topic = get(row, "关注主题 / Watch Topic") || get(row, "提醒标题 / Alert Title") || get(row, "名称 / Name") || "";
-  const owner = get(row, "所属人 / Owner");
-  const ticker = get(row, "相关代码 / Related Ticker") || get(row, "代码 / Ticker");
-  const watchId = get(row, "关联观察ID / Related Watch ID") || get(row, "观察ID / Watch ID");
   return `
     <article class="alert-row">
       <div class="alert-icon">!</div>
       <div>
-        <strong>${escapeHtml(topic)}</strong>
+        <strong>${escapeHtml(get(row, "关注主题 / Watch Topic"))}</strong>
         <p>${escapeHtml(get(row, "最新中文摘要 / Latest Chinese Summary") || get(row, "AI中文点评 / AI Chinese Comment") || "暂无最新摘要 / No latest summary")}</p>
       </div>
-      <div class="alert-actions">
-        <span class="status-pill">${escapeHtml(status)}</span>
-        <button
-          class="small-research-btn"
-          type="button"
-          data-alert-research="1"
-          data-topic="${escapeHtml(topic)}"
-          data-owner="${escapeHtml(owner)}"
-          data-ticker="${escapeHtml(ticker)}"
-          data-watch-id="${escapeHtml(watchId)}">
-          生成研究包
-        </button>
-      </div>
+      <span class="status-pill">${escapeHtml(status)}</span>
     </article>
   `;
 }
@@ -347,32 +332,115 @@ function SummaryList(zh, en, rows) {
   `;
 }
 
-function MarketSummaryCard(marketData) {
-  const rows = Array.isArray(marketData) ? marketData : [];
-  const bySymbol = {};
-  rows.forEach((r) => { bySymbol[get(r, "代码 / Symbol")] = r; });
+function HoldingsSummaryCard(holdings, marketData) {
+  const rows = Array.isArray(holdings) ? holdings : [];
+  const holdingByTicker = {};
 
-  function fmt(sym) {
-    const r = bySymbol[sym];
-    if (!r) return "待更新";
-    const price  = get(r, "当前水平 / Current Level");
-    const change = get(r, "日变动% / Daily Change %");
-    return price ? `$${escapeHtml(price)} (${escapeHtml(change)})` : "待更新";
-  }
+  rows.forEach((row) => {
+    const ticker = get(row, "代码 / Ticker");
+    if (ticker) holdingByTicker[ticker.toUpperCase()] = row;
+  });
 
-  const canada = bySymbol["XIC.TO"] ? "XIC.TO" : "XIU.TO";
+  const targetTickers = ["BCE.TO", "VFV.TO", "XUS.TO", "VCNS.TO"];
 
   return `
-    <article class="summary-card">
-      <h3>市场雷达<span>Market Radar</span></h3>
-      <div class="summary-table">
-        <div><span>SPY (S&P 500)</span><strong>${fmt("SPY")}</strong></div>
-        <div><span>QQQ (Nasdaq)</span><strong>${fmt("QQQ")}</strong></div>
-        <div><span>${canada} (Canada)</span><strong>${fmt(canada)}</strong></div>
-        <div><span>来源 / Source</span><strong>Alpha Vantage</strong></div>
+    <div>
+      <p class="summary-caption">以下显示指定持仓卡片，不是完整持仓列表。没有真实行情时不会伪造数值。</p>
+      <div class="stocks-list">
+        ${targetTickers.map((ticker) => holdingSnapshotRow(ticker, holdingByTicker[ticker])).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function holdingSnapshotRow(ticker, holdingRow) {
+  const name = holdingRow ? get(holdingRow, "名称 / Name") : "";
+  const currency = holdingRow ? get(holdingRow, "货币 / Currency") : "";
+  const price = holdingRow ? formatHoldingAmount(get(holdingRow, "当前价格 / Current Price"), currency) : DATA_UNAVAILABLE;
+  const value = holdingRow ? formatHoldingAmount(get(holdingRow, "当前市值 / Current Value"), currency) : DATA_UNAVAILABLE;
+  const change = holdingRow ? extractHoldingDailyChange(get(holdingRow, "备注 / Notes")) : DATA_UNAVAILABLE;
+  const note = buildHoldingChineseNote(holdingRow);
+
+  return `
+    <article class="stock-list-row tone-${getHoldingTone(change)}">
+      <div class="stock-main">
+        <strong class="stock-symbol">${escapeHtml(ticker)}</strong>
+        <small class="stock-name">${escapeHtml(name || DATA_UNAVAILABLE)}</small>
+        <small class="stock-note">${escapeHtml(note)}</small>
+      </div>
+      <div class="stock-side">
+        <strong class="stock-price">${escapeHtml(price)}</strong>
+        <span class="stock-change-pill">${escapeHtml(change)}</span>
+        <small class="stock-meta">${escapeHtml(value)}</small>
       </div>
     </article>
   `;
+}
+
+function buildIndexDisplayItem(bySymbol, symbol, label) {
+  const row = bySymbol[symbol] || null;
+  const hasValue = row && hasUsableValue(get(row, "当前水平 / Current Level"));
+  return {
+    symbol,
+    label,
+    value: hasValue ? formatIndexDisplayValue(get(row, "当前水平 / Current Level")) : DATA_UNAVAILABLE,
+    change: hasValue ? formatChangeValue(get(row, "日变动% / Daily Change %")) : DATA_UNAVAILABLE,
+    date: hasValue ? formatTextValue(get(row, "日期 / Date")) : DATA_UNAVAILABLE,
+  };
+}
+
+function hasUsableValue(value) {
+  const text = String(value || "").trim();
+  return text && !/pending|待更新/i.test(text);
+}
+
+function formatIndexDisplayValue(value) {
+  return hasUsableValue(value) ? String(value).trim() : DATA_UNAVAILABLE;
+}
+
+function formatChangeValue(value) {
+  return hasUsableValue(value) ? String(value).trim() : DATA_UNAVAILABLE;
+}
+
+function formatTextValue(value) {
+  return hasUsableValue(value) ? String(value).trim() : DATA_UNAVAILABLE;
+}
+
+function formatHoldingAmount(value, currency) {
+  if (!hasUsableValue(value)) return DATA_UNAVAILABLE;
+  const currencyText = currency ? ` ${currency}` : "";
+  return `$${String(value).trim()}${currencyText}`;
+}
+
+function extractHoldingDailyChange(notes) {
+  const text = String(notes || "");
+  const match = text.match(/([+-]\$?[\d,.]+)\s*\/\s*([+-][\d.]+%)/);
+  if (match && match[2]) return match[2];
+  return DATA_UNAVAILABLE;
+}
+
+function getHoldingTone(change) {
+  if (String(change).startsWith("+")) return "up";
+  if (String(change).startsWith("-")) return "down";
+  return "flat";
+}
+
+function buildHoldingChineseNote(row) {
+  if (!row) return "现有 dashboard 暂无该持仓数据。";
+
+  const owner = get(row, "所属人 / Owner");
+  const risk = get(row, "风险等级 / Risk Level");
+  const status = get(row, "状态 / Status");
+
+  if (/review|watch|confirm|pending|待|复核|确认/i.test(status)) {
+    return `${owner || "当前"}项目已标记为需复核，请结合持仓页查看。`;
+  }
+
+  if (risk) {
+    return `${owner || "当前"}持仓，现有风险等级为 ${risk}。`;
+  }
+
+  return `${owner || "当前"}持仓，按现有 dashboard 数据显示。`;
 }
 
 export function HoldingsPage(model) {
@@ -947,24 +1015,6 @@ export function WatchlistPopupHtml(popupData) {
           </div>
         </div>
 
-        <div class="popup-section popup-research-pack">
-          <h3>研究包 <span>/ Research Pack</span></h3>
-          <p class="research-pack-note">研究包用于整理资料和辅助分析，不构成投资建议。最终决策由用户自行判断。<br>Research packs organize information for review only and are not investment advice.</p>
-          <div class="popup-decision-link">
-            <button class="refresh-news-btn" type="button"
-              id="btn-popup-generate-research-pack"
-              data-topic="${escapeHtml(name || ticker || "")}"
-              data-ticker="${escapeHtml(ticker || "")}"
-              data-owner="${escapeHtml(owner || "")}"
-              data-watch-id="${escapeHtml(get(item, "观察ID / Watch ID") || "")}"
-              data-source-context="${escapeHtml(priority ? "Watchlist " + priority : "Watchlist Quick Research")}">
-              生成研究包 / Generate Research Pack
-            </button>
-            <span id="research-pack-status" class="news-refresh-status"></span>
-          </div>
-          <div id="research-pack-result" class="research-pack-result" hidden></div>
-        </div>
-
         <div class="popup-section popup-decision-link">
           <button class="refresh-news-btn" type="button"
             id="btn-popup-add-decision"
@@ -983,51 +1033,6 @@ export function WatchlistPopupHtml(popupData) {
   `;
 }
 
-export function ResearchPackResultHtml(result) {
-  return `
-    <div class="research-pack-success">
-      <strong>Google Doc 已生成 / Research Pack created</strong>
-      <div class="research-pack-actions">
-        <a class="refresh-news-btn link-button" href="${escapeHtml(result.docUrl || "#")}" target="_blank" rel="noopener noreferrer">Open Research Pack</a>
-        <a class="refresh-news-btn link-button subtle-link-button" href="#/research-packs?packId=${encodeURIComponent(result.packId || "")}" data-view-research-packs="1">查看研究包 / View Research Packs</a>
-        <button class="refresh-news-btn secondary-btn" type="button" id="btn-copy-notebook-prompt">Copy NotebookLM Prompt</button>
-      </div>
-      <label class="wf-field wf-full">
-        <span>NotebookLM Prompt</span>
-        <textarea id="notebook-prompt-text" rows="5" readonly>${escapeHtml(result.notebookLmPrompt || "")}</textarea>
-      </label>
-      <div class="research-pack-analysis-form" data-pack-id="${escapeHtml(result.packId || "")}">
-        <label class="wf-field wf-full">
-          <span>粘贴 NotebookLM 分析结论 / Paste NotebookLM Analysis</span>
-          <textarea id="notebook-analysis-text" rows="5" placeholder="从 NotebookLM 复制分析结论后粘贴到这里"></textarea>
-        </label>
-        <label class="wf-field wf-full">
-          <span>投资步骤 / Investment Steps</span>
-          <textarea id="notebook-steps-text" rows="3" placeholder="例如：继续观察、核实费用、比较同类基金"></textarea>
-        </label>
-        <div class="wf-row research-pack-form-row">
-          <label class="wf-field">
-            <span>Decision Status</span>
-            <select id="notebook-decision-status">
-              <option value="Review">Review</option>
-              <option value="High Attention">High Attention</option>
-              <option value="No Action">No Action</option>
-            </select>
-          </label>
-          <label class="wf-field">
-            <span>备注 / Notes</span>
-            <input id="notebook-notes-text" type="text" placeholder="NotebookLM manual review" />
-          </label>
-        </div>
-        <div class="popup-decision-link">
-          <button class="refresh-news-btn" type="button" id="btn-save-notebook-analysis">保存分析 / Save Analysis</button>
-          <span id="notebook-save-status" class="news-refresh-status"></span>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
 function watchPriorityClass(priority) {
   if (!priority) return "medium";
   if (priority.includes("High")) return "high";
@@ -1040,7 +1045,7 @@ function PopupMarketSnapshot(marketData) {
     return `
       <div class="popup-empty">
         <strong>暂无行情数据 / No market data yet</strong>
-        <small>仅 SPY、QQQ、XIC.TO 有行情数据。Run marketDataFetchJob or click Refresh Market on Dashboard.</small>
+        <small>请先运行 marketDataFetchJob 或在首页点击 Refresh Market。真实指数与代理 ETF 取决于当前数据源返回结果。</small>
       </div>
     `;
   }
@@ -1159,335 +1164,6 @@ function PopupResearch(research) {
         )
         .join("")}
     </div>
-  `;
-}
-
-// ─── Daily Portfolio Intelligence Page ───────────────────────────────────────
-
-export function DailyPortfolioIntelligencePage(model) {
-  return `
-    <header class="page-header">
-      <div>
-        <h1>每日持仓情报简报 <span>/ Daily Portfolio Intelligence</span></h1>
-        <p>基于 01 Holdings Master 与 02 Daily Holding Intelligence 的每日持仓相关情报。</p>
-      </div>
-      <span class="live-pill"><i></i>真实数据 / Real Data</span>
-    </header>
-    <section class="holdings-summary-grid">
-      <article class="mini-stat-card"><span>简报日期<small>Brief Date</small></span><strong>${escapeHtml(model.selectedDate || "—")}</strong></article>
-      <article class="mini-stat-card"><span>活跃持仓<small>Active Holdings</small></span><strong>${escapeHtml(model.summary.activeHoldings)}</strong></article>
-      <article class="mini-stat-card"><span>高风险<small>High Risk</small></span><strong>${escapeHtml(model.summary.highRisk)}</strong></article>
-      <article class="mini-stat-card"><span>需行动<small>Action Needed</small></span><strong>${escapeHtml(model.summary.actionNeeded)}</strong></article>
-    </section>
-    ${
-      model.hasAnyRows
-        ? DailyPortfolioContent(model)
-        : `<section class="panel">${EmptyState("今日持仓情报尚未生成", "No rows in 02 Daily Holding Intelligence")}</section>`
-    }
-  `;
-}
-
-function DailyPortfolioContent(model) {
-  const mabelGroup = model.groupedByOwner.find((group) => group.owner === "Mabel");
-  const victorGroup = model.groupedByOwner.find((group) => group.owner === "Victor");
-  const otherGroups = model.groupedByOwner.filter((group) => group.owner !== "Mabel" && group.owner !== "Victor");
-  return `
-    ${!model.isToday ? `<div class="dpi-date-note">当天暂无数据，当前显示最近一次简报日期：${escapeHtml(model.selectedDate)}</div>` : ""}
-    <section class="panel dpi-panel">
-      <div class="panel-title compact">
-        <h2>宏观市场判断 <span>/ Macro Market Judgment</span></h2>
-      </div>
-      ${
-        model.macroImpacts.length
-          ? `<div class="dpi-macro-list">${model.macroImpacts.map((impact) => `<p>${escapeHtml(impact)}</p>`).join("")}</div>`
-          : EmptyState("暂无持仓相关宏观影响", "No holding-specific macro impact rows")
-      }
-    </section>
-    <section class="panel dpi-panel">
-      <div class="panel-title compact">
-        <h2>行业趋势判断 <span>/ Sector Trend Judgment</span></h2>
-      </div>
-      ${
-        model.sectorTrends.length
-          ? `<div class="dpi-macro-list">${model.sectorTrends.map((trend) => `<p>${escapeHtml(trend)}</p>`).join("")}</div>`
-          : EmptyState("暂无行业趋势判断", "No sector trend rows")
-      }
-    </section>
-    ${mabelGroup ? DailyOwnerGroup(mabelGroup, "Mabel 持仓影响 / Mabel Holding Impact") : ""}
-    ${victorGroup ? DailyOwnerGroup(victorGroup, "Victor 持仓影响 / Victor Holding Impact") : ""}
-    ${otherGroups.map((group) => DailyOwnerGroup(group)).join("")}
-    <section class="panel dpi-panel">
-      <div class="panel-title compact">
-        <h2>今日财报 / 重大公告 <span>/ Earnings & Announcements</span></h2>
-      </div>
-      ${
-        model.earningsEvents.length
-          ? `<div class="dpi-event-list">${model.earningsEvents.map(DailyEarningsItem).join("")}</div>`
-          : EmptyState("暂无财报或重要公告", "No earnings event rows for selected brief date")
-      }
-    </section>
-    <section class="panel dpi-panel">
-      <div class="panel-title compact">
-        <h2>风险提醒 <span>/ Risk Alerts</span></h2>
-      </div>
-      ${
-        model.riskAlerts.length
-          ? `<div class="dpi-risk-list">${model.riskAlerts.map(DailyRiskItem).join("")}</div>`
-          : EmptyState("暂无风险提醒", "No risk alerts for selected brief date")
-      }
-    </section>
-    <section class="panel dpi-panel">
-      <div class="panel-title compact">
-        <h2>明日关注 <span>/ Tomorrow Focus</span></h2>
-      </div>
-      ${
-        model.tomorrowFocus.length
-          ? `<div class="dpi-macro-list">${model.tomorrowFocus.map((item) => `<p>${escapeHtml(item)}</p>`).join("")}</div>`
-          : EmptyState("暂无明日关注事项", "No tomorrow focus rows")
-      }
-    </section>
-    <footer class="footer">
-      本页面只整理持仓相关信息、宏观影响、来源链接和复核状态，不构成投资建议或买卖推荐。
-    </footer>
-  `;
-}
-
-function DailyOwnerGroup(group, title = "") {
-  return `
-    <section class="panel dpi-panel">
-      <div class="panel-title compact">
-        <h2>${title ? escapeHtml(title) : `${escapeHtml(group.owner)} 持仓影响 / Holding Impact`}</h2>
-        <small class="wl-hint">仅展示持仓相关信息，不提供买卖建议。</small>
-      </div>
-      <div class="dpi-holding-list">
-        ${group.items.map(DailyHoldingCard).join("")}
-      </div>
-    </section>
-  `;
-}
-
-function DailyHoldingCard(item) {
-  const hasIntelligence = Boolean(item.intelligence);
-  return `
-    <article class="dpi-holding-card ${hasIntelligence ? "" : "dpi-missing-intel"}">
-      <div class="dpi-card-top">
-        <div>
-          <strong>${escapeHtml(displayValue(item.ticker, "—"))}</strong>
-          <span>${escapeHtml(displayValue(item.name, "Unnamed holding"))}</span>
-        </div>
-        <span class="status-pill action-${actionLabelClass(item.actionNeeded)}">${escapeHtml(item.actionNeeded || "No Action")}</span>
-      </div>
-      <div class="dpi-meta">
-        <span>${escapeHtml(displayValue(item.market, "Market N/A"))}</span>
-        <span>${escapeHtml(displayValue(item.assetType, "Type N/A"))}</span>
-        <span>${escapeHtml(displayValue(item.priceChange, "Price change N/A"))}</span>
-        <span class="dpi-risk risk-${escapeHtml((item.riskLevel || "none").toLowerCase())}">${escapeHtml(displayValue(item.riskLevel, "Risk N/A"))}</span>
-      </div>
-      <div class="dpi-text-block">
-        <span>中文新闻摘要 / Chinese News Summary</span>
-        <p>${escapeHtml(hasIntelligence ? displayValue(item.chineseSummary, "暂无摘要") : "该持仓在当前简报日期没有匹配记录")}</p>
-      </div>
-      <div class="dpi-text-block">
-        <span>AI中文点评 / AI Chinese Comment</span>
-        <p>${escapeHtml(hasIntelligence ? displayValue(item.aiComment, "暂无点评") : "No daily intelligence row for this active holding")}</p>
-      </div>
-      ${DailySourceLinks(item)}
-    </article>
-  `;
-}
-
-function DailyRiskItem(item) {
-  return `
-    <article class="dpi-risk-item">
-      <div>
-        <strong>${escapeHtml(displayValue(item.ticker, "—"))} · ${escapeHtml(displayValue(item.name, "Unnamed holding"))}</strong>
-        <p>${escapeHtml(displayValue(item.aiComment || item.chineseSummary, "暂无点评"))}</p>
-      </div>
-      <div class="dpi-risk-actions">
-        <span class="tag">${escapeHtml(displayValue(item.riskLevel, "Risk N/A"))}</span>
-        <span class="status-pill action-${actionLabelClass(item.actionNeeded)}">${escapeHtml(item.actionNeeded || "No Action")}</span>
-      </div>
-    </article>
-  `;
-}
-
-function DailyEarningsItem(item) {
-  return `
-    <article class="dpi-event-item">
-      <div>
-        <strong>${escapeHtml(displayValue(item.ticker, "—"))} · ${escapeHtml(displayValue(item.name, "Unnamed holding"))}</strong>
-        <p>${escapeHtml(displayValue(item.earningsEvent, "暂无财报事件"))}</p>
-      </div>
-      ${DailySourceLinks(item)}
-    </article>
-  `;
-}
-
-function DailySourceLinks(item) {
-  const values = [item.sourceLink1, item.sourceLink2]
-    .map((link) => String(link || "").trim())
-    .filter(Boolean);
-  const links = values.filter((link) => /^https?:\/\//i.test(link));
-  const hasMissing = !values.length || values.some((link) => /source missing|来源缺失/i.test(link));
-  if (!links.length && hasMissing) {
-    return `<div class="dpi-sources missing">Source missing / 来源缺失</div>`;
-  }
-  return `
-    <div class="dpi-sources">
-      ${links.map((link, index) => `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">Source ${index + 1}</a>`).join("")}
-      ${hasMissing ? `<span class="dpi-source-missing">Source missing / 来源缺失</span>` : ""}
-    </div>
-  `;
-}
-
-// ─── Research Packs Page ─────────────────────────────────────────────────────
-
-const NOTEBOOKLM_RESEARCH_PROMPT = [
-  "请根据本研究包资料，分析该投资主题的主要机会与风险。",
-  "请指出哪些信息已经确认，哪些仍需核实。",
-  "请总结是否适合继续观察、进入 Review，或标记 High Attention。",
-  "请生成一段可以写入 Decision Log 的中文复盘摘要。",
-  "请不要生成直接买入或卖出建议。",
-].join("\n");
-
-export function ResearchPacksPage(rows, highlightedPackId = "") {
-  const packs = (rows ?? [])
-    .filter((row) => get(row, "研究包ID / Pack ID"))
-    .sort((a, b) => {
-      const av = get(a, "创建时间 / Created At") || get(a, "日期 / Date");
-      const bv = get(b, "创建时间 / Created At") || get(b, "日期 / Date");
-      return bv.localeCompare(av);
-    });
-
-  return `
-    <header class="page-header">
-      <div>
-        <h1>研究包 <span>/ Research Packs</span></h1>
-        <p>查看 Google Drive 研究包，手动导入 NotebookLM 后回填分析结果</p>
-      </div>
-      <span class="live-pill"><i></i>真实数据 / Real Data</span>
-    </header>
-    <section class="panel research-packs-panel">
-      <div class="panel-title compact">
-        <h2>研究包列表 <span>/ Research Pack Records</span></h2>
-        <small class="wl-hint">研究包用于整理资料和辅助分析，不构成投资建议。</small>
-      </div>
-      ${
-        packs.length
-          ? `${ResearchPacksTable(packs, highlightedPackId)}${ResearchPackCards(packs, highlightedPackId)}`
-          : `<div class="empty-state"><strong>暂无研究包 / No research packs yet</strong><span>从 Watchlist 或 Priority Alerts 生成第一份研究包</span></div>`
-      }
-    </section>
-  `;
-}
-
-function ResearchPacksTable(rows, highlightedPackId) {
-  return `
-    <div class="rp-table-wrap">
-      <div class="rp-table-head">
-        <span>Pack ID</span>
-        <span>Date</span>
-        <span>Owner</span>
-        <span>Research Topic</span>
-        <span>Related Ticker</span>
-        <span>Google Doc</span>
-        <span>NotebookLM Status</span>
-        <span>Decision Status</span>
-        <span>Created At</span>
-      </div>
-      ${rows.map((row) => researchPackRow(row, highlightedPackId)).join("")}
-    </div>
-  `;
-}
-
-function researchPackRow(row, highlightedPackId) {
-  const packId = get(row, "研究包ID / Pack ID");
-  const docUrl = get(row, "Google Drive文件链接 / Drive File Link") || get(row, "来源链接 / Source Link");
-  const highlighted = packId && packId === highlightedPackId;
-  return `
-    <article class="rp-record ${highlighted ? "rp-highlight" : ""}" data-rp-id="${escapeHtml(packId)}">
-      <div class="rp-row">
-        <strong class="dl-id">${escapeHtml(packId)}</strong>
-        <span>${escapeHtml(get(row, "日期 / Date"))}</span>
-        <span>${escapeHtml(get(row, "所属人 / Owner"))}</span>
-        <span>${escapeHtml(get(row, "研究主题 / Research Topic"))}</span>
-        <span>${escapeHtml(displayValue(get(row, "相关代码 / Related Ticker")))}</span>
-        <span>${docUrl ? `<a href="${escapeHtml(docUrl)}" target="_blank" rel="noopener noreferrer">Open Research Pack</a>` : "—"}</span>
-        <span>${escapeHtml(get(row, "NotebookLM状态 / NotebookLM Status"))}</span>
-        <span class="status-pill action-${actionLabelClass(get(row, "决策建议状态 / Decision Status") || "Review")}">${escapeHtml(get(row, "决策建议状态 / Decision Status") || "Review")}</span>
-        <span>${escapeHtml(get(row, "创建时间 / Created At"))}</span>
-      </div>
-      ${ResearchPackAnalysisForm(row)}
-    </article>
-  `;
-}
-
-function ResearchPackCards(rows, highlightedPackId) {
-  return `
-    <div class="rp-cards-mobile">
-      ${rows.map((row) => {
-        const packId = get(row, "研究包ID / Pack ID");
-        const highlighted = packId && packId === highlightedPackId;
-        return `
-        <article class="rp-card-m ${highlighted ? "rp-highlight" : ""}" data-rp-id="${escapeHtml(packId)}">
-          <div class="rp-card-top">
-            <strong>${escapeHtml(packId)}</strong>
-            <span class="status-pill action-${actionLabelClass(get(row, "决策建议状态 / Decision Status") || "Review")}">${escapeHtml(get(row, "决策建议状态 / Decision Status") || "Review")}</span>
-          </div>
-          <div class="rp-card-topic">${escapeHtml(get(row, "研究主题 / Research Topic"))}</div>
-          <div class="rp-card-meta">
-            <span>${escapeHtml(get(row, "日期 / Date"))}</span>
-            <span>${escapeHtml(get(row, "所属人 / Owner"))}</span>
-            <span>${escapeHtml(displayValue(get(row, "相关代码 / Related Ticker")))}</span>
-          </div>
-          <div class="rp-card-meta">
-            <span>${escapeHtml(get(row, "NotebookLM状态 / NotebookLM Status"))}</span>
-            <span>${escapeHtml(get(row, "创建时间 / Created At"))}</span>
-          </div>
-          ${ResearchPackAnalysisForm(row)}
-        </article>
-      `}).join("")}
-    </div>
-  `;
-}
-
-function ResearchPackAnalysisForm(row) {
-  const packId = get(row, "研究包ID / Pack ID");
-  const docUrl = get(row, "Google Drive文件链接 / Drive File Link") || get(row, "来源链接 / Source Link");
-  const decisionStatus = get(row, "决策建议状态 / Decision Status") || "Review";
-  return `
-    <form class="rp-analysis-form" data-rp-form="1" data-pack-id="${escapeHtml(packId)}">
-      <div class="rp-actions">
-        ${docUrl ? `<a class="refresh-news-btn link-button" href="${escapeHtml(docUrl)}" target="_blank" rel="noopener noreferrer">Open Research Pack</a>` : ""}
-        <button class="refresh-news-btn secondary-btn" type="button" data-copy-rp-prompt="1" data-prompt="${escapeHtml(NOTEBOOKLM_RESEARCH_PROMPT)}">Copy NotebookLM Prompt</button>
-      </div>
-      <div class="wf-row rp-form-grid">
-        <label class="wf-field wf-full">
-          <span>粘贴 / 更新 NotebookLM 分析结论</span>
-          <textarea name="notebookLmConclusion" rows="3" placeholder="Paste NotebookLM Analysis">${escapeHtml(get(row, "NotebookLM结论 / NotebookLM Conclusion"))}</textarea>
-        </label>
-        <label class="wf-field wf-full">
-          <span>投资步骤 / Investment Steps</span>
-          <textarea name="investmentSteps" rows="2" placeholder="Review steps only, no trading recommendation">${escapeHtml(get(row, "投资步骤 / Investment Steps"))}</textarea>
-        </label>
-        <label class="wf-field">
-          <span>Decision Status</span>
-          <select name="decisionStatus">
-            ${["Review", "High Attention", "No Action"].map((status) => `
-              <option value="${escapeHtml(status)}" ${decisionStatus === status ? "selected" : ""}>${escapeHtml(status)}</option>
-            `).join("")}
-          </select>
-        </label>
-        <label class="wf-field">
-          <span>备注 / Notes</span>
-          <input name="notes" type="text" value="${escapeHtml(get(row, "备注 / Notes"))}" placeholder="Optional notes" />
-        </label>
-      </div>
-      <div class="wf-actions">
-        <button type="submit" class="refresh-news-btn">保存分析 / Save Analysis</button>
-        <span class="news-refresh-status" data-rp-save-status></span>
-      </div>
-    </form>
   `;
 }
 

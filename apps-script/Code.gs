@@ -788,65 +788,140 @@ function marketDataFetchJob() {
 }
 
 function marketDataFetchJob_() {
-  var apiKey = PropertiesService.getScriptProperties().getProperty('ALPHA_VANTAGE_API_KEY');
-  if (!apiKey) throw new Error('ALPHA_VANTAGE_API_KEY not set in PropertiesService.');
-
+  // Source: 09 Market Index Source (GOOGLEFINANCE formulas)
+  // Columns: A=GF Symbol, B=Display Name, C=Price, D=Change, E=Change%, F=LastUpdated, G=Apps Script Symbol
   var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sourceSheet = spreadsheet.getSheetByName('09 Market Index Source');
+  if (!sourceSheet) throw new Error('Sheet not found: 09 Market Index Source');
+
+  var sourceLastRow = sourceSheet.getLastRow();
+  if (sourceLastRow < 2) throw new Error('09 Market Index Source has no data rows.');
+
+  var sourceData = sourceSheet.getRange(2, 1, sourceLastRow - 1, 7).getValues();
+
+  // Self-contained symbol info for real market indexes.
+  // This does not rely on MARKET_SYMBOLS and does not use ETF proxy symbols.
+  var symInfoMap = {
+    '^DJI': {
+      symbol: '^DJI',
+      market: 'US Market',
+      label: 'Dow Jones Industrial Average',
+      indicator: 'Dow Jones'
+    },
+    '^IXIC': {
+      symbol: '^IXIC',
+      market: 'US Market',
+      label: 'Nasdaq Composite Index',
+      indicator: 'Nasdaq Composite'
+    },
+    '^GSPC': {
+      symbol: '^GSPC',
+      market: 'US Market',
+      label: 'S&P 500 Index',
+      indicator: 'S&P 500'
+    },
+    '^GSPTSE': {
+      symbol: '^GSPTSE',
+      market: 'Canada Market',
+      label: 'S&P/TSX Composite Index',
+      indicator: 'S&P/TSX Composite'
+    }
+  };
+
+  // Destination: 05 Market Radar
   var sheet = spreadsheet.getSheetByName(DASHBOARD_TABS.marketRadar);
   if (!sheet) throw new Error('Sheet not found: ' + DASHBOARD_TABS.marketRadar);
 
   var lastCol = sheet.getLastColumn();
   if (lastCol < 1) throw new Error('05 Market Radar has no columns.');
+
   var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function(h) {
     return String(h || '').trim();
   });
 
-  // Build symbol -> sheet row index map for upsert
+  // Build symbol -> sheet row index map for upsert.
   var symCol = -1;
   for (var i = 0; i < headers.length; i++) {
-    if (headers[i].indexOf('Symbol') !== -1 || headers[i].indexOf('代码') !== -1) { symCol = i + 1; break; }
+    if (headers[i].indexOf('Symbol') !== -1 || headers[i].indexOf('代码') !== -1) {
+      symCol = i + 1;
+      break;
+    }
   }
+
   var symbolRowMap = {};
-  var lastRow = sheet.getLastRow();
-  if (lastRow > 1 && symCol > 0) {
-    var symVals = sheet.getRange(2, symCol, lastRow - 1, 1).getValues();
+  var radarLastRow = sheet.getLastRow();
+  if (radarLastRow > 1 && symCol > 0) {
+    var symVals = sheet.getRange(2, symCol, radarLastRow - 1, 1).getValues();
     for (var r = 0; r < symVals.length; r++) {
-      if (symVals[r][0]) symbolRowMap[String(symVals[r][0]).trim()] = r + 2;
+      if (symVals[r][0]) {
+        symbolRowMap[String(symVals[r][0]).trim()] = r + 2;
+      }
     }
   }
 
   var now = new Date();
   var dateStr = Utilities.formatDate(now, 'America/Vancouver', 'yyyy-MM-dd');
   var createdAt = now.toISOString();
-  var updated = 0, inserted = 0, errors = 0;
+  var updated = 0;
+  var inserted = 0;
+  var errors = 0;
 
-  for (var t = 0; t < MARKET_SYMBOLS.length; t++) {
-    if (t > 0) Utilities.sleep(15000); // Alpha Vantage free: max 5 req/min
-    var sym = MARKET_SYMBOLS[t];
-    var quote;
-    try {
-      quote = fetchAlphaVantageQuote_(apiKey, sym.symbol);
-    } catch (e) {
-      Logger.log('[Market] ERROR fetching ' + sym.symbol + ': ' + e.message);
+  for (var t = 0; t < sourceData.length; t++) {
+    var srcRow = sourceData[t];
+    var appsSymbol = String(srcRow[6] || '').trim(); // Column G: ^DJI / ^IXIC / ^GSPC / ^GSPTSE
+    var rawPrice = srcRow[2];                        // Column C: price
+    var rawChangePct = srcRow[4];                    // Column E: changepct
+    var rawDate = srcRow[5];                         // Column F: =NOW()
+
+    if (!appsSymbol) continue;
+
+    var symInfo = symInfoMap[appsSymbol];
+    if (!symInfo) {
+      Logger.log('[Market] Skipping unknown symbol in column G: ' + appsSymbol);
       errors++;
       continue;
     }
-    var row = buildMarketRow_(headers, sym, quote, dateStr, createdAt);
-    if (symbolRowMap[sym.symbol]) {
-      sheet.getRange(symbolRowMap[sym.symbol], 1, 1, row.length).setValues([row]);
-      Logger.log('[Market] Updated ' + sym.symbol + ' price=' + quote.price + ' change=' + quote.changePercent + '%');
+
+    var price = parseFloat(rawPrice);
+    if (rawPrice === '' || rawPrice === null || rawPrice === undefined || isNaN(price)) {
+      Logger.log('[Market] No price for ' + appsSymbol + ' — GOOGLEFINANCE may still be loading.');
+      errors++;
+      continue;
+    }
+
+    var tradingDay = rawDate instanceof Date
+      ? Utilities.formatDate(rawDate, 'America/Vancouver', 'yyyy-MM-dd')
+      : dateStr;
+
+    var quote = {
+      price: price,
+      changePercent: parseFloat(rawChangePct) || 0,
+      tradingDay: tradingDay
+    };
+
+    var row = buildMarketRow_(headers, symInfo, quote, dateStr, createdAt);
+
+    if (symbolRowMap[appsSymbol]) {
+      sheet.getRange(symbolRowMap[appsSymbol], 1, 1, row.length).setValues([row]);
+      Logger.log('[Market] Updated ' + appsSymbol + ' price=' + quote.price + ' change=' + quote.changePercent + '%');
     } else {
       sheet.appendRow(row);
-      symbolRowMap[sym.symbol] = sheet.getLastRow();
+      symbolRowMap[appsSymbol] = sheet.getLastRow();
       inserted++;
-      Logger.log('[Market] Inserted ' + sym.symbol);
+      Logger.log('[Market] Inserted ' + appsSymbol);
     }
+
     updated++;
   }
 
   SpreadsheetApp.flush();
-  return { updated: updated, inserted: inserted, errors: errors };
+  return {
+    updated: updated,
+    inserted: inserted,
+    errors: errors
+  };
 }
+
 
 function fetchAlphaVantageQuote_(apiKey, symbol) {
   var url = 'https://www.alphavantage.co/query'
@@ -881,38 +956,53 @@ function fetchAlphaVantageQuote_(apiKey, symbol) {
 function buildMarketRow_(headers, sym, quote, dateStr, createdAt) {
   var chg = quote.changePercent;
   var trend, riskSignal, action;
-  if      (chg >=  0.5) { trend = '上涨 / Up';   riskSignal = 'Low';    action = 'No Action';     }
-  else if (chg <= -2.0) { trend = '下跌 / Down';  riskSignal = 'High';   action = 'High Attention'; }
-  else if (chg <  -0.5) { trend = '下跌 / Down';  riskSignal = 'Medium'; action = 'Review';         }
-  else                   { trend = '横盘 / Flat';  riskSignal = 'Low';    action = 'No Action';     }
 
-  var sign    = chg >= 0 ? '+' : '';
+  if (chg >= 0.5) {
+    trend = '上涨 / Up';
+    riskSignal = 'Low';
+    action = 'No Action';
+  } else if (chg <= -2.0) {
+    trend = '下跌 / Down';
+    riskSignal = 'High';
+    action = 'High Attention';
+  } else if (chg < -0.5) {
+    trend = '下跌 / Down';
+    riskSignal = 'Medium';
+    action = 'Review';
+  } else {
+    trend = '横盘 / Flat';
+    riskSignal = 'Low';
+    action = 'No Action';
+  }
+
+  var sign = chg >= 0 ? '+' : '';
   var changeStr = sign + chg.toFixed(2) + '%';
-  var priceStr  = quote.price.toFixed(2);
-  var aiSum     = sym.indicator + ' (' + sym.label + ') '
-    + (chg >= 0.5  ? '今日上涨 '       + changeStr + '，市场表现良好。' :
-       chg <= -2.0 ? '今日大幅下跌 '   + changeStr + '，注意风险。'     :
-       chg <  -0.5 ? '今日小幅下跌 '   + changeStr + '，需留意。'       :
-                     '今日横盘，变动 '  + changeStr + '。')
-    + ' [代理ETF，仅供参考]';
+  var priceStr = quote.price.toFixed(2);
+  var aiSum = sym.indicator + ' (' + sym.label + ') '
+    + (chg >= 0.5 ? '今日上涨 ' + changeStr + '，市场表现偏强。' :
+       chg <= -2.0 ? '今日大幅下跌 ' + changeStr + '，需要关注市场风险。' :
+       chg < -0.5 ? '今日小幅下跌 ' + changeStr + '，需继续观察。' :
+       '今日相对平稳，变动 ' + changeStr + '。')
+    + ' 数据来源：Google Sheets GOOGLEFINANCE。';
 
   return headers.map(function(h) {
     if (!h) return '';
-    if (h.indexOf('日期')    !== -1 || h.indexOf('Date')         !== -1) return dateStr;
-    if (h.indexOf('市场')    !== -1 || h.indexOf('Market')       !== -1 || h.indexOf('Indicator') !== -1) return sym.market;
-    if (h.indexOf('代码')    !== -1 || h.indexOf('Symbol')       !== -1) return sym.symbol;
+    if (h.indexOf('日期') !== -1 || h.indexOf('Date') !== -1) return quote.tradingDay || dateStr;
+    if (h.indexOf('市场') !== -1 || h.indexOf('Market') !== -1 || h.indexOf('Indicator') !== -1) return sym.market;
+    if (h.indexOf('代码') !== -1 || h.indexOf('Symbol') !== -1) return sym.symbol;
     if (h.indexOf('当前水平') !== -1 || h.indexOf('Current Level') !== -1) return priceStr;
-    if (h.indexOf('日变动')  !== -1 || h.indexOf('Daily Change') !== -1) return changeStr;
-    if (h.indexOf('趋势')    !== -1 || h.indexOf('Trend')        !== -1) return trend;
+    if (h.indexOf('日变动') !== -1 || h.indexOf('Daily Change') !== -1) return changeStr;
+    if (h.indexOf('趋势') !== -1 || h.indexOf('Trend') !== -1) return trend;
     if (h.indexOf('风险信号') !== -1 || h.indexOf('Risk Signal') !== -1) return riskSignal;
     if (h.indexOf('AI中文摘要') !== -1 || h.indexOf('AI Chinese Summary') !== -1) return aiSum;
     if (h.indexOf('需要行动') !== -1 || h.indexOf('Action Needed') !== -1) return action;
-    if (h.indexOf('数据来源') !== -1 || h.indexOf('Data Source')  !== -1) return 'Alpha Vantage GLOBAL_QUOTE';
-    if (h.indexOf('创建时间') !== -1 || h.indexOf('Created At')   !== -1) return createdAt;
-    if (h.indexOf('备注')    !== -1 || h.indexOf('Notes')         !== -1) return sym.label + ' — Proxy ETF';
+    if (h.indexOf('数据来源') !== -1 || h.indexOf('Data Source') !== -1) return 'Google Sheets GOOGLEFINANCE';
+    if (h.indexOf('创建时间') !== -1 || h.indexOf('Created At') !== -1) return createdAt;
+    if (h.indexOf('备注') !== -1 || h.indexOf('Notes') !== -1) return sym.label + ' — real market index from 09 Market Index Source';
     return '';
   });
 }
+
 
 // --- Daily Portfolio Intelligence --------------------------------------------
 
@@ -2085,4 +2175,102 @@ function normalizeResearchDecisionStatus_(value) {
   var status = String(value || '').trim();
   if (['No Action', 'Review', 'High Attention'].indexOf(status) !== -1) return status;
   return 'Review';
+}
+
+
+function marketDataFetchJob_() {
+  // ── Source: 09 Market Index Source (GOOGLEFINANCE formulas) ──────────────────
+  // Columns: A=GF Symbol, B=Display Name, C=Price, D=Change, E=Change%, F=LastUpdated, G=Apps Script Symbol
+  var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sourceSheet = spreadsheet.getSheetByName('09 Market Index Source');
+  if (!sourceSheet) throw new Error('Sheet not found: 09 Market Index Source');
+
+  var sourceLastRow = sourceSheet.getLastRow();
+  if (sourceLastRow < 2) throw new Error('09 Market Index Source has no data rows.');
+  var sourceData = sourceSheet.getRange(2, 1, sourceLastRow - 1, 7).getValues();
+
+  // Self-contained symbol info — does NOT rely on MARKET_SYMBOLS
+  var symInfoMap = {
+    '^DJI':    { symbol: '^DJI',    market: 'US Market',     label: 'Dow Jones Industrial Average', indicator: 'Dow Jones' },
+    '^IXIC':   { symbol: '^IXIC',   market: 'US Market',     label: 'Nasdaq Composite Index',       indicator: 'Nasdaq Composite' },
+    '^GSPC':   { symbol: '^GSPC',   market: 'US Market',     label: 'S&P 500 Index',                indicator: 'S&P 500' },
+    '^GSPTSE': { symbol: '^GSPTSE', market: 'Canada Market', label: 'S&P/TSX Composite Index',      indicator: 'S&P/TSX Composite' },
+  };
+
+  // ── Destination: 05 Market Radar ─────────────────────────────────────────────
+  var sheet = spreadsheet.getSheetByName(DASHBOARD_TABS.marketRadar);
+  if (!sheet) throw new Error('Sheet not found: ' + DASHBOARD_TABS.marketRadar);
+
+  var lastCol = sheet.getLastColumn();
+  if (lastCol < 1) throw new Error('05 Market Radar has no columns.');
+  var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function(h) {
+    return String(h || '').trim();
+  });
+
+  var symCol = -1;
+  for (var i = 0; i < headers.length; i++) {
+    if (headers[i].indexOf('Symbol') !== -1 || headers[i].indexOf('代码') !== -1) { symCol = i + 1; break; }
+  }
+  var symbolRowMap = {};
+  var radarLastRow = sheet.getLastRow();
+  if (radarLastRow > 1 && symCol > 0) {
+    var symVals = sheet.getRange(2, symCol, radarLastRow - 1, 1).getValues();
+    for (var r = 0; r < symVals.length; r++) {
+      if (symVals[r][0]) symbolRowMap[String(symVals[r][0]).trim()] = r + 2;
+    }
+  }
+
+  var now = new Date();
+  var dateStr = Utilities.formatDate(now, 'America/Vancouver', 'yyyy-MM-dd');
+  var createdAt = now.toISOString();
+  var updated = 0, inserted = 0, errors = 0;
+
+  for (var t = 0; t < sourceData.length; t++) {
+    var srcRow       = sourceData[t];
+    var appsSymbol   = String(srcRow[6] || '').trim();  // Column G: ^DJI / ^IXIC / ^GSPC / ^GSPTSE
+    var rawPrice     = srcRow[2];                        // Column C: price
+    var rawChangePct = srcRow[4];                        // Column E: changepct
+    var rawDate      = srcRow[5];                        // Column F: =NOW()
+
+    if (!appsSymbol) continue;
+
+    var symInfo = symInfoMap[appsSymbol];
+    if (!symInfo) {
+      Logger.log('[Market] Skipping unknown symbol in column G: ' + appsSymbol);
+      errors++;
+      continue;
+    }
+
+    var price = parseFloat(rawPrice);
+    if (!rawPrice || isNaN(price)) {
+      Logger.log('[Market] No price for ' + appsSymbol + ' — GOOGLEFINANCE may still be loading.');
+      errors++;
+      continue;
+    }
+
+    var tradingDay = (rawDate instanceof Date)
+      ? Utilities.formatDate(rawDate, 'America/Vancouver', 'yyyy-MM-dd')
+      : dateStr;
+
+    var quote = {
+      price:         price,
+      changePercent: parseFloat(rawChangePct) || 0,
+      tradingDay:    tradingDay,
+    };
+
+    var row = buildMarketRow_(headers, symInfo, quote, dateStr, createdAt);
+    if (symbolRowMap[appsSymbol]) {
+      sheet.getRange(symbolRowMap[appsSymbol], 1, 1, row.length).setValues([row]);
+      Logger.log('[Market] Updated ' + appsSymbol + ' price=' + quote.price + ' change=' + quote.changePercent + '%');
+    } else {
+      sheet.appendRow(row);
+      symbolRowMap[appsSymbol] = sheet.getLastRow();
+      inserted++;
+      Logger.log('[Market] Inserted ' + appsSymbol);
+    }
+    updated++;
+  }
+
+  SpreadsheetApp.flush();
+  return { updated: updated, inserted: inserted, errors: errors };
 }

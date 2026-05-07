@@ -36,18 +36,6 @@ export async function loadHoldingsPageSource() {
   };
 }
 
-export async function loadDailyPortfolioIntelligenceSource() {
-  const [holdings, dailyHoldingIntelligence] = await Promise.all([
-    loadSheetTab(SHEET_CONFIG.tabs.holdings),
-    loadSheetTab(SHEET_CONFIG.tabs.dailyHoldingIntelligence),
-  ]);
-
-  return {
-    holdings,
-    dailyHoldingIntelligence,
-  };
-}
-
 export async function loadWatchlistPageSource() {
   const dashboardSource = await loadDashboardSource();
   const researchResult = await Promise.allSettled([
@@ -91,20 +79,6 @@ export async function addDecisionLog(payload) {
   return await fetchJson(url);
 }
 
-export async function generateResearchPack(payload) {
-  const url = buildApiUrl("generateResearchPack", payload);
-  return await fetchJson(url);
-}
-
-export async function saveNotebookLmAnalysis(payload) {
-  const url = buildApiUrl("saveNotebookLmAnalysis", payload);
-  return await fetchJson(url);
-}
-
-export async function loadResearchPackRows() {
-  return await loadSheetTab(SHEET_CONFIG.tabs.researchPack);
-}
-
 function buildApiUrl(action, params = {}) {
   if (!FAMILY_INVESTMENT_API_URL) {
     throw new Error(
@@ -115,9 +89,7 @@ function buildApiUrl(action, params = {}) {
   const url = new URL(FAMILY_INVESTMENT_API_URL);
   url.searchParams.set("action", action);
   Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      url.searchParams.set(key, value);
-    }
+    url.searchParams.set(key, value);
   });
   return url;
 }

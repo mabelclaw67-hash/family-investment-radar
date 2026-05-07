@@ -1,12 +1,14 @@
 [build]
-  publish = "dist"
-  command = "npm run build"
+  publish = "."
+  command = ""   # Static site — no build step needed
 
 [[redirects]]
   from   = "/*"
   to     = "/index.html"
   status = 200
 
-# Required environment variable — set in Netlify UI → Site settings → Environment variables:
-#   VITE_SITE_PASSWORD = <your real password>
-# Do NOT commit the real password to source control.
+[build.environment]
+  # Set this in Netlify UI → Site Settings → Environment Variables
+  # VITE_FAMILY_INVESTMENT_SITE_PASSWORD = "your-real-password"
+  # Do NOT commit the real password here.
+  VITE_FAMILY_INVESTMENT_SITE_PASSWORD = "CHANGE_ME_BEFORE_DEPLOY"
