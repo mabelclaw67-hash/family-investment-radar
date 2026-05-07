@@ -90,7 +90,10 @@ export function KpiCards(kpis) {
 export function MarketSection(marketData) {
   const rows = Array.isArray(marketData) ? marketData : [];
   const bySymbol = {};
-  rows.forEach((r) => { bySymbol[get(r, "代码 / Symbol")] = r; });
+  rows.forEach((r) => {
+    const symbol = r.symbol || get(r, "代码 / Symbol") || get(r, "Symbol");
+    if (symbol) bySymbol[String(symbol).trim()] = r;
+  });
 
   const dow = buildIndexDisplayItem(bySymbol, "^DJI", "Dow Jones Industrial Average");
   const nasdaq = buildIndexDisplayItem(bySymbol, "^IXIC", "Nasdaq Composite Index");
@@ -378,14 +381,38 @@ function holdingSnapshotRow(ticker, holdingRow) {
 }
 
 function buildIndexDisplayItem(bySymbol, symbol, label) {
-  const row = bySymbol[symbol] || null;
-  const hasValue = row && hasUsableValue(get(row, "当前水平 / Current Level"));
+  const row = bySymbol[symbol] || {};
+
+  const value =
+    row.value ||
+    get(row, "当前水平 / Current Level") ||
+    get(row, "Current Level") ||
+    get(row, "当前水平") ||
+    "";
+
+  const change =
+    row.change ||
+    get(row, "日变动% / Daily Change %") ||
+    get(row, "Daily Change %") ||
+    get(row, "Daily Change") ||
+    get(row, "日变动%") ||
+    "";
+
+  const date =
+    row.date ||
+    get(row, "日期 / Date") ||
+    get(row, "Date") ||
+    get(row, "日期") ||
+    "";
+
+  const hasValue = String(value || "").trim() !== "" && !String(value).includes("待更新") && !String(value).includes("Pending");
+
   return {
     symbol,
     label,
-    value: hasValue ? formatIndexDisplayValue(get(row, "当前水平 / Current Level")) : DATA_UNAVAILABLE,
-    change: hasValue ? formatChangeValue(get(row, "日变动% / Daily Change %")) : DATA_UNAVAILABLE,
-    date: hasValue ? formatTextValue(get(row, "日期 / Date")) : DATA_UNAVAILABLE,
+    value: hasValue ? value : DATA_UNAVAILABLE,
+    change: change || DATA_UNAVAILABLE,
+    date: date || DATA_UNAVAILABLE,
   };
 }
 
