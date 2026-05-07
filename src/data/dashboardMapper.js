@@ -41,13 +41,36 @@ export function buildDashboardModel(source) {
     watchlist: activeWatchlist,
     alerts: highPriorityAlerts,
     settings,
-    marketData: marketRadar,
+    marketData: buildMarketData(marketRadar),
     summaries: buildSummaries(activeHoldings, activeWatchlist, highPriorityAlerts, settings),
   };
 }
 
 export function get(row, key) {
   return row?.[key] ?? "";
+}
+
+function buildMarketData(marketRadar) {
+  return (marketRadar || []).map((row) => {
+    const symbol = get(row, "代码 / Symbol") || get(row, "Symbol");
+    const value = get(row, "当前水平 / Current Level") || get(row, "Current Level");
+    const change = get(row, "日变动% / Daily Change %") || get(row, "Daily Change %") || get(row, "Daily Change");
+    const date = get(row, "日期 / Date") || get(row, "Date");
+    const market = get(row, "市场/指标 / Market or Indicator") || get(row, "市场 / Market") || get(row, "Market");
+    const source = get(row, "数据来源 / Data Source") || get(row, "Data Source");
+    const note = get(row, "备注 / Notes") || get(row, "Notes");
+
+    return {
+      ...row,
+      symbol,
+      label: market || symbol,
+      value,
+      change,
+      date,
+      source,
+      note,
+    };
+  });
 }
 
 function getTodayRiskLevel(holdings, alerts) {
