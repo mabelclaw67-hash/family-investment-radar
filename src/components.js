@@ -96,10 +96,10 @@ export function MarketSection(marketData) {
     if (symbol) bySymbol[String(symbol).trim()] = r;
   });
 
-  const dow = buildIndexDisplayItem(bySymbol, "^DJI", "Dow Jones Industrial Average");
-  const nasdaq = buildIndexDisplayItem(bySymbol, "^IXIC", "Nasdaq Composite Index");
-  const sp500 = buildIndexDisplayItem(bySymbol, "^GSPC", "S&P 500 Index");
-  const tsx = buildIndexDisplayItem(bySymbol, "^GSPTSE", "S&P/TSX Composite Index");
+  const dow = buildIndexDisplayItem(bySymbol, ["^DJI"], "Dow Jones Industrial Average");
+  const nasdaq = buildIndexDisplayItem(bySymbol, ["^IXIC", "QQQ"], "Nasdaq Composite Index");
+  const sp500 = buildIndexDisplayItem(bySymbol, ["^GSPC", "SPY"], "S&P 500 Index");
+  const tsx = buildIndexDisplayItem(bySymbol, ["^GSPTSE", "XIC.TO", "XIU.TO"], "S&P/TSX Composite Index");
 
   return `
     <section class="market-grid">
@@ -381,8 +381,10 @@ function holdingSnapshotRow(ticker, holdingRow) {
   `;
 }
 
-function buildIndexDisplayItem(bySymbol, symbol, label) {
-  const row = bySymbol[symbol] || {};
+function buildIndexDisplayItem(bySymbol, symbols, label) {
+  const candidates = Array.isArray(symbols) ? symbols : [symbols];
+  const symbol = candidates[0] || "";
+  const row = candidates.map((key) => bySymbol[key]).find(Boolean) || {};
 
   const value =
     row.value ||
