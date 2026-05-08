@@ -14,11 +14,8 @@ export const SHEET_CONFIG = {
 };
 
 // ── Site password gate ────────────────────────────────────────────────────────
-// Set VITE_FAMILY_INVESTMENT_SITE_PASSWORD in your .env or Netlify env vars.
-// DO NOT commit the real password. The placeholder allows any password in dev.
-export const SITE_PASSWORD =
-  import.meta.env?.VITE_FAMILY_INVESTMENT_SITE_PASSWORD ||
-  "CHANGE_ME_BEFORE_DEPLOY";
+// Fixed local password gate. Keep UI copy generic and do not expose it on screen.
+export const SITE_PASSWORD = "Mabel2026！";
 
 export const FAMILY_INVESTMENT_API_URL =
   import.meta.env?.VITE_FAMILY_INVESTMENT_API_URL ||

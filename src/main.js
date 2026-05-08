@@ -30,7 +30,7 @@ import {
 import { SITE_PASSWORD } from "./config.js";
 
 const app = document.querySelector("#app");
-const AUTH_KEY = "fir_auth_v1";
+const AUTH_KEY = "fir_auth_v2";
 
 // ── Password Gate ─────────────────────────────────────────────────────────────
 
@@ -39,7 +39,6 @@ function checkAuth() {
 }
 
 function showPasswordGate() {
-  const isDevMode = SITE_PASSWORD === "CHANGE_ME_BEFORE_DEPLOY";
   app.innerHTML = `
     <div class="pw-gate-wrapper">
       <div class="pw-gate-box">
@@ -59,7 +58,6 @@ function showPasswordGate() {
           <div id="pw-error" class="pw-error" hidden>
             密码不正确 / Incorrect password
           </div>
-          ${isDevMode ? `<p class="pw-hint" style="color:var(--orange);font-size:11px;">开发模式：密码为占位符，输入任意内容即可 / Dev mode: placeholder password, any input accepted</p>` : ""}
           <button type="submit" class="pw-submit">进入 / Enter</button>
         </form>
       </div>
@@ -69,8 +67,7 @@ function showPasswordGate() {
   document.getElementById("pw-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const val = document.getElementById("pw-input").value;
-    const correct = isDevMode || val === SITE_PASSWORD;
-    if (correct) {
+    if (val === SITE_PASSWORD) {
       sessionStorage.setItem(AUTH_KEY, "ok");
       bootstrap();
     } else {

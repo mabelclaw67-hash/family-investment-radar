@@ -7,12 +7,13 @@ All data comes from `Family_Investment_Radar_Master` via Apps Script Web App.
 
 ## Run locally
 
-```powershell
-cd "C:\Users\mabel\_Share Folder\Family Investment\02_Web_Project"
-python -m http.server 4173 --bind 127.0.0.1
+```bash
+cd "/Users/mabelchen/Mabel Project/02_Family Investment/02_Web_Project"
+npm install
+npm run dev -- --host 127.0.0.1
 ```
 
-Open: http://127.0.0.1:4173/
+Open: http://127.0.0.1:5173/
 
 On first load you will see the **password gate**. In dev mode (when the password
 is still the placeholder `CHANGE_ME_BEFORE_DEPLOY`) any input is accepted.
