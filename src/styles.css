@@ -1658,6 +1658,12 @@ h2 {
   transition: background 0.15s;
 }
 
+.pw-submit-small {
+  align-self: center;
+  min-width: 120px;
+  padding: 10px 18px;
+}
+
 .pw-submit:hover {
   background: #1d4ed8;
 }
