@@ -787,6 +787,19 @@ function marketDataFetchJob() {
   return result;
 }
 
+function retryMarketSourceRowIfPriceMissing_(sourceSheet, rowNumber, readColCount, srcRow) {
+  var rawPrice = srcRow[2];
+  var price = parseFloat(rawPrice);
+  if (!(rawPrice === '' || rawPrice === null || rawPrice === undefined || isNaN(price))) {
+    return srcRow;
+  }
+
+  SpreadsheetApp.flush();
+  Utilities.sleep(1500);
+
+  return sourceSheet.getRange(rowNumber, 1, 1, readColCount).getValues()[0];
+}
+
 function marketDataFetchJob_() {
   // Source: 09 Market Index Source (GOOGLEFINANCE formulas)
   // Columns: A=GF Symbol, B=Display Name, C=Price, D=Change, E=Change%, F=LastUpdated, G=Apps Script Symbol
@@ -918,7 +931,8 @@ function marketDataFetchJob_() {
   var errors = 0;
 
   for (var t = 0; t < sourceData.length; t++) {
-    var srcRow = sourceData[t];
+    var sourceRowNumber = t + 2;
+    var srcRow = retryMarketSourceRowIfPriceMissing_(sourceSheet, sourceRowNumber, readColCount, sourceData[t]);
     // Notes/备注 column (if found) takes priority as the frontend symbol key
     var appsSymbol;
     if (notesColIdx >= 0 && notesColIdx < srcRow.length && String(srcRow[notesColIdx] || '').trim()) {
@@ -2301,7 +2315,8 @@ function marketDataFetchJob_() {
   var updated = 0, inserted = 0, errors = 0;
 
   for (var t = 0; t < sourceData.length; t++) {
-    var srcRow       = sourceData[t];
+    var sourceRowNumber = t + 2;
+    var srcRow       = retryMarketSourceRowIfPriceMissing_(sourceSheet, sourceRowNumber, readColCount2, sourceData[t]);
     // Notes/备注 column (if found) takes priority as the frontend symbol key
     var appsSymbol;
     if (notesColIdx2 >= 0 && notesColIdx2 < srcRow.length && String(srcRow[notesColIdx2] || '').trim()) {

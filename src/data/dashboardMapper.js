@@ -23,6 +23,10 @@ const HOLDING_KEYWORDS = {
   XUS:  /S&P.?500|SP500|US.?market|equity|tech|AI|Nvidia|recession|bear|tariff|hedge|美股|科技|衰退/i,
 };
 
+const MS_24H = 24 * 60 * 60 * 1000;
+const MS_48H = 48 * 60 * 60 * 1000;
+const MS_72H = 72 * 60 * 60 * 1000;
+
 // ── Main model builder ────────────────────────────────────────────────────────
 
 export function buildDashboardModel(source) {
@@ -40,7 +44,13 @@ export function buildDashboardModel(source) {
   const sheetAlerts = priorityAlerts.filter((row) => {
     const priority = get(row, "提醒级别 / Alert Priority");
     const status   = get(row, "状态 / Status");
-    return priority.includes("High") && (!status || ACTIVE_STATUS.test(status));
+    const triggered = String(get(row, "是否已触发 / Triggered")).toLowerCase() === "yes";
+    const reviewStatus = get(row, "人工处理状态 / Human Review Status");
+    return (
+      priority.includes("High") &&
+      (!status || ACTIVE_STATUS.test(status)) &&
+      (triggered || /review|high attention|已触发|触发/i.test(reviewStatus))
+    );
   });
 
   // News-derived alerts with severity classification
@@ -61,14 +71,15 @@ export function buildDashboardModel(source) {
 
   // ── Latest Updates: count only last-24h news + active alerts + holdings updates
   const recent24hCount = countRecentNews(dailyNews);
-  const latestUpdateCount = recent24hCount + sheetAlerts.length + reviewCount;
+  const latestUpdateCount = Math.min(20, recent24hCount) + sheetAlerts.length + reviewCount;
+  const priorityAlertCount = mergedAlerts.filter(isPriorityAlert).length;
 
   return {
     source,
     kpis: {
-      riskLevel:          getTodayRiskLevel(activeHoldings, mergedAlerts, marketRadar),
+      riskLevel:          getTodayRiskLevel(mergedAlerts, marketRadar, holdingStatuses),
       reviewCount,
-      priorityAlertCount: mergedAlerts.length,
+      priorityAlertCount,
       latestUpdateCount,
     },
     holdings:       activeHoldings,
@@ -89,30 +100,9 @@ export function get(row, key) {
 // ── Latest updates counter (last 24 hours) ────────────────────────────────────
 
 function countRecentNews(dailyNews) {
-  const now = Date.now();
-  const MS_24H = 24 * 60 * 60 * 1000;
-  const MS_48H = 48 * 60 * 60 * 1000;
-
   return dailyNews.filter((row) => {
     if (!get(row, "新闻标题中文 / Chinese Title")) return false;
-
-    // Try full ISO timestamp from 新闻时间 first
-    const timeRaw = get(row, "新闻时间 / News Time");
-    if (timeRaw) {
-      const ts = Date.parse(timeRaw);
-      if (!isNaN(ts)) return (now - ts) <= MS_24H;
-    }
-
-    // Fall back to date-only string from 日期 (treat as start of that day UTC)
-    const dateRaw = get(row, "日期 / Date");
-    if (dateRaw) {
-      const m = String(dateRaw).match(/^(\d{4}-\d{2}-\d{2})/);
-      if (m) {
-        const ts = Date.parse(m[1]);
-        if (!isNaN(ts)) return (now - ts) <= MS_48H; // 48h grace for date-only rows
-      }
-    }
-    return false;
+    return isRecentNewsRow(row, MS_24H, MS_48H);
   }).length;
 }
 
@@ -120,7 +110,9 @@ function countRecentNews(dailyNews) {
 
 function buildNewsAlerts(dailyNews) {
   const withTitle = dailyNews.filter(
-    (row) => get(row, "新闻标题中文 / Chinese Title") || get(row, "原始标题 / Original Title")
+    (row) =>
+      (get(row, "新闻标题中文 / Chinese Title") || get(row, "原始标题 / Original Title")) &&
+      isRecentNewsRow(row, MS_24H, MS_48H)
   );
 
   const matched = withTitle.filter((row) => {
@@ -178,7 +170,7 @@ function buildHoldingStatuses(dailyNews, marketRadar) {
     const matchingNews = kw
       ? dailyNews.filter((row) => {
           const title = get(row, "新闻标题中文 / Chinese Title") || get(row, "原始标题 / Original Title");
-          return kw.test(title);
+          return kw.test(title) && isRecentNewsRow(row, MS_24H, MS_72H);
         })
       : [];
 
@@ -203,7 +195,7 @@ function buildHoldingStatuses(dailyNews, marketRadar) {
 
 // ── Risk level calculator ─────────────────────────────────────────────────────
 
-function getTodayRiskLevel(holdings, alerts, marketRadar) {
+function getTodayRiskLevel(alerts, marketRadar, holdingStatuses) {
   // Parse index moves
   const indexSymbols = ["^DJI", "^IXIC", "^GSPC", "^GSPTSE"];
   const marketMoves  = {};
@@ -219,11 +211,6 @@ function getTodayRiskLevel(holdings, alerts, marketRadar) {
   // Moderate drop: any major index down ≥ 1.5%
   const moderateDrop    = indexSymbols.some((sym) => (marketMoves[sym] ?? 0) <= -1.5);
 
-  // Holdings risk check — only explicit High flagging triggers high risk
-  const highRiskHolding = holdings.some((row) =>
-    get(row, "风险等级 / Risk Level").toLowerCase() === "high"
-  );
-
   // Alert severity breakdown
   const highAttentionAlerts = alerts.filter(
     (a) => get(a, "_severity") === "High Attention" ||
@@ -233,13 +220,15 @@ function getTodayRiskLevel(holdings, alerts, marketRadar) {
     (a) => get(a, "_severity") === "Review" ||
            get(a, "人工处理状态 / Human Review Status") === "Review"
   );
+  const highAttentionHoldings = holdingStatuses.filter((h) => h.status === "High Attention");
+  const reviewHoldings = holdingStatuses.filter((h) => h.status === "Review");
 
   // ── HIGH: real shock conditions only ──────────────────────────────────────
   if (
-    highRiskHolding ||
     severeDrop ||
     highAttentionAlerts.length >= 2 ||
-    (highAttentionAlerts.length >= 1 && moderateDrop)
+    highAttentionHoldings.length >= 2 ||
+    ((highAttentionAlerts.length >= 1 || highAttentionHoldings.length >= 1) && moderateDrop)
   ) {
     return { zh: "高", en: "High", tone: "high" };
   }
@@ -248,13 +237,15 @@ function getTodayRiskLevel(holdings, alerts, marketRadar) {
   if (
     moderateDrop ||
     highAttentionAlerts.length >= 1 ||
-    reviewAlerts.length >= 4
+    highAttentionHoldings.length >= 1 ||
+    reviewAlerts.length >= 3 ||
+    reviewHoldings.length >= 2
   ) {
     return { zh: "中等", en: "Medium", tone: "medium" };
   }
 
   // ── LOW: stable conditions ────────────────────────────────────────────────
-  if (holdings.length || hasMarketData) {
+  if (holdingStatuses.length || hasMarketData) {
     return { zh: "低", en: "Low", tone: "low" };
   }
 
@@ -306,6 +297,43 @@ function formatAlertTime(raw) {
   const hhmm = raw.match(/^(\d{2}:\d{2})/);
   if (hhmm) return hhmm[1];
   return String(raw).slice(0, 10) || "—";
+}
+
+function isRecentNewsRow(row, isoThresholdMs, dateOnlyThresholdMs) {
+  const now = Date.now();
+  const createdAt = get(row, "创建时间 / Created At");
+  if (createdAt) {
+    const ts = Date.parse(createdAt);
+    if (!isNaN(ts)) return (now - ts) <= isoThresholdMs;
+  }
+
+  const timeRaw = get(row, "新闻时间 / News Time");
+  if (timeRaw) {
+    const ts = Date.parse(timeRaw);
+    if (!isNaN(ts)) return (now - ts) <= isoThresholdMs;
+  }
+
+  const dateRaw = get(row, "日期 / Date");
+  if (dateRaw) {
+    const m = String(dateRaw).match(/^(\d{4}-\d{2}-\d{2})/);
+    if (m) {
+      const ts = Date.parse(m[1]);
+      if (!isNaN(ts)) return (now - ts) <= dateOnlyThresholdMs;
+    }
+  }
+
+  return false;
+}
+
+function isHighAttentionAlert(alert) {
+  return get(alert, "_severity") === "High Attention" ||
+    get(alert, "人工处理状态 / Human Review Status") === "High Attention";
+}
+
+function isPriorityAlert(alert) {
+  return isHighAttentionAlert(alert) ||
+    get(alert, "_severity") === "Review" ||
+    get(alert, "人工处理状态 / Human Review Status") === "Review";
 }
 
 function sortByDateTime(a, b) {
