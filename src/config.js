@@ -20,7 +20,7 @@ export const SITE_PASSWORD = "246810";
 export const FAMILY_INVESTMENT_API_URL =
   import.meta.env?.VITE_FAMILY_INVESTMENT_API_URL ||
   (typeof window !== "undefined" ? window.FAMILY_INVESTMENT_API_URL : "") ||
-  "https://script.google.com/macros/s/AKfycbzdSdpB1ZZp8XZPIESgl6jQNc83GrvY5LM-kWYPLxWRjsGkLaJEIrxI-CBlsOIp_HWDXg/exec";
+  "https://script.google.com/macros/s/AKfycbwxCyBuqCjc8vB4SHe6QtYPx3WgfAsaJN4dHpFqBjc22h3R9gScYzgSs9XlJNrRdSpyNQ/exec";
 
 export const NAV_ITEMS = [
   ["首页", "Dashboard", "home", "dashboard"],
