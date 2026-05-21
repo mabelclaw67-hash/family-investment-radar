@@ -27,10 +27,10 @@ import {
   WatchlistPage,
   WatchlistPopupHtml,
 } from "./components.js";
+import { SITE_PASSWORD } from "./config.js";
 
 const app = document.querySelector("#app");
 const AUTH_KEY = "fir_auth_v2";
-const ACCESS_CODE = "246810";
 
 // ── Password Gate ─────────────────────────────────────────────────────────────
 
@@ -45,23 +45,20 @@ function showPasswordGate() {
         <div class="pw-brand">◎</div>
         <h2 class="pw-title">家庭投资雷达</h2>
         <p class="pw-subtitle">Family Investment Radar</p>
-        <form id="pw-form" class="pw-form" autocomplete="off">
+        <form id="pw-form" class="pw-form" autocomplete="on">
           <p class="pw-hint">请输入访问密码 / Enter access password</p>
           <input
             id="pw-input"
-            type="text"
+            type="password"
             class="pw-input"
-            placeholder="Access code"
-            inputmode="numeric"
-            autocomplete="off"
-            autocapitalize="off"
-            spellcheck="false"
+            placeholder="Password"
+            autocomplete="current-password"
             autofocus
           />
           <div id="pw-error" class="pw-error" hidden>
             密码不正确 / Incorrect password
           </div>
-          <button type="submit" class="pw-submit pw-submit-small">Enter</button>
+          <button type="submit" class="pw-submit">进入 / Enter</button>
         </form>
       </div>
     </div>
@@ -69,18 +66,15 @@ function showPasswordGate() {
 
   document.getElementById("pw-form").addEventListener("submit", (e) => {
     e.preventDefault();
-    const input = document.getElementById("pw-input");
-    const val = input.value.trim();
-    input.value = val;
-
-    if (val === ACCESS_CODE) {
+    const val = document.getElementById("pw-input").value;
+    if (val === SITE_PASSWORD) {
       sessionStorage.setItem(AUTH_KEY, "ok");
       bootstrap();
     } else {
       const errEl = document.getElementById("pw-error");
       errEl.hidden = false;
-      input.value = "";
-      input.focus();
+      document.getElementById("pw-input").value = "";
+      document.getElementById("pw-input").focus();
     }
   });
 }
@@ -158,7 +152,7 @@ function renderDashboard(dashboard) {
     ${MarketSection(dashboard.marketData)}
     <section class="dashboard-grid">
       ${LiveUpdatesPanel(dashboard.news)}
-      ${AlertsPanel(dashboard.alerts)}
+      ${AlertsPanel({ alerts: dashboard.alerts, holdingStatuses: dashboard.holdingStatuses })}
     </section>
     ${SummaryCards(dashboard.summaries)}
     <footer class="footer">

@@ -13,6 +13,10 @@ export const SHEET_CONFIG = {
   },
 };
 
+// ── Site password gate ────────────────────────────────────────────────────────
+// Fixed local password gate. Keep UI copy generic and do not expose it on screen.
+export const SITE_PASSWORD = "246810";
+
 export const FAMILY_INVESTMENT_API_URL =
   import.meta.env?.VITE_FAMILY_INVESTMENT_API_URL ||
   (typeof window !== "undefined" ? window.FAMILY_INVESTMENT_API_URL : "") ||

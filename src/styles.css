@@ -240,8 +240,8 @@ h3 span {
 }
 
 .kpi-card {
-  min-height: 150px;
-  padding: 18px;
+  min-height: 120px;
+  padding: 14px 18px;
   position: relative;
   overflow: hidden;
 }
@@ -262,8 +262,8 @@ h3 span {
 
 .kpi-card > strong {
   display: block;
-  font-size: 30px;
-  margin-top: 24px;
+  font-size: 28px;
+  margin-top: 14px;
 }
 
 .kpi-card > em {
@@ -421,8 +421,9 @@ h2 {
 }
 
 .panel {
-  padding: 16px;
-  min-height: 344px;
+  padding: 14px 16px;
+  min-height: 300px;
+  height: 100%;
 }
 
 .news-list,
@@ -492,20 +493,101 @@ h2 {
 }
 
 .alert-icon {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   border-radius: 50%;
   background: var(--orange-soft);
   color: var(--orange);
   font-weight: 900;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.alert-icon-high {
+  background: var(--red-soft);
+  color: var(--red);
+  font-size: 11px;
+}
+
+.alert-icon-watch {
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: 15px;
 }
 
 .alert-row p {
   color: var(--muted);
   font-size: 13px;
   margin-top: 4px;
+}
+
+/* ── Holdings Status Mini (inside AlertsPanel) ─────────────────────────────── */
+.holdings-status-mini {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.hsr-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.hsr-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hsr-note {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.hsr-list {
+  display: grid;
+  gap: 5px;
+}
+
+.hsr-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hsr-ticker {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  min-width: 48px;
+}
+
+.hsr-news-count {
+  font-size: 11px;
+  color: var(--muted);
+  flex: 1;
+}
+
+.hsr-row .status-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  padding: 2px 8px;
+}
+
+.hsr-icon {
+  font-style: normal;
+  font-size: 10px;
 }
 
 .status-pill {
@@ -924,6 +1006,11 @@ h2 {
 .action-review {
   background: var(--orange-soft);
   color: var(--orange);
+}
+
+.action-watch {
+  background: var(--blue-soft);
+  color: var(--blue);
 }
 
 .action-none {
@@ -1656,12 +1743,6 @@ h2 {
   font-weight: 700;
   cursor: pointer;
   transition: background 0.15s;
-}
-
-.pw-submit-small {
-  align-self: center;
-  min-width: 120px;
-  padding: 10px 18px;
 }
 
 .pw-submit:hover {

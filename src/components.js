@@ -1,4 +1,3 @@
-// deploy marker: force Netlify rebuild after market index display fix
 import { NAV_ITEMS, SHEET_CONFIG } from "./config.js";
 import { get } from "./data/dashboardMapper.js";
 import { deriveActionLabel, displayMarketValue, displayValue, HOLDING_FILTERS } from "./data/holdingsMapper.js";
@@ -91,15 +90,20 @@ export function KpiCards(kpis) {
 export function MarketSection(marketData) {
   const rows = Array.isArray(marketData) ? marketData : [];
   const bySymbol = {};
-  rows.forEach((r) => {
-    const symbol = r.symbol || get(r, "代码 / Symbol") || get(r, "Symbol");
-    if (symbol) bySymbol[String(symbol).trim()] = r;
-  });
+  rows.forEach((r) => { bySymbol[get(r, "代码 / Symbol")] = r; });
 
-  const dow = buildIndexDisplayItem(bySymbol, ["^DJI"], "Dow Jones Industrial Average");
-  const nasdaq = buildIndexDisplayItem(bySymbol, ["^IXIC", "QQQ"], "Nasdaq Composite Index");
-  const sp500 = buildIndexDisplayItem(bySymbol, ["^GSPC", "SPY"], "S&P 500 Index");
-  const tsx = buildIndexDisplayItem(bySymbol, ["^GSPTSE", "XIC.TO", "XIU.TO"], "S&P/TSX Composite Index");
+  const dow    = buildIndexDisplayItem(bySymbol, "^DJI",    "Dow Jones");
+  const nasdaq = buildIndexDisplayItem(bySymbol, "^IXIC",   "Nasdaq");
+  const sp500  = buildIndexDisplayItem(bySymbol, "^GSPC",   "S&P 500");
+  const nvda   = buildIndexDisplayItem(bySymbol, "NVDA",    "NVIDIA");
+  const googl  = buildIndexDisplayItem(bySymbol, "GOOGL",   "Alphabet (Google)");
+  const tsx    = buildIndexDisplayItem(bySymbol, "^GSPTSE", "S&P/TSX Composite");
+
+  // Canada expanded — show unavailable if symbols not in sheet
+  const cadusd  = buildIndexDisplayItem(bySymbol, "CADUSD=X",         "CAD/USD");
+  const gold    = buildIndexDisplayItem(bySymbol, "GC=F",             "Gold (USD/oz)");
+  const oil     = buildIndexDisplayItem(bySymbol, "USO",              "Oil ETF Proxy (USO)");
+  const ca10y   = buildIndexDisplayItem(bySymbol, "XBB.TO",          "Canada Bond ETF (XBB.TO)");
 
   return `
     <section class="market-grid">
@@ -111,15 +115,15 @@ export function MarketSection(marketData) {
             <span id="market-refresh-status" class="news-refresh-status"></span>
           </div>
         </div>
-        ${marketQuoteRows([dow, nasdaq, sp500])}
-        <p class="market-proxy-note">仅显示真实指数。若当前数据源未返回可用指数值，则显示 Data unavailable / 暂无数据。</p>
+        ${marketQuoteRows([dow, nasdaq, sp500, nvda, googl])}
+        <p class="market-proxy-note">指数 + 重点个股。若数据未返回则显示 Data unavailable / 暂无数据。</p>
       </article>
       <article class="market-card">
         <div class="panel-title compact">
-          <h2>加股走势 <span>/ Canada Market</span></h2>
+          <h2>加拿大市场 <span>/ Canada &amp; Commodities</span></h2>
         </div>
-        ${marketQuoteRows([tsx])}
-        <p class="market-proxy-note">指数与持仓分开显示。ETF / 股票不混入市场指数区。</p>
+        ${marketQuoteRows([tsx, cadusd, gold, oil, ca10y])}
+        <p class="market-proxy-note">CAD/USD、Gold、Oil、10Y Bond 需在 09 Market Index Source 表格中配置对应 GOOGLEFINANCE 行后方可显示。</p>
       </article>
     </section>
   `;
@@ -180,17 +184,60 @@ export function LiveUpdatesPanel(news) {
   `;
 }
 
-export function AlertsPanel(alerts) {
+export function AlertsPanel({ alerts, holdingStatuses }) {
+  const holdingsSection = Array.isArray(holdingStatuses) && holdingStatuses.length
+    ? holdingsNeedingReviewSection(holdingStatuses)
+    : "";
+
   return `
     <section class="panel alerts-panel">
       <div class="panel-title"><h2>重点提醒 <span>/ High Attention Alerts</span></h2></div>
+      ${holdingsSection}
       ${
         alerts.length
           ? `<div class="alert-list">${alerts.map(alertItem).join("")}</div>`
-          : EmptyState("08 Priority Alert Watch 暂无高优先级提醒", "No high attention alerts")
+          : EmptyState("暂无高优先级提醒 / No high attention alerts", "Data unavailable / 暂无数据")
       }
       <a class="panel-link" href="#" aria-disabled="true">查看全部提醒 ›</a>
     </section>
+  `;
+}
+
+function holdingsNeedingReviewSection(holdingStatuses) {
+  function statusClass(s) {
+    if (s === "High Attention") return "high";
+    if (s === "Review")         return "review";
+    return "none";
+  }
+  function statusLabel(s) {
+    if (s === "High Attention") return "需关注";
+    if (s === "Review")         return "建议复核";
+    return "正常";
+  }
+  function statusIcon(s) {
+    if (s === "High Attention") return "▲";
+    if (s === "Review")         return "◎";
+    return "✓";
+  }
+
+  const rows = holdingStatuses.map((h) => `
+    <div class="hsr-row">
+      <span class="hsr-ticker">${escapeHtml(h.ticker)}</span>
+      <span class="hsr-news-count">${h.newsCount > 0 ? h.newsCount + " 条相关" : ""}</span>
+      <span class="status-pill action-${statusClass(h.status)}">
+        <em class="hsr-icon">${statusIcon(h.status)}</em>${escapeHtml(statusLabel(h.status))}
+      </span>
+    </div>
+  `).join("");
+
+  return `
+    <div class="holdings-status-mini">
+      <div class="hsr-header">
+        <strong class="hsr-title">持仓状态 / Holdings Status</strong>
+        <small class="hsr-note">仅供参考 · Informational only</small>
+      </div>
+      <div class="hsr-list">${rows}</div>
+    </div>
   `;
 }
 
@@ -300,14 +347,23 @@ function formatNewsTime(raw) {
 
 function alertItem(row) {
   const status = get(row, "人工处理状态 / Human Review Status") || get(row, "需要行动 / Action Needed") || "Review";
+  const pillClass = status === "High Attention" ? "action-high"
+                  : status === "Review"         ? "action-review"
+                  : status === "Watch"          ? "action-watch"
+                  : "action-none";
+  const iconClass = status === "High Attention" ? "alert-icon alert-icon-high"
+                  : status === "Watch"          ? "alert-icon alert-icon-watch"
+                  : "alert-icon";
+  const iconGlyph = status === "High Attention" ? "!!" : status === "Watch" ? "⌁" : "!";
+
   return `
     <article class="alert-row">
-      <div class="alert-icon">!</div>
+      <div class="${iconClass}">${iconGlyph}</div>
       <div>
         <strong>${escapeHtml(get(row, "关注主题 / Watch Topic"))}</strong>
         <p>${escapeHtml(get(row, "最新中文摘要 / Latest Chinese Summary") || get(row, "AI中文点评 / AI Chinese Comment") || "暂无最新摘要 / No latest summary")}</p>
       </div>
-      <span class="status-pill">${escapeHtml(status)}</span>
+      <span class="status-pill ${pillClass}">${escapeHtml(status)}</span>
     </article>
   `;
 }
@@ -381,41 +437,15 @@ function holdingSnapshotRow(ticker, holdingRow) {
   `;
 }
 
-function buildIndexDisplayItem(bySymbol, symbols, label) {
-  const candidates = Array.isArray(symbols) ? symbols : [symbols];
-  const symbol = candidates[0] || "";
-  const row = candidates.map((key) => bySymbol[key]).find(Boolean) || {};
-
-  const value =
-    row.value ||
-    get(row, "当前水平 / Current Level") ||
-    get(row, "Current Level") ||
-    get(row, "当前水平") ||
-    "";
-
-  const change =
-    row.change ||
-    get(row, "日变动% / Daily Change %") ||
-    get(row, "Daily Change %") ||
-    get(row, "Daily Change") ||
-    get(row, "日变动%") ||
-    "";
-
-  const date =
-    row.date ||
-    get(row, "日期 / Date") ||
-    get(row, "Date") ||
-    get(row, "日期") ||
-    "";
-
-  const hasValue = String(value || "").trim() !== "" && !String(value).includes("待更新") && !String(value).includes("Pending");
-
+function buildIndexDisplayItem(bySymbol, symbol, label) {
+  const row = bySymbol[symbol] || null;
+  const hasValue = row && hasUsableValue(get(row, "当前水平 / Current Level"));
   return {
     symbol,
     label,
-    value: hasValue ? value : DATA_UNAVAILABLE,
-    change: change || DATA_UNAVAILABLE,
-    date: date || DATA_UNAVAILABLE,
+    value: hasValue ? formatIndexDisplayValue(get(row, "当前水平 / Current Level")) : DATA_UNAVAILABLE,
+    change: hasValue ? formatChangeValue(get(row, "日变动% / Daily Change %")) : DATA_UNAVAILABLE,
+    date: hasValue ? formatTextValue(get(row, "日期 / Date")) : DATA_UNAVAILABLE,
   };
 }
 

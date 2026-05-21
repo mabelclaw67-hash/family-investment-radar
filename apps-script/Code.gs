@@ -797,7 +797,16 @@ function marketDataFetchJob_() {
   var sourceLastRow = sourceSheet.getLastRow();
   if (sourceLastRow < 2) throw new Error('09 Market Index Source has no data rows.');
 
-  var sourceData = sourceSheet.getRange(2, 1, sourceLastRow - 1, 7).getValues();
+  // Detect Notes/备注 column dynamically so NVDA / GOOGL overrides are picked up
+  var sourceLastCol = sourceSheet.getLastColumn();
+  var sourceHeaders = sourceSheet.getRange(1, 1, 1, sourceLastCol).getValues()[0];
+  var notesColIdx = -1;
+  for (var hi = 0; hi < sourceHeaders.length; hi++) {
+    var hv = String(sourceHeaders[hi] || '').trim();
+    if (hv.indexOf('Notes') !== -1 || hv.indexOf('备注') !== -1) { notesColIdx = hi; break; }
+  }
+  var readColCount = Math.max(7, notesColIdx >= 0 ? notesColIdx + 1 : 7);
+  var sourceData = sourceSheet.getRange(2, 1, sourceLastRow - 1, readColCount).getValues();
 
   // Self-contained symbol info for real market indexes.
   // This does not rely on MARKET_SYMBOLS and does not use ETF proxy symbols.
@@ -825,6 +834,48 @@ function marketDataFetchJob_() {
       market: 'Canada Market',
       label: 'S&P/TSX Composite Index',
       indicator: 'S&P/TSX Composite'
+    },
+    // ── Added: US individual stocks ───────────────────────────────────────────
+    'NVDA': {
+      symbol: 'NVDA',
+      market: 'US Market',
+      label: 'NVIDIA Corporation',
+      indicator: 'NVDA'
+    },
+    'GOOGL': {
+      symbol: 'GOOGL',
+      market: 'US Market',
+      label: 'Alphabet Inc.',
+      indicator: 'GOOGL'
+    },
+    // ── Added: Canada Market expanded symbols ─────────────────────────────────
+    // Source: GOOGLEFINANCE("CURRENCY:CADUSD") — how many USD per 1 CAD
+    'CADUSD=X': {
+      symbol: 'CADUSD=X',
+      market: 'Canada Market',
+      label: 'Canadian Dollar / US Dollar',
+      indicator: 'CAD/USD'
+    },
+    // Source: GOOGLEFINANCE("CURRENCY:XAUUSD") — Gold price in USD per troy oz
+    'GC=F': {
+      symbol: 'GC=F',
+      market: 'Canada Market',
+      label: 'Gold (XAU/USD, per troy oz)',
+      indicator: 'Gold'
+    },
+    // Proxy: USO (United States Oil Fund ETF) — tracks WTI crude oil price
+    'USO': {
+      symbol: 'USO',
+      market: 'Canada Market',
+      label: 'Oil ETF Proxy (USO)',
+      indicator: 'Oil ETF'
+    },
+    // Proxy: XBB.TO (iShares Core Canadian Universe Bond Index ETF)
+    'XBB.TO': {
+      symbol: 'XBB.TO',
+      market: 'Canada Market',
+      label: 'Canada Bond ETF Proxy (XBB.TO)',
+      indicator: 'Canada Bond'
     }
   };
 
@@ -868,7 +919,13 @@ function marketDataFetchJob_() {
 
   for (var t = 0; t < sourceData.length; t++) {
     var srcRow = sourceData[t];
-    var appsSymbol = String(srcRow[6] || '').trim(); // Column G: ^DJI / ^IXIC / ^GSPC / ^GSPTSE
+    // Notes/备注 column (if found) takes priority as the frontend symbol key
+    var appsSymbol;
+    if (notesColIdx >= 0 && notesColIdx < srcRow.length && String(srcRow[notesColIdx] || '').trim()) {
+      appsSymbol = String(srcRow[notesColIdx]).trim();
+    } else {
+      appsSymbol = String(srcRow[6] || '').trim(); // Fall back to Column G
+    }
     var rawPrice = srcRow[2];                        // Column C: price
     var rawChangePct = srcRow[4];                    // Column E: changepct
     var rawDate = srcRow[5];                         // Column F: =NOW()
@@ -2187,7 +2244,17 @@ function marketDataFetchJob_() {
 
   var sourceLastRow = sourceSheet.getLastRow();
   if (sourceLastRow < 2) throw new Error('09 Market Index Source has no data rows.');
-  var sourceData = sourceSheet.getRange(2, 1, sourceLastRow - 1, 7).getValues();
+
+  // Detect Notes/备注 column dynamically so NVDA / GOOGL overrides are picked up
+  var sourceLastCol2 = sourceSheet.getLastColumn();
+  var sourceHeaders2 = sourceSheet.getRange(1, 1, 1, sourceLastCol2).getValues()[0];
+  var notesColIdx2 = -1;
+  for (var hi2 = 0; hi2 < sourceHeaders2.length; hi2++) {
+    var hv2 = String(sourceHeaders2[hi2] || '').trim();
+    if (hv2.indexOf('Notes') !== -1 || hv2.indexOf('备注') !== -1) { notesColIdx2 = hi2; break; }
+  }
+  var readColCount2 = Math.max(7, notesColIdx2 >= 0 ? notesColIdx2 + 1 : 7);
+  var sourceData = sourceSheet.getRange(2, 1, sourceLastRow - 1, readColCount2).getValues();
 
   // Self-contained symbol info — does NOT rely on MARKET_SYMBOLS
   var symInfoMap = {
@@ -2195,6 +2262,14 @@ function marketDataFetchJob_() {
     '^IXIC':   { symbol: '^IXIC',   market: 'US Market',     label: 'Nasdaq Composite Index',       indicator: 'Nasdaq Composite' },
     '^GSPC':   { symbol: '^GSPC',   market: 'US Market',     label: 'S&P 500 Index',                indicator: 'S&P 500' },
     '^GSPTSE': { symbol: '^GSPTSE', market: 'Canada Market', label: 'S&P/TSX Composite Index',      indicator: 'S&P/TSX Composite' },
+    // ── Added: US individual stocks ────────────────────────────────────────────
+    'NVDA':   { symbol: 'NVDA',   market: 'US Market',     label: 'NVIDIA Corporation',              indicator: 'NVDA'         },
+    'GOOGL':  { symbol: 'GOOGL',  market: 'US Market',     label: 'Alphabet Inc.',                   indicator: 'GOOGL'        },
+    // ── Added: Canada Market expanded symbols ──────────────────────────────────
+    'CADUSD=X': { symbol: 'CADUSD=X', market: 'Canada Market', label: 'Canadian Dollar / US Dollar',       indicator: 'CAD/USD'      },
+    'GC=F':     { symbol: 'GC=F',     market: 'Canada Market', label: 'Gold (XAU/USD, per troy oz)',       indicator: 'Gold'         },
+    'USO':      { symbol: 'USO',      market: 'Canada Market', label: 'Oil ETF Proxy (USO)',               indicator: 'Oil ETF'      },
+    'XBB.TO':   { symbol: 'XBB.TO',   market: 'Canada Market', label: 'Canada Bond ETF Proxy (XBB.TO)',   indicator: 'Canada Bond'  },
   };
 
   // ── Destination: 05 Market Radar ─────────────────────────────────────────────
@@ -2227,7 +2302,13 @@ function marketDataFetchJob_() {
 
   for (var t = 0; t < sourceData.length; t++) {
     var srcRow       = sourceData[t];
-    var appsSymbol   = String(srcRow[6] || '').trim();  // Column G: ^DJI / ^IXIC / ^GSPC / ^GSPTSE
+    // Notes/备注 column (if found) takes priority as the frontend symbol key
+    var appsSymbol;
+    if (notesColIdx2 >= 0 && notesColIdx2 < srcRow.length && String(srcRow[notesColIdx2] || '').trim()) {
+      appsSymbol = String(srcRow[notesColIdx2]).trim();
+    } else {
+      appsSymbol = String(srcRow[6] || '').trim(); // Fall back to Column G
+    }
     var rawPrice     = srcRow[2];                        // Column C: price
     var rawChangePct = srcRow[4];                        // Column E: changepct
     var rawDate      = srcRow[5];                        // Column F: =NOW()
