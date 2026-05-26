@@ -231,10 +231,7 @@ function filterMorningBriefByLanguage(items) {
     const language = String(get(row, "语言 / Language")).trim().toLowerCase();
     if (!language) return true;
     if (lang === "zh") return language === "zh" || language === "chinese" || language === "中文";
-    return (
-      (language === "en" || language === "english" || language === "英文") &&
-      !hasMostlyChineseBriefContent(row)
-    );
+    return language === "en" || language === "english" || language === "英文";
   });
 }
 
@@ -249,7 +246,8 @@ function hasMostlyChineseBriefContent(row) {
 function morningBriefItem(row) {
   const date = get(row, "日期 / Date");
   const title = get(row, "标题 / Title") || t("morning_brief_no_title");
-  const summary = get(row, "_docContent") || get(row, "摘要 / Summary");
+  const rawSummary = get(row, "_docContent") || get(row, "摘要 / Summary");
+  const summary = getLang() === "en" && hasMostlyChineseBriefContent(row) ? "" : rawSummary;
   const docLink = get(row, "Google Doc Link");
 
   return `
