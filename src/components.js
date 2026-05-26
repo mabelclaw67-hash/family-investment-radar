@@ -32,7 +32,6 @@ export function AppShell(content, currentPage = "dashboard") {
         <span>${SHEET_CONFIG.spreadsheetTitle}</span>
         <div class="sidebar-footer-actions">
           <button class="logout-btn" data-action="logout" type="button">${t("btn_lock")}</button>
-          <button class="lang-btn" data-action="toggleLang" type="button">${t("btn_lang")}</button>
         </div>
       </div>
     </aside>
@@ -45,6 +44,10 @@ export function AppShell(content, currentPage = "dashboard") {
         </a>
       `).join("")}
     </nav>
+    <div class="lang-float" role="group" aria-label="Language / 语言">
+      <button class="lang-float-btn${getLang() === "en" ? " active" : ""}" data-action="setLang" data-lang="en" type="button">EN</button>
+      <button class="lang-float-btn${getLang() === "zh" ? " active" : ""}" data-action="setLang" data-lang="zh" type="button">中文</button>
+    </div>
   `;
 }
 

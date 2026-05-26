@@ -91,15 +91,13 @@ function bindGlobalActions() {
     });
   }
 
-  // Language toggle
-  const langBtn = document.querySelector("[data-action='toggleLang']");
-  if (langBtn) {
-    langBtn.addEventListener("click", () => {
-      const newLang = getLang() === "en" ? "zh" : "en";
+  // Language switcher (floating widget — EN and 中文 buttons)
+  document.querySelectorAll("[data-action='setLang']").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const newLang = btn.dataset.lang;
+      if (getLang() === newLang) return; // already active
       setLang(newLang);
-      // Update document language attribute
       document.documentElement.lang = newLang === "zh" ? "zh-CN" : "en";
-      // Re-render current page with new language
       app.innerHTML = LoadingState();
       renderCurrentPage().catch((error) => {
         app.innerHTML = ErrorState(error);
@@ -107,7 +105,7 @@ function bindGlobalActions() {
         bindGlobalActions();
       });
     });
-  }
+  });
 }
 
 // ── State ─────────────────────────────────────────────────────────────────────
