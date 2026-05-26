@@ -12,7 +12,7 @@ export async function loadDashboardSource() {
   const dashboardData = payload.data ?? {};
   const morningBrief = Array.isArray(dashboardData.morningBrief) && dashboardData.morningBrief.length
     ? dashboardData.morningBrief
-    : await loadSheetTab(SHEET_CONFIG.tabs.morningBrief);
+    : await loadMorningBriefFallback();
 
   return {
     holdings: dashboardData.holdings ?? [],
@@ -23,6 +23,15 @@ export async function loadDashboardSource() {
     marketRadar: dashboardData.marketRadar ?? [],
     morningBrief,
   };
+}
+
+async function loadMorningBriefFallback() {
+  try {
+    return await loadSheetTab(SHEET_CONFIG.tabs.morningBrief);
+  } catch (error) {
+    console.warn("Morning brief fallback unavailable:", error.message);
+    return [];
+  }
 }
 
 export async function loadHoldingsPageSource() {
