@@ -557,6 +557,27 @@ h2 {
   line-height: 1.5;
 }
 
+.morning-brief-content {
+  display: grid;
+  gap: 6px;
+  max-height: 560px;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+.morning-brief-content p {
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.morning-brief-content hr {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 6px 0;
+}
+
 .morning-brief-link {
   width: fit-content;
   color: var(--blue);

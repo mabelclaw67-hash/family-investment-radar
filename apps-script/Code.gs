@@ -1,4 +1,5 @@
 const SPREADSHEET_ID = '1mNmAtxQn9udMm0ljuX1nCJKif_VhvhFhkWxNZBJgBBs';
+const MORNING_BRIEF_FOLDER_ID = '1C19niJbpUsUpxjLkw-IkX-csUUnXxh0c';
 
 const DASHBOARD_TABS = {
   holdings: '01 Holdings Master',
@@ -158,7 +159,7 @@ function doGet(e) {
           priorityAlerts: readTab_(DASHBOARD_TABS.priorityAlerts),
           settings: readTab_(DASHBOARD_TABS.settings),
           marketRadar: readTab_(DASHBOARD_TABS.marketRadar),
-          morningBrief: readTab_(DASHBOARD_TABS.morningBrief),
+          morningBrief: readMorningBrief_(),
         },
         updatedAt: new Date().toISOString(),
       });
@@ -314,6 +315,151 @@ function isAllowedTab_(tabName) {
   return Object.keys(DASHBOARD_TABS).some(function(key) {
     return DASHBOARD_TABS[key] === tabName;
   });
+}
+
+function readMorningBrief_() {
+  var rows = readTab_(DASHBOARD_TABS.morningBrief);
+  var todayKey = getTodayDateKey_();
+  var todayCompact = todayKey.replace(/-/g, '');
+  var output = [];
+  var seen = {};
+
+  rows.forEach(function(row) {
+    if (!isActiveMorningBriefRow_(row, todayKey)) {
+      return;
+    }
+
+    var record = Object.assign({}, row);
+    var docLink = getMorningBriefCell_(record, 'Google Doc Link');
+    var docId = extractGoogleDocId_(docLink);
+    if (docId) {
+      record['_docContent'] = readGoogleDocText_(docId);
+    }
+
+    output.push(record);
+    seen[getMorningBriefDedupeKey_(record)] = true;
+  });
+
+  findTodayMorningBriefDocs_(todayKey, todayCompact).forEach(function(record) {
+    var key = getMorningBriefDedupeKey_(record);
+    if (!seen[key]) {
+      output.push(record);
+      seen[key] = true;
+    }
+  });
+
+  return output;
+}
+
+function findTodayMorningBriefDocs_(todayKey, todayCompact) {
+  var folder;
+  try {
+    folder = DriveApp.getFolderById(MORNING_BRIEF_FOLDER_ID);
+  } catch (error) {
+    return [];
+  }
+
+  var candidates = [
+    { language: 'zh', title: '早晨简报_' + todayCompact },
+    { language: 'zh', title: '早晨晨报_' + todayCompact },
+    { language: 'en', title: 'Morning Brief_' + todayCompact },
+    { language: 'en', title: 'Morning_Brief_' + todayCompact },
+    { language: 'en', title: 'MorningBrief_' + todayCompact }
+  ];
+
+  var records = [];
+  candidates.forEach(function(candidate) {
+    var files = folder.getFilesByName(candidate.title);
+    if (!files.hasNext()) {
+      return;
+    }
+
+    var file = files.next();
+    var docId = file.getId();
+    records.push({
+      '日期 / Date': todayKey,
+      '语言 / Language': candidate.language,
+      '标题 / Title': candidate.title,
+      '摘要 / Summary': '',
+      'Google Doc Link': 'https://docs.google.com/document/d/' + docId + '/edit',
+      '类型 / Type': 'Morning Brief',
+      '状态 / Status': 'Active',
+      '创建时间 / Created At': Utilities.formatDate(new Date(), getScriptTimeZone_(), 'yyyy-MM-dd HH:mm:ss'),
+      '_docContent': readGoogleDocText_(docId),
+      '_source': 'auto-doc'
+    });
+  });
+
+  return records;
+}
+
+function isActiveMorningBriefRow_(row, todayKey) {
+  var status = getMorningBriefCell_(row, '状态 / Status').toLowerCase();
+  var type = getMorningBriefCell_(row, '类型 / Type').toLowerCase();
+  var dateKey = normalizeMorningBriefDate_(getMorningBriefCell_(row, '日期 / Date'));
+
+  if (status !== 'active') {
+    return false;
+  }
+  if (type && type !== 'morning brief' && type !== '早晨晨报' && type !== '早晨简报') {
+    return false;
+  }
+  return dateKey === todayKey;
+}
+
+function getMorningBriefCell_(row, key) {
+  return String(row && row[key] !== undefined ? row[key] : '').trim();
+}
+
+function getMorningBriefDedupeKey_(row) {
+  return [
+    normalizeMorningBriefDate_(getMorningBriefCell_(row, '日期 / Date')),
+    getMorningBriefCell_(row, '语言 / Language').toLowerCase(),
+    getMorningBriefCell_(row, '标题 / Title').toLowerCase()
+  ].join('|');
+}
+
+function getTodayDateKey_() {
+  return Utilities.formatDate(new Date(), getScriptTimeZone_(), 'yyyy-MM-dd');
+}
+
+function getScriptTimeZone_() {
+  return Session.getScriptTimeZone() || 'America/Vancouver';
+}
+
+function normalizeMorningBriefDate_(value) {
+  var text = String(value || '').trim();
+  var match = text.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+  if (match) {
+    return [
+      match[1],
+      ('0' + match[2]).slice(-2),
+      ('0' + match[3]).slice(-2)
+    ].join('-');
+  }
+
+  var date = new Date(text);
+  if (!isNaN(date.getTime())) {
+    return Utilities.formatDate(date, getScriptTimeZone_(), 'yyyy-MM-dd');
+  }
+  return '';
+}
+
+function extractGoogleDocId_(url) {
+  var text = String(url || '').trim();
+  var match = text.match(/\/document\/d\/([a-zA-Z0-9_-]+)/);
+  return match ? match[1] : '';
+}
+
+function readGoogleDocText_(docId) {
+  if (!docId) {
+    return '';
+  }
+  try {
+    return DocumentApp.openById(docId).getBody().getText();
+  } catch (error) {
+    return '';
+  }
 }
 
 function jsonResponse_(payload) {

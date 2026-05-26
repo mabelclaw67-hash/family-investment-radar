@@ -102,12 +102,34 @@ export function get(row, key) {
 function buildMorningBrief(rows) {
   return rows
     .filter((row) => /^active$/i.test(String(get(row, "状态 / Status")).trim()))
+    .filter(isMorningBriefType)
+    .filter(isTodayMorningBrief)
     .sort((a, b) => sortByBriefDate(b, a))
-    .slice(0, 5);
+    .slice(0, 2);
 }
 
 function sortByBriefDate(a, b) {
   return parseBriefDate(get(a, "日期 / Date")) - parseBriefDate(get(b, "日期 / Date"));
+}
+
+function isMorningBriefType(row) {
+  const type = String(get(row, "类型 / Type")).trim().toLowerCase();
+  return !type || type === "morning brief" || type === "早晨晨报" || type === "早晨简报";
+}
+
+function isTodayMorningBrief(row) {
+  return formatBriefDateKey(get(row, "日期 / Date")) === formatBriefDateKey(new Date());
+}
+
+function formatBriefDateKey(value) {
+  const time = parseBriefDate(value);
+  if (!time) return "";
+
+  const date = new Date(time);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function parseBriefDate(value) {
@@ -115,13 +137,13 @@ function parseBriefDate(value) {
   if (value instanceof Date) return value.getTime();
 
   const text = String(value).trim();
-  const time = Date.parse(text);
-  if (!Number.isNaN(time)) return time;
-
   const match = text.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
   if (match) {
     return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])).getTime();
   }
+
+  const time = Date.parse(text);
+  if (!Number.isNaN(time)) return time;
 
   return 0;
 }

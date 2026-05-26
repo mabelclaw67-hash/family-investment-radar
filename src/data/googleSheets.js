@@ -9,15 +9,19 @@ export async function loadSheetTab(sheetName) {
 export async function loadDashboardSource() {
   const url = buildApiUrl("dashboard");
   const payload = await fetchJson(url);
+  const dashboardData = payload.data ?? {};
+  const morningBrief = Array.isArray(dashboardData.morningBrief) && dashboardData.morningBrief.length
+    ? dashboardData.morningBrief
+    : await loadSheetTab(SHEET_CONFIG.tabs.morningBrief);
 
   return {
-    holdings: payload.data?.holdings ?? [],
-    dailyNews: payload.data?.dailyNews ?? [],
-    watchlist: payload.data?.watchlist ?? [],
-    priorityAlerts: payload.data?.priorityAlerts ?? [],
-    settings: payload.data?.settings ?? [],
-    marketRadar: payload.data?.marketRadar ?? [],
-    morningBrief: payload.data?.morningBrief ?? [],
+    holdings: dashboardData.holdings ?? [],
+    dailyNews: dashboardData.dailyNews ?? [],
+    watchlist: dashboardData.watchlist ?? [],
+    priorityAlerts: dashboardData.priorityAlerts ?? [],
+    settings: dashboardData.settings ?? [],
+    marketRadar: dashboardData.marketRadar ?? [],
+    morningBrief,
   };
 }
 
@@ -89,6 +93,7 @@ function buildApiUrl(action, params = {}) {
 
   const url = new URL(FAMILY_INVESTMENT_API_URL);
   url.searchParams.set("action", action);
+  url.searchParams.set("_", String(Date.now()));
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.set(key, value);
   });

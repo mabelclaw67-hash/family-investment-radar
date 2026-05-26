@@ -212,22 +212,44 @@ export function AlertsPanel({ alerts, holdingStatuses }) {
 // --- Morning Brief Panel -----------------------------------------------------
 
 export function MorningBriefPanel(items) {
+  const visibleItems = filterMorningBriefByLanguage(items).slice(0, 1);
   return `
     <section class="panel morning-brief-panel">
       <div class="panel-title"><h2>${t("morning_brief_title")}</h2></div>
       ${
-        items.length
-          ? `<div class="morning-brief-list">${items.map(morningBriefItem).join("")}</div>`
+        visibleItems.length
+          ? `<div class="morning-brief-list">${visibleItems.map(morningBriefItem).join("")}</div>`
           : EmptyState(t("morning_brief_empty"), "")
       }
     </section>
   `;
 }
 
+function filterMorningBriefByLanguage(items) {
+  const lang = getLang();
+  return items.filter((row) => {
+    const language = String(get(row, "语言 / Language")).trim().toLowerCase();
+    if (!language) return true;
+    if (lang === "zh") return language === "zh" || language === "chinese" || language === "中文";
+    return (
+      (language === "en" || language === "english" || language === "英文") &&
+      !hasMostlyChineseBriefContent(row)
+    );
+  });
+}
+
+function hasMostlyChineseBriefContent(row) {
+  const text = `${get(row, "_docContent")} ${get(row, "摘要 / Summary")}`.trim();
+  if (!text) return false;
+
+  const chineseChars = text.match(/[\u3400-\u9fff]/g)?.length ?? 0;
+  return chineseChars >= 20;
+}
+
 function morningBriefItem(row) {
   const date = get(row, "日期 / Date");
   const title = get(row, "标题 / Title") || t("morning_brief_no_title");
-  const summary = get(row, "摘要 / Summary");
+  const summary = get(row, "_docContent") || get(row, "摘要 / Summary");
   const docLink = get(row, "Google Doc Link");
 
   return `
@@ -235,7 +257,7 @@ function morningBriefItem(row) {
       <time>${escapeHtml(formatBriefDate(date))}</time>
       <div class="morning-brief-body">
         <strong>${escapeHtml(title)}</strong>
-        ${summary ? `<p>${escapeHtml(summary)}</p>` : ""}
+        ${summary ? renderBriefContent(summary) : ""}
         ${
           docLink
             ? `<a class="morning-brief-link" href="${escapeHtml(docLink)}" target="_blank" rel="noopener noreferrer">${t("morning_brief_open_doc")}</a>`
@@ -246,9 +268,39 @@ function morningBriefItem(row) {
   `;
 }
 
+function renderBriefContent(summary) {
+  const lines = String(summary)
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length <= 1) {
+    return `<p>${escapeHtml(summary)}</p>`;
+  }
+
+  return `
+    <div class="morning-brief-content">
+      ${lines.map((line) => {
+        if (/^═+$/.test(line)) return `<hr />`;
+        return `<p>${escapeHtml(line)}</p>`;
+      }).join("")}
+    </div>
+  `;
+}
+
 function formatBriefDate(value) {
   if (!value) return "";
   const text = String(value).trim();
+  const match = text.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+  if (match) {
+    const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    return date.toLocaleDateString(getLang() === "zh" ? "zh-CN" : "en-CA", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }
+
   const parsed = new Date(text);
   if (Number.isNaN(parsed.getTime())) return text;
   return parsed.toLocaleDateString(getLang() === "zh" ? "zh-CN" : "en-CA", {
