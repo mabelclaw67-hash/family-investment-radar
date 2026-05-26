@@ -36,6 +36,7 @@ export function buildDashboardModel(source) {
   const priorityAlerts = source.priorityAlerts ?? [];
   const settings       = source.settings       ?? [];
   const marketRadar    = source.marketRadar    ?? [];
+  const morningBrief   = source.morningBrief   ?? [];
 
   const activeHoldings  = holdings.filter((row) => get(row, "持仓ID / Holding ID"));
   const activeWatchlist = watchlist.filter((row) => get(row, "观察ID / Watch ID"));
@@ -87,6 +88,7 @@ export function buildDashboardModel(source) {
     watchlist:      activeWatchlist,
     alerts:         mergedAlerts,
     holdingStatuses,
+    morningBrief: buildMorningBrief(morningBrief),
     settings,
     marketData:     marketRadar,
     summaries: buildSummaries(activeHoldings, activeWatchlist, mergedAlerts, settings),
@@ -95,6 +97,33 @@ export function buildDashboardModel(source) {
 
 export function get(row, key) {
   return row?.[key] ?? "";
+}
+
+function buildMorningBrief(rows) {
+  return rows
+    .filter((row) => /^active$/i.test(String(get(row, "状态 / Status")).trim()))
+    .sort((a, b) => sortByBriefDate(b, a))
+    .slice(0, 5);
+}
+
+function sortByBriefDate(a, b) {
+  return parseBriefDate(get(a, "日期 / Date")) - parseBriefDate(get(b, "日期 / Date"));
+}
+
+function parseBriefDate(value) {
+  if (!value) return 0;
+  if (value instanceof Date) return value.getTime();
+
+  const text = String(value).trim();
+  const time = Date.parse(text);
+  if (!Number.isNaN(time)) return time;
+
+  const match = text.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+  if (match) {
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])).getTime();
+  }
+
+  return 0;
 }
 
 // ── Latest updates counter (last 24 hours) ────────────────────────────────────

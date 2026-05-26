@@ -17,6 +17,7 @@ export async function loadDashboardSource() {
     priorityAlerts: payload.data?.priorityAlerts ?? [],
     settings: payload.data?.settings ?? [],
     marketRadar: payload.data?.marketRadar ?? [],
+    morningBrief: payload.data?.morningBrief ?? [],
   };
 }
 

@@ -1,13 +1,14 @@
 import { get } from "./dashboardMapper.js";
 
+// Labels are resolved via i18n in components.js using t('filter_' + id)
 export const HOLDING_FILTERS = [
-  ["all", "All / 全部"],
-  ["Mabel", "Mabel"],
-  ["Victor", "Victor"],
-  ["ETF", "ETF"],
-  ["Stock", "Stock"],
-  ["highRisk", "High Risk"],
-  ["review", "Review"],
+  "all",
+  "Mabel",
+  "Victor",
+  "ETF",
+  "Stock",
+  "highRisk",
+  "review",
 ];
 
 export function buildHoldingsModel(source, filter = "all", selectedId = "") {
@@ -76,12 +77,12 @@ export function deriveActionLabel(row) {
   return "No Action";
 }
 
-export function displayValue(value, fallback = "待补充") {
+export function displayValue(value, fallback = "—") {
   return value && String(value).trim() ? value : fallback;
 }
 
 export function displayMarketValue(value) {
-  return value && String(value).trim() ? value : "待更新";
+  return value && String(value).trim() ? value : "—";
 }
 
 function findResearch(holding, researchRows) {

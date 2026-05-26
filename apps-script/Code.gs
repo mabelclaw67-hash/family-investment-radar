@@ -8,6 +8,7 @@ const DASHBOARD_TABS = {
   watchlist: '07 Watchlist Intelligence',
   priorityAlerts: '08 Priority Alert Watch',
   decisionLog: '09 Decision Log',
+  morningBrief: '10 Morning Brief',
   researchPack: '12 Research Pack',
   settings: '99 Settings',
   marketRadar: '05 Market Radar',
@@ -157,6 +158,7 @@ function doGet(e) {
           priorityAlerts: readTab_(DASHBOARD_TABS.priorityAlerts),
           settings: readTab_(DASHBOARD_TABS.settings),
           marketRadar: readTab_(DASHBOARD_TABS.marketRadar),
+          morningBrief: readTab_(DASHBOARD_TABS.morningBrief),
         },
         updatedAt: new Date().toISOString(),
       });
@@ -788,16 +790,22 @@ function marketDataFetchJob() {
 }
 
 function retryMarketSourceRowIfPriceMissing_(sourceSheet, rowNumber, readColCount, srcRow) {
-  var rawPrice = srcRow[2];
-  var price = parseFloat(rawPrice);
-  if (!(rawPrice === '' || rawPrice === null || rawPrice === undefined || isNaN(price))) {
-    return srcRow;
+  var maxRetries = 3;
+  var retryDelayMs = 2500;
+  for (var attempt = 0; attempt < maxRetries; attempt++) {
+    var rawPrice = srcRow[2];
+    var price = parseFloat(rawPrice);
+    if (!(rawPrice === '' || rawPrice === null || rawPrice === undefined || isNaN(price))) {
+      return srcRow;
+    }
+    if (attempt < maxRetries - 1) {
+      Logger.log('[Market] Price blank for row ' + rowNumber + ', retry ' + (attempt + 1) + '/' + (maxRetries - 1));
+      SpreadsheetApp.flush();
+      Utilities.sleep(retryDelayMs);
+      srcRow = sourceSheet.getRange(rowNumber, 1, 1, readColCount).getValues()[0];
+    }
   }
-
-  SpreadsheetApp.flush();
-  Utilities.sleep(1500);
-
-  return sourceSheet.getRange(rowNumber, 1, 1, readColCount).getValues()[0];
+  return srcRow;
 }
 
 function marketDataFetchJob_() {
@@ -2269,6 +2277,21 @@ function marketDataFetchJob_() {
   }
   var readColCount2 = Math.max(7, notesColIdx2 >= 0 ? notesColIdx2 + 1 : 7);
   var sourceData = sourceSheet.getRange(2, 1, sourceLastRow - 1, readColCount2).getValues();
+
+  // Pre-check: some GOOGLEFINANCE formulas (stocks, ETFs, currencies) load slower than
+  // index formulas. If any price cells are blank, wait 6 s then re-read the whole sheet.
+  // This resolves the issue where NVDA/GOOGL/CADUSD=X/GC=F/USO/XBB.TO stay stale
+  // while the four indexes update normally.
+  var hasBlankPrices = sourceData.some(function(row) {
+    var p = row[2];
+    return p === '' || p === null || p === undefined || isNaN(parseFloat(p));
+  });
+  if (hasBlankPrices) {
+    Logger.log('[Market] Some GOOGLEFINANCE prices still loading — flushing and waiting 6 s...');
+    SpreadsheetApp.flush();
+    Utilities.sleep(6000);
+    sourceData = sourceSheet.getRange(2, 1, sourceLastRow - 1, readColCount2).getValues();
+  }
 
   // Self-contained symbol info — does NOT rely on MARKET_SYMBOLS
   var symInfoMap = {

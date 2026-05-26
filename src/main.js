@@ -23,11 +23,13 @@ import {
   LiveUpdatesPanel,
   LoadingState,
   MarketSection,
+  MorningBriefPanel,
   SummaryCards,
   WatchlistPage,
   WatchlistPopupHtml,
 } from "./components.js";
 import { SITE_PASSWORD } from "./config.js";
+import { t, getLang, setLang } from "./i18n.js";
 
 const app = document.querySelector("#app");
 const AUTH_KEY = "fir_auth_v2";
@@ -43,10 +45,10 @@ function showPasswordGate() {
     <div class="pw-gate-wrapper">
       <div class="pw-gate-box">
         <div class="pw-brand">◎</div>
-        <h2 class="pw-title">家庭投资雷达</h2>
-        <p class="pw-subtitle">Family Investment Radar</p>
+        <h2 class="pw-title">${t("pw_title")}</h2>
+        <p class="pw-subtitle">${t("pw_subtitle")}</p>
         <form id="pw-form" class="pw-form" autocomplete="on">
-          <p class="pw-hint">请输入访问密码 / Enter access password</p>
+          <p class="pw-hint">${t("pw_hint")}</p>
           <input
             id="pw-input"
             type="password"
@@ -56,9 +58,9 @@ function showPasswordGate() {
             autofocus
           />
           <div id="pw-error" class="pw-error" hidden>
-            密码不正确 / Incorrect password
+            ${t("pw_error")}
           </div>
-          <button type="submit" class="pw-submit">进入 / Enter</button>
+          <button type="submit" class="pw-submit">${t("pw_submit")}</button>
         </form>
       </div>
     </div>
@@ -80,6 +82,7 @@ function showPasswordGate() {
 }
 
 function bindGlobalActions() {
+  // Logout
   const logoutBtn = document.querySelector("[data-action='logout']");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
@@ -87,7 +90,27 @@ function bindGlobalActions() {
       showPasswordGate();
     });
   }
+
+  // Language toggle
+  const langBtn = document.querySelector("[data-action='toggleLang']");
+  if (langBtn) {
+    langBtn.addEventListener("click", () => {
+      const newLang = getLang() === "en" ? "zh" : "en";
+      setLang(newLang);
+      // Update document language attribute
+      document.documentElement.lang = newLang === "zh" ? "zh-CN" : "en";
+      // Re-render current page with new language
+      app.innerHTML = LoadingState();
+      renderCurrentPage().catch((error) => {
+        app.innerHTML = ErrorState(error);
+        console.error(error);
+        bindGlobalActions();
+      });
+    });
+  }
 }
+
+// ── State ─────────────────────────────────────────────────────────────────────
 
 const state = {
   page: getPageFromUrl(),
@@ -99,11 +122,16 @@ const state = {
   decisionLogFilter: "all",
 };
 
+// ── Bootstrap ─────────────────────────────────────────────────────────────────
+
 async function bootstrap() {
   if (!checkAuth()) {
     showPasswordGate();
     return;
   }
+
+  // Apply stored language preference to document
+  document.documentElement.lang = getLang() === "zh" ? "zh-CN" : "en";
 
   app.innerHTML = LoadingState();
 
@@ -115,6 +143,8 @@ async function bootstrap() {
     bindGlobalActions();
   }
 }
+
+// ── Page Routing ──────────────────────────────────────────────────────────────
 
 async function renderCurrentPage() {
   state.page = getPageFromUrl();
@@ -145,6 +175,8 @@ async function renderCurrentPage() {
   renderDashboard(dashboard);
 }
 
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+
 function renderDashboard(dashboard) {
   app.innerHTML = AppShell(`
     ${Header()}
@@ -152,11 +184,11 @@ function renderDashboard(dashboard) {
     ${MarketSection(dashboard.marketData)}
     <section class="dashboard-grid">
       ${LiveUpdatesPanel(dashboard.news)}
-      ${AlertsPanel({ alerts: dashboard.alerts, holdingStatuses: dashboard.holdingStatuses })}
+      ${MorningBriefPanel(dashboard.morningBrief)}
     </section>
     ${SummaryCards(dashboard.summaries)}
     <footer class="footer">
-      本平台提供信息与监控服务，不构成投资建议或任何买卖推荐。投资有风险，请根据自身情况谨慎决策。
+      ${t("footer_disclaimer")}
     </footer>
   `, "dashboard");
   bindRefreshNewsButton();
@@ -171,12 +203,15 @@ function bindRefreshNewsButton() {
 
   btn.addEventListener("click", async () => {
     btn.disabled = true;
-    statusEl.textContent = "正在刷新新闻...";
+    statusEl.textContent = t("status_refreshing_news");
     statusEl.className = "news-refresh-status loading";
 
     try {
       const result = await refreshNews();
-      statusEl.textContent = `新闻刷新完成：新增 ${result.inserted} 条，跳过 ${result.skipped} 条`;
+      const lang = getLang();
+      statusEl.textContent = lang === "zh"
+        ? `新闻刷新完成：新增 ${result.inserted} 条，跳过 ${result.skipped} 条`
+        : `News refresh complete: ${result.inserted} inserted, ${result.skipped} skipped`;
       statusEl.className = "news-refresh-status success";
 
       const source = await loadDashboardSource();
@@ -185,8 +220,8 @@ function bindRefreshNewsButton() {
     } catch (err) {
       const msg = err.message || "";
       statusEl.textContent = msg.includes("not configured") || msg.includes("apiKey") || msg.includes("API key")
-        ? "NEWS_API_KEY 未配置 / News API key is not configured."
-        : "刷新失败：" + msg;
+        ? t("status_news_api_missing")
+        : t("status_refresh_failed") + msg;
       statusEl.className = "news-refresh-status error";
       btn.disabled = false;
     }
@@ -200,12 +235,15 @@ function bindRefreshMarketButton() {
 
   btn.addEventListener("click", async () => {
     btn.disabled = true;
-    statusEl.textContent = "正在刷新行情...";
+    statusEl.textContent = t("status_refreshing_market");
     statusEl.className = "news-refresh-status loading";
 
     try {
       const result = await refreshMarketData();
-      statusEl.textContent = `行情已更新：更新 ${result.updated} 条，错误 ${result.errors} 条`;
+      const lang = getLang();
+      statusEl.textContent = lang === "zh"
+        ? `行情已更新：更新 ${result.updated} 条，错误 ${result.errors} 条`
+        : `Market updated: ${result.updated} updated, ${result.errors} errors`;
       statusEl.className = "news-refresh-status success";
 
       const source = await loadDashboardSource();
@@ -214,13 +252,15 @@ function bindRefreshMarketButton() {
     } catch (err) {
       const msg = err.message || "";
       statusEl.textContent = msg.includes("not set") || msg.includes("ALPHA_VANTAGE")
-        ? "ALPHA_VANTAGE_API_KEY 未配置。"
-        : "刷新失败：" + msg;
+        ? t("status_alpha_missing")
+        : t("status_refresh_failed") + msg;
       statusEl.className = "news-refresh-status error";
       btn.disabled = false;
     }
   });
 }
+
+// ── Holdings ──────────────────────────────────────────────────────────────────
 
 function renderHoldings() {
   const holdings = buildHoldingsModel(
@@ -253,6 +293,8 @@ function bindHoldingsInteractions() {
   });
 }
 
+// ── Watchlist ─────────────────────────────────────────────────────────────────
+
 function renderWatchlist() {
   const model = buildWatchlistModel(state.watchlistSource);
   app.innerHTML = AppShell(WatchlistPage(model), "watchlist");
@@ -276,18 +318,18 @@ function bindWatchlistInteractions() {
     const submitBtn = form.querySelector("button[type='submit']");
     const formData = new FormData(form);
     const payload = {
-      owner: String(formData.get("owner") || "").trim(),
-      ticker: String(formData.get("ticker") || "").trim(),
-      name: String(formData.get("name") || "").trim(),
-      type: String(formData.get("type") || "").trim(),
-      sector: String(formData.get("sector") || "").trim(),
+      owner:    String(formData.get("owner")    || "").trim(),
+      ticker:   String(formData.get("ticker")   || "").trim(),
+      name:     String(formData.get("name")     || "").trim(),
+      type:     String(formData.get("type")     || "").trim(),
+      sector:   String(formData.get("sector")   || "").trim(),
       priority: String(formData.get("priority") || "Medium").trim(),
-      reason: String(formData.get("reason") || "").trim(),
+      reason:   String(formData.get("reason")   || "").trim(),
     };
 
     if (!payload.owner || !payload.type || (!payload.ticker && !payload.name)) {
       if (statusEl) {
-        statusEl.textContent = "请填写 Owner、Type，并填写 Ticker 或 Name。";
+        statusEl.textContent = t("status_watchlist_validation");
         statusEl.className = "news-refresh-status error";
       }
       return;
@@ -295,14 +337,20 @@ function bindWatchlistInteractions() {
 
     if (submitBtn) submitBtn.disabled = true;
     if (statusEl) {
-      statusEl.textContent = "正在写入观察清单...";
+      statusEl.textContent = t("status_watchlist_writing");
       statusEl.className = "news-refresh-status loading";
     }
 
     try {
       const result = await addWatchItem(payload);
       if (statusEl) {
-        statusEl.textContent = `已加入观察清单：${result.watchId || "新记录"}`;
+        statusEl.textContent = t("status_watchlist_writing").replace("...", "") + `: ${result.watchId || t("nav_watchlist")}`;
+        // Better: show added confirmation
+        const id = result.watchId || "";
+        const lang = getLang();
+        statusEl.textContent = lang === "zh"
+          ? `已加入观察清单：${id || "新记录"}`
+          : `Added to watchlist: ${id || "new record"}`;
         statusEl.className = "news-refresh-status success";
       }
       form.reset();
@@ -311,7 +359,7 @@ function bindWatchlistInteractions() {
       renderWatchlist();
     } catch (err) {
       if (statusEl) {
-        statusEl.textContent = "写入功能待接入 / Write action pending";
+        statusEl.textContent = t("status_watchlist_pending");
         statusEl.className = "news-refresh-status";
       }
       console.warn(err);
@@ -363,6 +411,8 @@ function openWatchlistPopup(id) {
   document.addEventListener("keydown", onKey);
 }
 
+// ── Decision Log ──────────────────────────────────────────────────────────────
+
 function renderDecisionLog() {
   const model = buildDecisionLogModel(state.decisionLogSource ?? { decisions: [] }, state.decisionLogFilter);
   app.innerHTML = AppShell(DecisionLogPage(model), "decisions");
@@ -375,18 +425,17 @@ function renderDecisionLog() {
     window._decisionPrefill = null;
     const form = document.getElementById("dl-add-form");
     if (form) {
-      if (p.owner)        { const s = form.querySelector('[name="owner"]');       if (s) s.value = p.owner; }
-      if (p.ticker)       { const f = form.querySelector('[name="ticker"]');      if (f) f.value = p.ticker; }
-      if (p.name)         { const f = form.querySelector('[name="name"]');        if (f) f.value = p.name; }
-      if (p.assetType)    { const s = form.querySelector('[name="assetType"]');   if (s) s.value = p.assetType; }
-      if (p.relatedWatchId) { const f = form.querySelector('[name="relatedWatchId"]'); if (f) f.value = p.relatedWatchId; }
-      if (p.referenceInfo)  { const f = form.querySelector('[name="referenceInfo"]');  if (f) f.value = p.referenceInfo; }
+      if (p.owner)          { const s = form.querySelector('[name="owner"]');           if (s) s.value = p.owner; }
+      if (p.ticker)         { const f = form.querySelector('[name="ticker"]');          if (f) f.value = p.ticker; }
+      if (p.name)           { const f = form.querySelector('[name="name"]');            if (f) f.value = p.name; }
+      if (p.assetType)      { const s = form.querySelector('[name="assetType"]');       if (s) s.value = p.assetType; }
+      if (p.relatedWatchId) { const f = form.querySelector('[name="relatedWatchId"]');  if (f) f.value = p.relatedWatchId; }
+      if (p.referenceInfo)  { const f = form.querySelector('[name="referenceInfo"]');   if (f) f.value = p.referenceInfo; }
     }
   }
 }
 
 function bindDecisionLogInteractions() {
-  // Filter buttons
   app.querySelectorAll("[data-dl-filter]").forEach((btn) => {
     btn.addEventListener("click", () => {
       state.decisionLogFilter = btn.dataset.dlFilter;
@@ -404,29 +453,29 @@ function bindDecisionLogInteractions() {
     const data      = new FormData(form);
 
     const payload = {
-      date:            String(data.get("date")            || "").trim(),
-      owner:           String(data.get("owner")           || "").trim(),
-      accountType:     String(data.get("accountType")     || "").trim(),
-      ticker:          String(data.get("ticker")          || "").trim(),
-      name:            String(data.get("name")            || "").trim(),
-      assetType:       String(data.get("assetType")       || "").trim(),
-      actionType:      String(data.get("actionType")      || "").trim(),
-      decisionStatus:  String(data.get("decisionStatus")  || "").trim(),
-      amount:          String(data.get("amount")          || "").trim(),
-      quantity:        String(data.get("quantity")        || "").trim(),
-      price:           String(data.get("price")           || "").trim(),
-      cost:            String(data.get("cost")            || "").trim(),
-      decisionReason:  String(data.get("decisionReason")  || "").trim(),
-      referenceInfo:   String(data.get("referenceInfo")   || "").trim(),
-      riskLevel:       String(data.get("riskLevel")       || "").trim(),
-      relatedWatchId:  String(data.get("relatedWatchId")  || "").trim(),
-      relatedHoldingId:String(data.get("relatedHoldingId")|| "").trim(),
-      reviewNotes:     String(data.get("reviewNotes")     || "").trim(),
+      date:             String(data.get("date")             || "").trim(),
+      owner:            String(data.get("owner")            || "").trim(),
+      accountType:      String(data.get("accountType")      || "").trim(),
+      ticker:           String(data.get("ticker")           || "").trim(),
+      name:             String(data.get("name")             || "").trim(),
+      assetType:        String(data.get("assetType")        || "").trim(),
+      actionType:       String(data.get("actionType")       || "").trim(),
+      decisionStatus:   String(data.get("decisionStatus")   || "").trim(),
+      amount:           String(data.get("amount")           || "").trim(),
+      quantity:         String(data.get("quantity")         || "").trim(),
+      price:            String(data.get("price")            || "").trim(),
+      cost:             String(data.get("cost")             || "").trim(),
+      decisionReason:   String(data.get("decisionReason")   || "").trim(),
+      referenceInfo:    String(data.get("referenceInfo")    || "").trim(),
+      riskLevel:        String(data.get("riskLevel")        || "").trim(),
+      relatedWatchId:   String(data.get("relatedWatchId")   || "").trim(),
+      relatedHoldingId: String(data.get("relatedHoldingId") || "").trim(),
+      reviewNotes:      String(data.get("reviewNotes")      || "").trim(),
     };
 
     if (!payload.date || !payload.owner || !payload.actionType || (!payload.ticker && !payload.name)) {
       if (statusEl) {
-        statusEl.textContent = "请填写日期、所属人、操作类型，以及代码或名称。";
+        statusEl.textContent = t("status_decision_validation");
         statusEl.className = "news-refresh-status error";
       }
       return;
@@ -434,14 +483,17 @@ function bindDecisionLogInteractions() {
 
     if (submitBtn) submitBtn.disabled = true;
     if (statusEl) {
-      statusEl.textContent = "正在写入决策记录...";
+      statusEl.textContent = t("status_decision_writing");
       statusEl.className = "news-refresh-status loading";
     }
 
     try {
       const result = await addDecisionLog(payload);
       if (statusEl) {
-        statusEl.textContent = `已新增决策记录 ${result.decisionId || ""}`;
+        const lang = getLang();
+        statusEl.textContent = lang === "zh"
+          ? `已新增决策记录 ${result.decisionId || ""}`
+          : `Decision record added ${result.decisionId || ""}`;
         statusEl.className = "news-refresh-status success";
       }
       form.reset();
@@ -451,13 +503,15 @@ function bindDecisionLogInteractions() {
       renderDecisionLog();
     } catch (err) {
       if (statusEl) {
-        statusEl.textContent = "写入失败：" + (err.message || "未知错误");
+        statusEl.textContent = t("status_decision_failed") + (err.message || t("status_unknown_error"));
         statusEl.className = "news-refresh-status error";
       }
       if (submitBtn) submitBtn.disabled = false;
     }
   });
 }
+
+// ── URL Routing ───────────────────────────────────────────────────────────────
 
 function getPageFromUrl() {
   if (window.location.pathname.includes("/holdings"))  return "holdings";
