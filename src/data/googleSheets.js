@@ -1,5 +1,8 @@
 import { FAMILY_INVESTMENT_API_URL, SHEET_CONFIG } from "../config.js";
 
+const MORNING_BRIEF_API_URL =
+  "https://script.google.com/macros/s/AKfycbwxCyBuqCjc8vB4SHe6QtYPx3WgfAsaJN4dHpFqBjc22h3R9gScYzgSs9XlJNrRdSpyNQ/exec";
+
 export async function loadSheetTab(sheetName) {
   const url = buildApiUrl("tab", { name: sheetName });
   const payload = await fetchJson(url);
@@ -30,6 +33,19 @@ async function loadMorningBriefFallback() {
     return await loadSheetTab(SHEET_CONFIG.tabs.morningBrief);
   } catch (error) {
     console.warn("Morning brief fallback unavailable:", error.message);
+    return await loadMorningBriefFromCurrentApi();
+  }
+}
+
+async function loadMorningBriefFromCurrentApi() {
+  if (FAMILY_INVESTMENT_API_URL === MORNING_BRIEF_API_URL) return [];
+
+  try {
+    const url = buildApiUrl("dashboard", {}, MORNING_BRIEF_API_URL);
+    const payload = await fetchJson(url);
+    return Array.isArray(payload.data?.morningBrief) ? payload.data.morningBrief : [];
+  } catch (error) {
+    console.warn("Morning brief current API unavailable:", error.message);
     return [];
   }
 }
@@ -93,14 +109,14 @@ export async function addDecisionLog(payload) {
   return await fetchJson(url);
 }
 
-function buildApiUrl(action, params = {}) {
-  if (!FAMILY_INVESTMENT_API_URL) {
+function buildApiUrl(action, params = {}, apiUrl = FAMILY_INVESTMENT_API_URL) {
+  if (!apiUrl) {
     throw new Error(
       "Missing API URL. Set VITE_FAMILY_INVESTMENT_API_URL or window.FAMILY_INVESTMENT_API_URL to the Apps Script Web App exec URL."
     );
   }
 
-  const url = new URL(FAMILY_INVESTMENT_API_URL);
+  const url = new URL(apiUrl);
   url.searchParams.set("action", action);
   url.searchParams.set("_", String(Date.now()));
   Object.entries(params).forEach(([key, value]) => {
