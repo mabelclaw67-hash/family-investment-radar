@@ -18,10 +18,19 @@ export const SHEET_CONFIG = {
 // Fixed local password gate. Keep UI copy generic and do not expose it on screen.
 export const SITE_PASSWORD = "246810";
 
-export const FAMILY_INVESTMENT_API_URL =
+const CURRENT_API_URL =
+  "https://script.google.com/macros/s/AKfycbwxCyBuqCjc8vB4SHe6QtYPx3WgfAsaJN4dHpFqBjc22h3R9gScYzgSs9XlJNrRdSpyNQ/exec";
+
+const OLD_API_URL =
+  "https://script.google.com/macros/s/AKfycbzdSdpB1ZZp8XZPIESgl6jQNc83GrvY5LM-kWYPLxWRjsGkLaJEIrxI-CBlsOIp_HWDXg/exec";
+
+const configuredApiUrl =
   import.meta.env?.VITE_FAMILY_INVESTMENT_API_URL ||
   (typeof window !== "undefined" ? window.FAMILY_INVESTMENT_API_URL : "") ||
-  "https://script.google.com/macros/s/AKfycbwxCyBuqCjc8vB4SHe6QtYPx3WgfAsaJN4dHpFqBjc22h3R9gScYzgSs9XlJNrRdSpyNQ/exec";
+  CURRENT_API_URL;
+
+export const FAMILY_INVESTMENT_API_URL =
+  configuredApiUrl === OLD_API_URL ? CURRENT_API_URL : configuredApiUrl;
 
 // Each entry: [i18n-key, icon-class, page-id]
 export const NAV_ITEMS = [
