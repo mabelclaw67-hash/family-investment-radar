@@ -251,7 +251,7 @@ function hasMostlyChineseBriefContent(row) {
 function morningBriefItem(row) {
   const date = row.reportDate || get(row, "日期 / Date");
   const title = row.title || get(row, "标题 / Title") || t("morning_brief_no_title");
-  const rawSummary = row.summary3Lines || get(row, "_docContent") || get(row, "摘要 / Summary");
+  const rawSummary = row.fullContent || get(row, "_docContent") || row.summary3Lines || get(row, "摘要 / Summary");
   const summary = getLang() === "en" && hasMostlyChineseBriefContent(row) ? "" : rawSummary;
   const docLink = row.sourceDocUrl || get(row, "Google Doc Link");
 
