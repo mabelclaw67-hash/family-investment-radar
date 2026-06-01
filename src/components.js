@@ -231,6 +231,8 @@ export function MorningBriefPanel(items) {
 function filterMorningBriefByLanguage(items) {
   const lang = getLang();
   return items.filter((row) => {
+    if (row?.summary3Lines) return true;
+
     const language = String(get(row, "语言 / Language")).trim().toLowerCase();
     if (!language) return true;
     if (lang === "zh") return language === "zh" || language === "chinese" || language === "中文";
@@ -247,11 +249,11 @@ function hasMostlyChineseBriefContent(row) {
 }
 
 function morningBriefItem(row) {
-  const date = get(row, "日期 / Date");
-  const title = get(row, "标题 / Title") || t("morning_brief_no_title");
-  const rawSummary = get(row, "_docContent") || get(row, "摘要 / Summary");
+  const date = row.reportDate || get(row, "日期 / Date");
+  const title = row.title || get(row, "标题 / Title") || t("morning_brief_no_title");
+  const rawSummary = row.summary3Lines || get(row, "_docContent") || get(row, "摘要 / Summary");
   const summary = getLang() === "en" && hasMostlyChineseBriefContent(row) ? "" : rawSummary;
-  const docLink = get(row, "Google Doc Link");
+  const docLink = row.sourceDocUrl || get(row, "Google Doc Link");
 
   return `
     <article class="morning-brief-row">

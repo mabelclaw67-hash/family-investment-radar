@@ -159,7 +159,7 @@ function doGet(e) {
           priorityAlerts: readTab_(DASHBOARD_TABS.priorityAlerts),
           settings: readTab_(DASHBOARD_TABS.settings),
           marketRadar: readTab_(DASHBOARD_TABS.marketRadar),
-          morningBrief: readMorningBrief_(),
+          morningBrief: getLatestMorningBrief_(),
         },
         updatedAt: new Date().toISOString(),
       });
@@ -315,6 +315,85 @@ function isAllowedTab_(tabName) {
   return Object.keys(DASHBOARD_TABS).some(function(key) {
     return DASHBOARD_TABS[key] === tabName;
   });
+}
+
+function getLatestMorningBrief_() {
+  var rows = readTab_(DASHBOARD_TABS.morningBrief);
+  var latest = null;
+
+  rows.forEach(function(row) {
+    if (!isActiveMorningBriefRecord_(row)) {
+      return;
+    }
+
+    var reportTime = parseMorningBriefDateTime_(row);
+    if (!latest || reportTime > latest.reportTime) {
+      latest = {
+        reportTime: reportTime,
+        row: row
+      };
+    }
+  });
+
+  if (!latest) {
+    return null;
+  }
+
+  var record = latest.row;
+  var docLink = getMorningBriefCell_(record, 'Google Doc Link');
+  var docId = extractGoogleDocId_(docLink);
+  var docContent = docId ? readGoogleDocText_(docId) : '';
+  var summary = getMorningBriefCell_(record, '摘要 / Summary');
+
+  return {
+    reportDate: getMorningBriefCell_(record, '日期 / Date'),
+    generatedAt: getMorningBriefCell_(record, '创建时间 / Created At'),
+    title: getMorningBriefCell_(record, '标题 / Title'),
+    summary3Lines: summary,
+    fullContent: docContent || summary,
+    sourceDocUrl: docLink,
+    status: getMorningBriefCell_(record, '状态 / Status'),
+    '日期 / Date': getMorningBriefCell_(record, '日期 / Date'),
+    '语言 / Language': getMorningBriefCell_(record, '语言 / Language'),
+    '标题 / Title': getMorningBriefCell_(record, '标题 / Title'),
+    '摘要 / Summary': summary,
+    'Google Doc Link': docLink,
+    '类型 / Type': getMorningBriefCell_(record, '类型 / Type'),
+    '状态 / Status': getMorningBriefCell_(record, '状态 / Status'),
+    '创建时间 / Created At': getMorningBriefCell_(record, '创建时间 / Created At'),
+    '_docContent': docContent
+  };
+}
+
+function isActiveMorningBriefRecord_(row) {
+  var status = getMorningBriefCell_(row, '状态 / Status').toLowerCase();
+  var type = getMorningBriefCell_(row, '类型 / Type').toLowerCase();
+
+  if (status !== 'active') {
+    return false;
+  }
+  return !type || type === 'morning brief' || type === '早晨晨报' || type === '早晨简报';
+}
+
+function parseMorningBriefDateTime_(row) {
+  var createdAt = getMorningBriefCell_(row, '创建时间 / Created At');
+  var date = getMorningBriefCell_(row, '日期 / Date');
+  return parseMorningBriefDateValue_(createdAt) || parseMorningBriefDateValue_(date);
+}
+
+function parseMorningBriefDateValue_(value) {
+  var text = String(value || '').trim();
+  if (!text) {
+    return 0;
+  }
+
+  var match = text.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+  if (match) {
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])).getTime();
+  }
+
+  var parsed = new Date(text);
+  return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
 }
 
 function readMorningBrief_() {

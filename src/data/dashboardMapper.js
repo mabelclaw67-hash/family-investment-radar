@@ -36,7 +36,7 @@ export function buildDashboardModel(source) {
   const priorityAlerts = source.priorityAlerts ?? [];
   const settings       = source.settings       ?? [];
   const marketRadar    = source.marketRadar    ?? [];
-  const morningBrief   = source.morningBrief   ?? [];
+  const morningBrief   = source.morningBrief   ?? null;
 
   const activeHoldings  = holdings.filter((row) => get(row, "持仓ID / Holding ID"));
   const activeWatchlist = watchlist.filter((row) => get(row, "观察ID / Watch ID"));
@@ -100,12 +100,17 @@ export function get(row, key) {
 }
 
 function buildMorningBrief(rows) {
+  if (!rows) return [];
+
+  if (!Array.isArray(rows)) {
+    return rows.summary3Lines ? [rows] : [];
+  }
+
   return rows
     .filter((row) => /^active$/i.test(String(get(row, "状态 / Status")).trim()))
     .filter(isMorningBriefType)
-    .filter(isTodayMorningBrief)
     .sort((a, b) => sortByBriefDate(b, a))
-    .slice(0, 2);
+    .slice(0, 1);
 }
 
 function sortByBriefDate(a, b) {

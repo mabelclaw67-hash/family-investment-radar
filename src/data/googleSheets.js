@@ -13,7 +13,7 @@ export async function loadDashboardSource() {
   const url = buildApiUrl("dashboard");
   const payload = await fetchJson(url);
   const dashboardData = payload.data ?? {};
-  const morningBrief = Array.isArray(dashboardData.morningBrief) && dashboardData.morningBrief.length
+  const morningBrief = dashboardData.morningBrief
     ? dashboardData.morningBrief
     : await loadMorningBriefFallback();
 
