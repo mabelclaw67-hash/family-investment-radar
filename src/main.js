@@ -7,6 +7,7 @@ import {
   loadWatchlistPageSource,
   refreshMarketData,
   refreshNews,
+  syncMorningBrief,
 } from "./data/googleSheets.js";
 import { buildDashboardModel } from "./data/dashboardMapper.js";
 import { buildHoldingsModel } from "./data/holdingsMapper.js";
@@ -191,6 +192,7 @@ function renderDashboard(dashboard) {
   `, "dashboard");
   bindRefreshNewsButton();
   bindRefreshMarketButton();
+  bindSyncMorningBriefButton();
   bindGlobalActions();
 }
 
@@ -252,6 +254,35 @@ function bindRefreshMarketButton() {
       statusEl.textContent = msg.includes("not set") || msg.includes("ALPHA_VANTAGE")
         ? t("status_alpha_missing")
         : t("status_refresh_failed") + msg;
+      statusEl.className = "news-refresh-status error";
+      btn.disabled = false;
+    }
+  });
+}
+
+function bindSyncMorningBriefButton() {
+  const btn = document.getElementById("btn-sync-morning-brief");
+  const statusEl = document.getElementById("morning-brief-sync-status");
+  if (!btn || !statusEl) return;
+
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    statusEl.textContent = t("status_syncing_morning_brief");
+    statusEl.className = "news-refresh-status loading";
+
+    try {
+      const result = await syncMorningBrief();
+      const lang = getLang();
+      statusEl.textContent = lang === "zh"
+        ? `晨报同步完成：新增 ${result.inserted} 条`
+        : `Morning brief synced: ${result.inserted} inserted`;
+      statusEl.className = "news-refresh-status success";
+
+      const source = await loadDashboardSource();
+      const dashboard = buildDashboardModel(source);
+      renderDashboard(dashboard);
+    } catch (err) {
+      statusEl.textContent = t("status_refresh_failed") + (err.message || t("status_unknown_error"));
       statusEl.className = "news-refresh-status error";
       btn.disabled = false;
     }

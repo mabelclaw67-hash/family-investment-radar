@@ -218,7 +218,13 @@ export function MorningBriefPanel(items) {
   const visibleItems = filterMorningBriefByLanguage(items).slice(0, 1);
   return `
     <section class="panel morning-brief-panel">
-      <div class="panel-title"><h2>${t("morning_brief_title")}</h2></div>
+      <div class="panel-title">
+        <h2>${t("morning_brief_title")}</h2>
+        <div class="news-refresh-row">
+          <button id="btn-sync-morning-brief" class="refresh-news-btn" type="button">${t("btn_sync_morning_brief")}</button>
+          <span id="morning-brief-sync-status" class="news-refresh-status"></span>
+        </div>
+      </div>
       ${
         visibleItems.length
           ? `<div class="morning-brief-list">${visibleItems.map(morningBriefItem).join("")}</div>`

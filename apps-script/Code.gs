@@ -210,6 +210,17 @@ function doGet(e) {
       });
     }
 
+    if (action === 'syncMorningBrief') {
+      const result = syncMorningBriefFromDrive();
+      return jsonResponse_({
+        ok: true,
+        inserted: result.inserted,
+        message: 'Morning brief sync completed',
+        morningBrief: getLatestMorningBrief_(),
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
     if (action === 'generateDailyHoldingIntelligence') {
       const result = generateDailyHoldingIntelligence_();
       return jsonResponse_({

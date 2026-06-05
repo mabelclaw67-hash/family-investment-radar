@@ -91,6 +91,11 @@ export async function refreshMarketData() {
   return await fetchJson(url);
 }
 
+export async function syncMorningBrief() {
+  const url = buildApiUrl("syncMorningBrief");
+  return await fetchJson(url);
+}
+
 export async function addWatchItem(payload) {
   const url = buildApiUrl("addWatchItem", payload);
   return await fetchJson(url);
