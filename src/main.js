@@ -6,7 +6,7 @@ import {
   loadHoldingsPageSource,
   loadWatchlistPageSource,
   refreshMarketData,
-  refreshNews,
+  syncNewsFromSheet,
   syncMorningBrief,
 } from "./data/googleSheets.js";
 import { buildDashboardModel } from "./data/dashboardMapper.js";
@@ -207,11 +207,11 @@ function bindRefreshNewsButton() {
     statusEl.className = "news-refresh-status loading";
 
     try {
-      const result = await refreshNews();
+      const result = await syncNewsFromSheet();
       const lang = getLang();
       statusEl.textContent = lang === "zh"
-        ? `新闻刷新完成：新增 ${result.inserted} 条，跳过 ${result.skipped} 条`
-        : `News refresh complete: ${result.inserted} inserted, ${result.skipped} skipped`;
+        ? `新闻同步完成：已读取 ${result.count} 条`
+        : `News sync complete: ${result.count} rows loaded`;
       statusEl.className = "news-refresh-status success";
 
       const source = await loadDashboardSource();
@@ -219,9 +219,7 @@ function bindRefreshNewsButton() {
       renderDashboard(dashboard);
     } catch (err) {
       const msg = err.message || "";
-      statusEl.textContent = msg.includes("not configured") || msg.includes("apiKey") || msg.includes("API key")
-        ? t("status_news_api_missing")
-        : t("status_refresh_failed") + msg;
+      statusEl.textContent = t("status_refresh_failed") + msg;
       statusEl.className = "news-refresh-status error";
       btn.disabled = false;
     }

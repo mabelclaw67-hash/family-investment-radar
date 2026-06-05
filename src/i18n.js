@@ -56,7 +56,7 @@ const STRINGS = {
 
     // ── News panel ────────────────────────────────────────────────────────────
     news_panel_title:      "Live Updates",
-    btn_refresh_news:      "Refresh News",
+    btn_refresh_news:      "Sync News",
     news_no_data_main:     "No daily news rows available yet",
     news_no_data_sub:      "Add rows to 06 Daily News Intelligence",
     news_view_all:         "View All News ›",
@@ -248,7 +248,7 @@ const STRINGS = {
     pw_submit:                 "Enter",
 
     // ── Status messages ───────────────────────────────────────────────────────
-    status_refreshing_news:    "Refreshing news...",
+    status_refreshing_news:    "Syncing news...",
     status_news_api_missing:   "NEWS_API_KEY not configured.",
     status_refresh_failed:     "Refresh failed: ",
     status_refreshing_market:  "Refreshing market data...",
@@ -320,7 +320,7 @@ const STRINGS = {
 
     // ── News panel ────────────────────────────────────────────────────────────
     news_panel_title:      "即时更新",
-    btn_refresh_news:      "刷新新闻",
+    btn_refresh_news:      "同步新闻",
     news_no_data_main:     "06 Daily News Intelligence 目前没有新闻数据",
     news_no_data_sub:      "请在 06 Daily News Intelligence 中添加记录",
     news_view_all:         "查看全部新闻 ›",
@@ -512,7 +512,7 @@ const STRINGS = {
     pw_submit:                 "进入",
 
     // ── Status messages ───────────────────────────────────────────────────────
-    status_refreshing_news:    "正在刷新新闻...",
+    status_refreshing_news:    "正在同步新闻...",
     status_news_api_missing:   "NEWS_API_KEY 未配置。",
     status_refresh_failed:     "刷新失败：",
     status_refreshing_market:  "正在刷新行情...",

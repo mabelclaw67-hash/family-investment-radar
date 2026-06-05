@@ -86,6 +86,11 @@ export async function refreshNews() {
   return await fetchJson(url);
 }
 
+export async function syncNewsFromSheet() {
+  const url = buildApiUrl("syncNewsFromSheet");
+  return await fetchJson(url);
+}
+
 export async function refreshMarketData() {
   const url = buildApiUrl("refreshMarketData");
   return await fetchJson(url);

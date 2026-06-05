@@ -198,6 +198,17 @@ function doGet(e) {
       });
     }
 
+    if (action === 'syncNewsFromSheet') {
+      const rows = readTab_(DASHBOARD_TABS.dailyNews);
+      return jsonResponse_({
+        ok: true,
+        count: rows.length,
+        data: rows,
+        message: 'Daily news synced from sheet',
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
     if (action === 'refreshMarketData') {
       const result = marketDataFetchJob_();
       return jsonResponse_({
