@@ -159,7 +159,13 @@ function doGet(e) {
           priorityAlerts: readTab_(DASHBOARD_TABS.priorityAlerts),
           settings: readTab_(DASHBOARD_TABS.settings),
           marketRadar: readTab_(DASHBOARD_TABS.marketRadar),
-          morningBrief: getLatestMorningBrief_(),
+          morningBrief: (function() {
+            // Prefer today's brief (from sheet row OR Drive doc with today's filename).
+            // Fall back to the latest sheet entry if nothing exists for today yet.
+            var todayRows = readMorningBrief_();
+            if (todayRows && todayRows.length > 0) return todayRows;
+            return getLatestMorningBrief_();
+          }()),
         },
         updatedAt: new Date().toISOString(),
       });
@@ -951,6 +957,115 @@ function translateExistingNewsRows() {
   return summary;
 }
 
+// ─── Morning Brief: sync Drive docs → 10 Morning Brief sheet ─────────────────
+//
+// Scans the Drive folder for docs matching known naming patterns over the last
+// SYNC_DAYS days.  Any doc that does not already have a row in the sheet is
+// appended automatically.  Safe to run multiple times (title-based dedup).
+//
+// Run manually from the editor to backfill gaps, or let the daily trigger call it.
+
+var SYNC_DAYS = 14;   // look back this many days for missing docs
+
+function syncMorningBriefFromDrive() {
+  var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = spreadsheet.getSheetByName(DASHBOARD_TABS.morningBrief);
+  if (!sheet) throw new Error('Sheet not found: ' + DASHBOARD_TABS.morningBrief);
+
+  var lastCol = sheet.getLastColumn();
+  if (lastCol < 1) throw new Error('10 Morning Brief has no columns.');
+  var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function(h) {
+    return String(h || '').trim();
+  });
+
+  // Build set of already-indexed titles (lowercase) for deduplication
+  var existingTitles = {};
+  var lastRow = sheet.getLastRow();
+  if (lastRow > 1) {
+    var titleColIdx = -1;
+    for (var hi = 0; hi < headers.length; hi++) {
+      if (headers[hi].indexOf('标题') !== -1 || headers[hi].toLowerCase() === 'title') {
+        titleColIdx = hi + 1; break;
+      }
+    }
+    if (titleColIdx > 0) {
+      var titleVals = sheet.getRange(2, titleColIdx, lastRow - 1, 1).getValues();
+      titleVals.forEach(function(r) {
+        var t = String(r[0] || '').trim().toLowerCase();
+        if (t) existingTitles[t] = true;
+      });
+    }
+  }
+
+  var folder;
+  try {
+    folder = DriveApp.getFolderById(MORNING_BRIEF_FOLDER_ID);
+  } catch (e) {
+    throw new Error('Cannot access Morning Brief Drive folder: ' + e.message);
+  }
+
+  var tz = getScriptTimeZone_();
+  var today = new Date();
+  var inserted = 0;
+
+  for (var i = 0; i < SYNC_DAYS; i++) {
+    var d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+    var dateKey = Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+    var compact  = dateKey.replace(/-/g, '');
+
+    var candidates = [
+      { language: 'zh', title: '早晨简报_'   + compact },
+      { language: 'zh', title: '早晨晨报_'   + compact },
+      { language: 'en', title: 'Morning Brief_'  + compact },
+      { language: 'en', title: 'Morning_Brief_'  + compact },
+      { language: 'en', title: 'MorningBrief_'   + compact },
+    ];
+
+    candidates.forEach(function(c) {
+      if (existingTitles[c.title.toLowerCase()]) return; // already in sheet
+
+      var files = folder.getFilesByName(c.title);
+      if (!files.hasNext()) return; // not in Drive either
+
+      var file    = files.next();
+      var docId   = file.getId();
+      var docLink = 'https://docs.google.com/document/d/' + docId + '/edit';
+      var createdAt = Utilities.formatDate(file.getDateCreated(), tz, 'yyyy-MM-dd HH:mm:ss');
+
+      // Read first 500 chars of doc body as preview summary
+      var summary = '';
+      try {
+        var fullText = readGoogleDocText_(docId);
+        summary = fullText ? fullText.slice(0, 500) : '';
+      } catch (readErr) {
+        Logger.log('[SyncBrief] Could not read doc ' + docId + ': ' + readErr.message);
+      }
+
+      var row = headers.map(function(h) {
+        if (!h) return '';
+        if (h.indexOf('日期') !== -1 || h === 'Date')              return dateKey;
+        if (h.indexOf('语言') !== -1 || h === 'Language')          return c.language;
+        if (h.indexOf('标题') !== -1 || h === 'Title')             return c.title;
+        if (h.indexOf('摘要') !== -1 || h === 'Summary')           return summary;
+        if (h.indexOf('Google Doc Link') !== -1)                   return docLink;
+        if (h.indexOf('类型') !== -1 || h === 'Type')              return 'Morning Brief';
+        if (h.indexOf('状态') !== -1 || h === 'Status')            return 'Active';
+        if (h.indexOf('创建时间') !== -1 || h === 'Created At')    return createdAt;
+        return '';
+      });
+
+      sheet.appendRow(row);
+      existingTitles[c.title.toLowerCase()] = true;
+      inserted++;
+      Logger.log('[SyncBrief] Inserted row: ' + c.title + ' → ' + dateKey);
+    });
+  }
+
+  SpreadsheetApp.flush();
+  Logger.log('[SyncBrief] Done. inserted=' + inserted);
+  return { inserted: inserted };
+}
+
 // --- Trigger setup: run once from Apps Script editor -------------------------
 // Prerequisites:
 //   Project Settings > Time zone must be set to "America/Vancouver" FIRST.
@@ -980,6 +1095,20 @@ function createDailyTriggers() {
     .everyDays(1)
     .create();
   Logger.log('Created trigger 2: dailyNewsFetchJob 14:00-15:00 Vancouver');
+
+  // Trigger 3: syncMorningBriefFromDrive at 7am-8am (after briefing docs are created)
+  for (var j = 0; j < existing.length; j++) {
+    if (existing[j].getHandlerFunction() === 'syncMorningBriefFromDrive') {
+      ScriptApp.deleteTrigger(existing[j]);
+      Logger.log('Deleted existing trigger: syncMorningBriefFromDrive id=' + existing[j].getUniqueId());
+    }
+  }
+  ScriptApp.newTrigger('syncMorningBriefFromDrive')
+    .timeBased()
+    .atHour(7)
+    .everyDays(1)
+    .create();
+  Logger.log('Created trigger 3: syncMorningBriefFromDrive 07:00-08:00 Vancouver');
 
   Logger.log('Done. Check Triggers panel (clock icon, left sidebar) to confirm.');
 }
