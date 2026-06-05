@@ -7,8 +7,24 @@ All data comes from `Family_Investment_Radar_Master` via Apps Script Web App.
 
 ## Run locally
 
+Use this folder only:
+
+```text
+/Users/mabelchen/Mabel Project/02_Family Investment/02_Web_Project_GitHub
+```
+
+This is the only active website project. It is connected to GitHub:
+
+```text
+https://github.com/mabelclaw67-hash/family-investment-radar.git
+```
+
+Do not edit old archived copies such as `02_Web_Project`,
+`02_Web_Project_BACKUP_20260507_133607`, or standalone Apps Script `.gs` files.
+They are kept only for history.
+
 ```bash
-cd "/Users/mabelchen/Mabel Project/02_Family Investment/02_Web_Project"
+cd "/Users/mabelchen/Mabel Project/02_Family Investment/02_Web_Project_GitHub"
 npm install
 npm run dev -- --host 127.0.0.1
 ```
@@ -78,7 +94,8 @@ Verify:
 
 **Step 5 — Deploy**
 
-Drag and drop the `02_Web_Project` folder to Netlify, or connect via Git.
+Deploy through GitHub to Netlify from `02_Web_Project_GitHub`.
+Do not drag and drop old local project folders to Netlify.
 `netlify.toml` is already configured for static deployment with SPA redirect.
 
 ---
