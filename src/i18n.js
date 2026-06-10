@@ -77,7 +77,6 @@ const STRINGS = {
     alerts_empty_sub:      "No high-priority alert rows",
     morning_brief_title:   "Morning Brief",
     btn_sync_morning_brief:"Sync Brief",
-    morning_brief_open_doc:"Open Doc",
     morning_brief_empty:   "No morning brief yet",
     morning_brief_no_title:"(No Title)",
 
@@ -341,7 +340,6 @@ const STRINGS = {
     alerts_empty_sub:      "暂无数据",
     morning_brief_title:   "早晨晨报",
     btn_sync_morning_brief:"同步晨报",
-    morning_brief_open_doc:"打开文档",
     morning_brief_empty:   "暂无晨报",
     morning_brief_no_title:"(无标题)",
 

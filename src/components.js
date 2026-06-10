@@ -259,7 +259,6 @@ function morningBriefItem(row) {
   const title = row.title || get(row, "标题 / Title") || t("morning_brief_no_title");
   const rawSummary = row.fullContent || get(row, "_docContent") || row.summary3Lines || get(row, "摘要 / Summary");
   const summary = getLang() === "en" && hasMostlyChineseBriefContent(row) ? "" : rawSummary;
-  const docLink = row.sourceDocUrl || get(row, "Google Doc Link");
 
   return `
     <article class="morning-brief-row">
@@ -267,11 +266,6 @@ function morningBriefItem(row) {
       <div class="morning-brief-body">
         <strong>${escapeHtml(title)}</strong>
         ${summary ? renderBriefContent(summary) : ""}
-        ${
-          docLink
-            ? `<a class="morning-brief-link" href="${escapeHtml(docLink)}" target="_blank" rel="noopener noreferrer">${t("morning_brief_open_doc")}</a>`
-            : ""
-        }
       </div>
     </article>
   `;
@@ -430,7 +424,7 @@ function newsItem(row) {
 
   const chineseTitle  = get(row, "新闻标题中文 / Chinese Title");
   const originalTitle = get(row, "原始标题 / Original Title");
-  const sourceLink    = get(row, "来源链接 / Source Link");
+  const sourceLink    = publicSourceLink(get(row, "来源链接 / Source Link"));
 
   // In EN mode show original title when available, fall back to Chinese title
   // In ZH mode show Chinese title when available, fall back to original
@@ -1160,7 +1154,7 @@ function popupNewsItem(row) {
   const displayTime  = formatNewsTime(rawTime) || "--";
   const chineseTitle = get(row, "新闻标题中文 / Chinese Title");
   const origTitle    = get(row, "原始标题 / Original Title");
-  const sourceLink   = get(row, "来源链接 / Source Link");
+  const sourceLink   = publicSourceLink(get(row, "来源链接 / Source Link"));
   const action       = get(row, "需要行动 / Action Needed") || "Review";
   const risk         = get(row, "风险等级 / Risk Level");
   const category     = get(row, "类别 / Category");
@@ -1559,6 +1553,21 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+function publicSourceLink(value) {
+  const link = String(value || "").trim();
+  if (!link) return "";
+
+  try {
+    const url = new URL(link);
+    const host = url.hostname.toLowerCase();
+    if (host === "drive.google.com" || host.endsWith(".drive.google.com")) return "";
+    if (host === "docs.google.com" || host.endsWith(".docs.google.com")) return "";
+    return link;
+  } catch {
+    return "";
+  }
 }
 
 function buildIndexDisplayItem(bySymbol, symbol, label) {

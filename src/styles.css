@@ -578,19 +578,6 @@ h2 {
   margin: 6px 0;
 }
 
-.morning-brief-link {
-  width: fit-content;
-  color: var(--blue);
-  font-size: 13px;
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.morning-brief-link:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
 /* ── Holdings Status Mini (inside AlertsPanel) ─────────────────────────────── */
 .holdings-status-mini {
   background: var(--bg);

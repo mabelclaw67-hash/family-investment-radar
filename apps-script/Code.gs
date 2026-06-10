@@ -379,13 +379,11 @@ function getLatestMorningBrief_() {
     title: getMorningBriefCell_(record, '标题 / Title'),
     summary3Lines: summary,
     fullContent: docContent || summary,
-    sourceDocUrl: docLink,
     status: getMorningBriefCell_(record, '状态 / Status'),
     '日期 / Date': getMorningBriefCell_(record, '日期 / Date'),
     '语言 / Language': getMorningBriefCell_(record, '语言 / Language'),
     '标题 / Title': getMorningBriefCell_(record, '标题 / Title'),
     '摘要 / Summary': summary,
-    'Google Doc Link': docLink,
     '类型 / Type': getMorningBriefCell_(record, '类型 / Type'),
     '状态 / Status': getMorningBriefCell_(record, '状态 / Status'),
     '创建时间 / Created At': getMorningBriefCell_(record, '创建时间 / Created At'),
@@ -443,14 +441,14 @@ function readMorningBrief_() {
       record['_docContent'] = readGoogleDocText_(docId);
     }
 
-    output.push(record);
+    output.push(sanitizePublicMorningBriefRecord_(record));
     seen[getMorningBriefDedupeKey_(record)] = true;
   });
 
   findTodayMorningBriefDocs_(todayKey, todayCompact).forEach(function(record) {
     var key = getMorningBriefDedupeKey_(record);
     if (!seen[key]) {
-      output.push(record);
+      output.push(sanitizePublicMorningBriefRecord_(record));
       seen[key] = true;
     }
   });
@@ -488,7 +486,6 @@ function findTodayMorningBriefDocs_(todayKey, todayCompact) {
       '语言 / Language': candidate.language,
       '标题 / Title': candidate.title,
       '摘要 / Summary': '',
-      'Google Doc Link': 'https://docs.google.com/document/d/' + docId + '/edit',
       '类型 / Type': 'Morning Brief',
       '状态 / Status': 'Active',
       '创建时间 / Created At': Utilities.formatDate(new Date(), getScriptTimeZone_(), 'yyyy-MM-dd HH:mm:ss'),
@@ -498,6 +495,15 @@ function findTodayMorningBriefDocs_(todayKey, todayCompact) {
   });
 
   return records;
+}
+
+function sanitizePublicMorningBriefRecord_(record) {
+  var publicRecord = Object.assign({}, record);
+  delete publicRecord['Google Doc Link'];
+  delete publicRecord['Google Drive文件链接 / Drive File Link'];
+  delete publicRecord['Drive File Link'];
+  delete publicRecord.sourceDocUrl;
+  return publicRecord;
 }
 
 function isActiveMorningBriefRow_(row, todayKey) {
