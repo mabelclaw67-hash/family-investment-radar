@@ -180,9 +180,14 @@ function doGet(e) {
         throw new Error('Unsupported tab name: ' + tabName);
       }
 
+      const rows = readTab_(tabName);
+      const data = tabName === DASHBOARD_TABS.morningBrief
+        ? rows.map(sanitizePublicMorningBriefRecord_)
+        : rows;
+
       return jsonResponse_({
         ok: true,
-        data: readTab_(tabName),
+        data: data,
         updatedAt: new Date().toISOString(),
       });
     }
