@@ -11,6 +11,7 @@ export const SHEET_CONFIG = {
     morningBrief: "10 Morning Brief",
     settings: "99 Settings",
     marketRadar: "05 Market Radar",
+    stockAnalysis: "11 Stock Analysis",
   },
 };
 
@@ -40,6 +41,7 @@ export const NAV_ITEMS = [
   ["nav_alerts",    "bell",      "alerts"],
   ["nav_news",      "news",      "news"],
   ["nav_market",    "radar",     "market"],
+  ["nav_stock_analysis", "radar", "stock-analysis"],
   ["nav_decisions", "document",  "decisions"],
   ["nav_settings",  "settings",  "settings"],
 ];

@@ -13,6 +13,7 @@ const DASHBOARD_TABS = {
   researchPack: '12 Research Pack',
   settings: '99 Settings',
   marketRadar: '05 Market Radar',
+  stockAnalysis: '11 Stock Analysis',
 };
 
 const RESEARCH_PACK_HEADERS = [
@@ -299,6 +300,26 @@ function doGet(e) {
         updatedAt: new Date().toISOString(),
       });
     }
+
+    if (action === 'analyze_stocks') {
+  const result = analyzeStocks_(params);
+  return jsonResponse_({
+    ok: true,
+    data: result.data || result,
+    updatedAt: new Date().toISOString(),
+  });
+}
+
+if (action === 'update_stock_fundamentals') {
+  const result = updateStockFundamentalsForStockAnalysis_(params);
+  return jsonResponse_({
+    ok: true,
+    data: result,
+    updatedAt: new Date().toISOString(),
+  });
+}
+
+throw new Error('Unsupported action: ' + action);
 
     throw new Error('Unsupported action: ' + action);
   } catch (error) {
@@ -2779,4 +2800,1765 @@ function marketDataFetchJob_() {
 
   SpreadsheetApp.flush();
   return { updated: updated, inserted: inserted, errors: errors };
+}
+
+// ================== 股市分析 - 适配你的 Family Investment Radar ==================
+function analyzeStocks_(params) {
+  const industry = String(params.industry || 'all').toLowerCase().trim();
+  const apiKey = PropertiesService.getScriptProperties().getProperty('ALPHA_VANTAGE_API_KEY');
+  
+  // 结合你当前持仓 + 热门美加龙头（可继续扩展）
+  let tickers = [];
+  if (industry === 'tech' || industry === 'all') {
+    tickers = tickers.concat(['NVDA', 'TSLA', 'GOOGL', 'MSFT', 'AMZN', 'HSAI', 'BABA']);
+  }
+  if (industry === 'energy' || industry === 'all') {
+    tickers = tickers.concat(['CVE.TO', 'SU.TO', 'XOM', 'CVX', 'REI']);
+  }
+  if (industry === 'canada' || industry === 'all') {
+    tickers = tickers.concat(['RY.TO', 'TD.TO', 'SHOP.TO', 'ENB.TO', 'XIC.TO', 'XIU.TO']);
+  }
+  if (industry === 'all') {
+    tickers = tickers.concat(['AAPL', 'V', 'MA', 'LLY', 'JPM']); // 更多行业龙头
+  }
+  
+  // 去重
+  tickers = [...new Set(tickers.map(t => t.toUpperCase()))];
+  
+  let results = [];
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  
+  tickers.forEach(ticker => {
+    try {
+      const analysis = getStockValueRiskAnalysis_(ticker, apiKey);
+      if (analysis) results.push(analysis);
+    } catch (e) {
+      Logger.log('分析 ' + ticker + ' 失败: ' + e.message);
+    }
+  });
+  
+  // 保存到 11 Stock Analysis
+  saveStockAnalysisToSheet_(spreadsheet, results);
+  
+  return {
+    ok: true,
+    data: results,
+    count: results.length,
+    industry: industry || 'all',
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function getStockValueRiskAnalysis_(ticker, apiKey) {
+  let price = null;
+  let changePct = null;
+  let name = ticker;
+  
+  // 优先使用你已有的 GOOGLEFINANCE（最稳定）
+  try {
+    const formulaPrice = '=GOOGLEFINANCE("' + ticker + '", "price")';
+    const formulaChange = '=GOOGLEFINANCE("' + ticker + '", "changepct")';
+    const formulaName = '=GOOGLEFINANCE("' + ticker + '", "name")';
+    
+    price = SpreadsheetApp.getActive().getRange(formulaPrice).getValue();
+    changePct = SpreadsheetApp.getActive().getRange(formulaChange).getValue();
+    const fetchedName = SpreadsheetApp.getActive().getRange(formulaName).getValue();
+    if (fetchedName) name = fetchedName;
+  } catch (e) {
+    Logger.log('[Stock] GOOGLEFINANCE failed for ' + ticker + ': ' + e.message);
+  }
+
+  // Alpha Vantage 补充 PE / Beta
+  let pe = null;
+  let beta = null;
+  if (apiKey) {
+    try {
+      const av = fetchAlphaVantageOverview_(apiKey, ticker);
+      if (av) {
+        pe = av['ForwardPE'] || av['TrailingPE'];
+        beta = av['Beta'];
+      }
+    } catch (e) {}
+  }
+
+  const volatility = changePct ? Math.abs(Number(changePct)) * 8 : 25;
+  
+  const valueScore = pe ? Math.max(4, Math.min(10, 40 / Number(pe) * 6)) : 6;
+  const riskScore = beta ? Math.max(3, Math.min(10, 18 - Number(beta) * 4)) : 6;
+
+  return {
+    Ticker: ticker,
+    名称: name,
+    当前价格: price ? Number(price).toFixed(2) : '待更新',
+    日变动: changePct ? Number(changePct).toFixed(2) + '%' : '待更新',
+    ForwardPE: pe ? Number(pe).toFixed(2) : 'N/A',
+    Beta: beta ? Number(beta).toFixed(2) : 'N/A',
+    年化波动率: volatility.toFixed(1) + '%',
+    价值评分: valueScore.toFixed(1),
+    风险评分: riskScore.toFixed(1),
+    综合评分: ((valueScore + riskScore) / 2).toFixed(1),
+    行业: getIndustryForTicker_(ticker),
+    更新时间: new Date().toISOString(),
+    备注: '供参考，仅家庭内部使用'
+  };
+}
+
+function getIndustryForTicker_(ticker) {
+  const map = {
+    'NVDA': '科技/AI', 'TSLA': 'EV/科技', 'HSAI': 'Auto Tech', 
+    'BABA': '中国科技', 'CVE.TO': '能源', 'RY.TO': '加拿大银行'
+  };
+  return map[ticker] || '其他';
+}
+
+function saveStockAnalysisToSheet_(spreadsheet, results) {
+  let sheet = spreadsheet.getSheetByName('11 Stock Analysis');
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet('11 Stock Analysis');
+  }
+
+  const headers = [
+    'Ticker',
+    '名称',
+    '当前价格',
+    '日变动%',
+    'Forward P/E',
+    'Beta',
+    '简化波动参考%',
+    '价值评分',
+    '风险评分',
+    '综合评分',
+    '行业',
+    '更新时间',
+    '备注text',
+    '中文名称',
+    '英文名称',
+    '类型',
+    '一句话说明',
+    '适合关注点',
+    '主题分类'
+  ];
+
+  // 写入表头，确保 A-S 都存在
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+  // 清空旧数据，只清内容，不清格式
+  if (sheet.getLastRow() > 1) {
+    sheet.getRange(2, 1, sheet.getLastRow() - 1, headers.length).clearContent();
+  }
+
+  const infoMap = {
+    'NVDA': {
+      zh: '英伟达',
+      en: 'NVIDIA',
+      type: 'AI芯片/半导体',
+      desc: 'AI GPU 和数据中心芯片龙头，是人工智能基础设施的重要公司。',
+      focus: 'AI 算力需求、数据中心增长、估值是否过热、芯片周期。',
+      theme: 'AI / 算力'
+    },
+    'TSLA': {
+      zh: '特斯拉',
+      en: 'Tesla',
+      type: '电动车/科技',
+      desc: '电动车、储能和自动驾驶概念公司，股价波动通常较大。',
+      focus: '交付量、毛利率、自动驾驶进展、市场情绪。',
+      theme: 'AI / 电动车'
+    },
+    'GOOGL': {
+      zh: '谷歌母公司',
+      en: 'Alphabet',
+      type: '互联网/AI/广告',
+      desc: 'Google 搜索、YouTube、广告、云服务和 AI 业务的母公司。',
+      focus: '广告收入、AI竞争、云业务增长、监管风险。',
+      theme: 'AI / 云 / 平台'
+    },
+    'MSFT': {
+      zh: '微软',
+      en: 'Microsoft',
+      type: '软件/云/AI',
+      desc: 'Windows、Office、Azure 云和 AI 生态的全球科技巨头。',
+      focus: 'Azure增长、AI商业化、企业软件需求、估值水平。',
+      theme: 'AI / 云 / 软件'
+    },
+    'AMZN': {
+      zh: '亚马逊',
+      en: 'Amazon',
+      type: '电商/云计算',
+      desc: '电商、物流、AWS 云计算和数字服务平台公司。',
+      focus: 'AWS利润、电商利润率、消费需求、AI云竞争。',
+      theme: '云计算 / 电商'
+    },
+    'HSAI': {
+      zh: '禾赛科技',
+      en: 'Hesai Group',
+      type: '自动驾驶传感器',
+      desc: '激光雷达 LiDAR 公司，服务自动驾驶和智能汽车市场。',
+      focus: '车企订单、自动驾驶发展、亏损风险、中概股波动。',
+      theme: 'AI / 自动驾驶'
+    },
+    'BABA': {
+      zh: '阿里巴巴',
+      en: 'Alibaba',
+      type: '中国科技/电商/云',
+      desc: '中国大型电商、云计算和数字平台公司。',
+      focus: '中国消费、云业务、监管环境、地缘政治风险。',
+      theme: '中国科技'
+    },
+    'CVE.TO': {
+      zh: '森科能源',
+      en: 'Cenovus Energy',
+      type: '加拿大能源',
+      desc: '加拿大油砂、炼油和综合能源公司。',
+      focus: '油价、现金流、分红回购、能源周期。',
+      theme: '能源'
+    },
+    'SU.TO': {
+      zh: '森科尔能源',
+      en: 'Suncor Energy',
+      type: '加拿大能源',
+      desc: '加拿大大型油砂和综合能源公司。',
+      focus: '油价、运营成本、分红、能源政策。',
+      theme: '能源'
+    },
+    'XOM': {
+      zh: '埃克森美孚',
+      en: 'Exxon Mobil',
+      type: '能源/石油天然气',
+      desc: '全球大型石油天然气和综合能源公司。',
+      focus: '油价周期、现金流、资本开支、能源转型风险。',
+      theme: '能源'
+    },
+    'CVX': {
+      zh: '雪佛龙',
+      en: 'Chevron',
+      type: '能源/石油天然气',
+      desc: '美国大型综合能源公司，业务覆盖上游和下游。',
+      focus: '油价、分红稳定性、项目执行、能源政策。',
+      theme: '能源'
+    },
+    'REI': {
+      zh: 'Ring Energy',
+      en: 'Ring Energy',
+      type: '小型能源股',
+      desc: '美国小型油气勘探与生产公司，波动和风险通常较高。',
+      focus: '油价敏感度、债务、产量、流动性风险。',
+      theme: '能源 / 高波动'
+    },
+    'RY.TO': {
+      zh: '加拿大皇家银行',
+      en: 'Royal Bank of Canada',
+      type: '加拿大银行',
+      desc: '加拿大大型银行，业务包括个人银行、财富管理和资本市场。',
+      focus: '利率环境、贷款质量、分红、加拿大经济。',
+      theme: '银行 / 金融'
+    },
+    'TD.TO': {
+      zh: '道明银行',
+      en: 'Toronto-Dominion Bank',
+      type: '加拿大银行',
+      desc: '加拿大大型银行，北美零售银行业务占比较高。',
+      focus: '利率、美国业务、信用风险、监管问题。',
+      theme: '银行 / 金融'
+    },
+    'SHOP.TO': {
+      zh: 'Shopify',
+      en: 'Shopify',
+      type: '加拿大科技/电商软件',
+      desc: '加拿大电商建站、支付和商家服务软件平台。',
+      focus: '商家增长、支付业务、盈利能力、科技股估值。',
+      theme: '加拿大科技'
+    },
+    'ENB.TO': {
+      zh: '恩桥',
+      en: 'Enbridge',
+      type: '能源管道/股息',
+      desc: '加拿大能源管道和基础设施公司，常被关注为股息型资产。',
+      focus: '现金流、债务、利率、分红可持续性。',
+      theme: '能源 / 管道 / 股息'
+    },
+    'XIC.TO': {
+      zh: '加拿大综合市场ETF',
+      en: 'iShares Core S&P/TSX Capped Composite ETF',
+      type: 'ETF/加拿大大盘',
+      desc: '跟踪加拿大整体股市的一篮子 ETF。',
+      focus: '加拿大大盘配置、行业集中度、长期分散投资。',
+      theme: 'ETF / 加拿大大盘'
+    },
+    'XIU.TO': {
+      zh: '加拿大TSX 60 ETF',
+      en: 'iShares S&P/TSX 60 ETF',
+      type: 'ETF/加拿大蓝筹',
+      desc: '跟踪加拿大 60 家大型蓝筹公司的 ETF。',
+      focus: '加拿大蓝筹暴露、银行能源权重、分红稳定性。',
+      theme: 'ETF / 加拿大蓝筹'
+    },
+    'AAPL': {
+      zh: '苹果',
+      en: 'Apple',
+      type: '消费电子/服务',
+      desc: 'iPhone、Mac、可穿戴设备和服务生态的全球科技公司。',
+      focus: 'iPhone周期、服务收入、AI设备生态、估值。',
+      theme: '消费科技'
+    },
+    'V': {
+      zh: 'Visa',
+      en: 'Visa',
+      type: '支付网络',
+      desc: '全球银行卡支付网络公司，不直接发放贷款，主要赚交易网络费用。',
+      focus: '消费支付量、跨境交易、监管费率、金融科技竞争。',
+      theme: '支付网络 / 金融科技'
+    },
+    'MA': {
+      zh: '万事达',
+      en: 'Mastercard',
+      type: '支付网络',
+      desc: '全球支付网络公司，连接银行、商户和消费者。',
+      focus: '消费趋势、跨境支付、费率监管、数字支付增长。',
+      theme: '支付网络 / 金融科技'
+    },
+    'LLY': {
+      zh: '礼来',
+      en: 'Eli Lilly',
+      type: '医药/制药',
+      desc: '美国大型制药公司，糖尿病、减重药和创新药是重要增长点。',
+      focus: '药品销售、研发管线、医保定价、估值是否过高。',
+      theme: '医药 / 制药'
+    },
+    'JPM': {
+      zh: '摩根大通',
+      en: 'JPMorgan Chase',
+      type: '美国银行/金融',
+      desc: '美国大型综合银行，业务包括商业银行、投资银行、信用卡和资产管理。',
+      focus: '利率、信贷周期、资本市场收入、监管要求。',
+      theme: '银行 / 金融'
+    }
+  };
+
+  const rows = [];
+  results.forEach((r) => {
+    const originalTicker = r.Ticker;
+    const info = infoMap[originalTicker] || {
+      zh: r.名称 || originalTicker,
+      en: r.名称 || originalTicker,
+      type: r.行业 || '其他',
+      desc: '待补充公司说明。',
+      focus: '待补充关注点。',
+      theme: r.行业 || '其他'
+    };
+
+    rows.push([
+      originalTicker,
+      r.名称 || originalTicker,
+      '',
+      '',
+      r.ForwardPE || 'N/A',
+      r.Beta || 'N/A',
+      '',
+      r.价值评分 || '6.0',
+      r.风险评分 || '6.0',
+      r.综合评分 || '6.0',
+      r.行业 || info.type || '其他',
+      r.更新时间 || new Date().toISOString(),
+      r.备注 || '供参考，仅家庭内部使用',
+      info.zh,
+      info.en,
+      info.type,
+      info.desc,
+      info.focus,
+      info.theme
+    ]);
+  });
+
+  if (rows.length > 0) {
+    sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
+
+    // 写入 GOOGLEFINANCE 公式：C列价格，D列日变动%，G列简化波动参考%
+    for (let i = 0; i < rows.length; i++) {
+      const rowNum = i + 2;
+      const originalTicker = rows[i][0];
+      let gfTicker = originalTicker;
+
+      // 加拿大 .TO 转换成 GoogleFinance 支持的 TSE: 格式
+      if (originalTicker.endsWith('.TO')) {
+        gfTicker = 'TSE:' + originalTicker.replace('.TO', '');
+      }
+
+      sheet.getRange(rowNum, 3).setFormula('=GOOGLEFINANCE("' + gfTicker + '","price")');
+      sheet.getRange(rowNum, 4).setFormula('=GOOGLEFINANCE("' + gfTicker + '","changepct")');
+      sheet.getRange(rowNum, 7).setFormula('=IFERROR(ABS(D' + rowNum + ')*8/100,"待更新")');
+    }
+
+    // G列显示为百分比
+    sheet.getRange(2, 7, rows.length, 1).setNumberFormat('0.00%');
+
+    // Q-R 长文本自动换行
+    sheet.getRange(2, 17, rows.length, 2).setWrap(true);
+  }
+
+  // 表头格式
+  sheet.getRange(1, 1, 1, headers.length)
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center');
+
+  SpreadsheetApp.flush();
+}
+
+function updateStockFundamentalsForStockAnalysis_(params) {
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = spreadsheet.getSheetByName('11 Stock Analysis');
+
+  if (!sheet) {
+    throw new Error('11 Stock Analysis sheet not found.');
+  }
+
+  const apiKey = getAlphaVantageApiKey_();
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow < 2) {
+    return {
+      updated: 0,
+      skipped: 0,
+      errors: [],
+      message: 'No stock rows found.',
+    };
+  }
+
+  const maxParam = params && params.max ? Number(params.max) : 5;
+  const maxToUpdate = Math.max(1, Math.min(maxParam, 10));
+
+  const values = sheet.getRange(2, 1, lastRow - 1, 36).getValues();
+  const errors = [];
+  let updated = 0;
+  let skipped = 0;
+
+  for (let i = 0; i < values.length; i++) {
+    if (updated >= maxToUpdate) break;
+
+    const row = values[i];
+    const rowNum = i + 2;
+    const ticker = String(row[0] || '').trim();
+
+    if (!ticker) {
+      skipped++;
+      continue;
+    }
+
+    // 跳过未上市或无法从 Alpha Vantage 抓基本面的观察项
+    if (isPrivateOrPlaceholderTicker_(ticker)) {
+      sheet.getRange(rowNum, 20, 1, 17).setValues([[
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        new Date().toISOString(),
+        '未上市或非标准公开股票，暂不抓取基本面数据。',
+        '作为主题观察项保留，不能按普通上市公司财务指标直接比较。',
+        'Manual / Watch only'
+      ]]);
+      updated++;
+      continue;
+    }
+
+    // 如果已经有“基本面数据来源”，默认先跳过，避免浪费 API 次数
+    const existingSource = String(row[35] || '').trim();
+    const force = params && String(params.force || '').toLowerCase() === 'true';
+
+    if (existingSource && !force) {
+      skipped++;
+      continue;
+    }
+
+    try {
+      const avSymbol = normalizeTickerForAlphaVantage_(ticker);
+      const overview = fetchAlphaVantageOverview_(avSymbol, apiKey);
+
+      if (!overview || !overview.Symbol) {
+        errors.push({
+          row: rowNum,
+          ticker,
+          error: 'No overview data returned from Alpha Vantage.',
+        });
+        skipped++;
+        continue;
+      }
+
+      const financialRow = buildFundamentalRow_(overview);
+      sheet.getRange(rowNum, 20, 1, 17).setValues([financialRow]);
+
+      updated++;
+
+      // 避免触发 Alpha Vantage 频率限制。免费 API 通常不适合一次抓太多。
+      Utilities.sleep(13000);
+
+    } catch (err) {
+      errors.push({
+        row: rowNum,
+        ticker,
+        error: String(err && err.message ? err.message : err),
+      });
+      skipped++;
+    }
+  }
+
+  // 设置百分比格式：X 股息率、Y 净利率、Z 营业利润率、AA ROE、AC 营收增长
+  if (lastRow > 1) {
+    sheet.getRange(2, 24, lastRow - 1, 1).setNumberFormat('0.00%'); // X
+    sheet.getRange(2, 25, lastRow - 1, 1).setNumberFormat('0.00%'); // Y
+    sheet.getRange(2, 26, lastRow - 1, 1).setNumberFormat('0.00%'); // Z
+    sheet.getRange(2, 27, lastRow - 1, 1).setNumberFormat('0.00%'); // AA
+    sheet.getRange(2, 29, lastRow - 1, 1).setNumberFormat('0.00%'); // AC
+
+    // AH-AJ 长文本换行
+    sheet.getRange(2, 34, lastRow - 1, 3).setWrap(true);
+  }
+
+  SpreadsheetApp.flush();
+
+  return {
+    updated,
+    skipped,
+    errors,
+    message: 'Fundamentals update completed. Use max parameter to control API usage.',
+  };
+}
+
+
+function getAlphaVantageApiKey_() {
+  const props = PropertiesService.getScriptProperties();
+
+  const possibleNames = [
+    'ALPHA_VANTAGE_API_KEY',
+    'ALPHAVANTAGE_API_KEY',
+    'ALPHA_VANTAGE_KEY',
+    'ALPHAVANTAGE_KEY'
+  ];
+
+  for (let i = 0; i < possibleNames.length; i++) {
+    const value = props.getProperty(possibleNames[i]);
+    if (value) return value;
+  }
+
+  throw new Error('Alpha Vantage API key not found in Script Properties.');
+}
+
+
+function normalizeTickerForAlphaVantage_(ticker) {
+  const t = String(ticker || '').trim();
+
+  // Alpha Vantage 对加拿大 ticker 支持不如美股稳定。
+  // 这里先尝试去掉 .TO，让脚本不报错；如果无数据，会在结果里记录 skipped/error。
+  if (t.endsWith('.TO')) {
+    return t.replace('.TO', '');
+  }
+
+  // BRK.B 在不同数据源可能是 BRK.B 或 BRK-B，这里先保留原样。
+  return t;
+}
+
+
+function isPrivateOrPlaceholderTicker_(ticker) {
+  const t = String(ticker || '').toUpperCase().trim();
+
+  return [
+    'OPENAI',
+    'ANTHROPIC',
+    'CURSOR',
+    'ANYSphere'.toUpperCase()
+  ].includes(t);
+}
+
+
+function fetchAlphaVantageOverview_(symbol, apiKey) {
+  const url =
+    'https://www.alphavantage.co/query'
+    + '?function=OVERVIEW'
+    + '&symbol=' + encodeURIComponent(symbol)
+    + '&apikey=' + encodeURIComponent(apiKey);
+
+  const response = UrlFetchApp.fetch(url, {
+    method: 'get',
+    muteHttpExceptions: true,
+  });
+
+  const status = response.getResponseCode();
+  const text = response.getContentText();
+
+  if (status < 200 || status >= 300) {
+    throw new Error('Alpha Vantage HTTP error ' + status + ': ' + text.slice(0, 200));
+  }
+
+  const data = JSON.parse(text);
+
+  if (data.Note) {
+    throw new Error('Alpha Vantage rate limit / note: ' + data.Note);
+  }
+
+  if (data.Information) {
+    throw new Error('Alpha Vantage information: ' + data.Information);
+  }
+
+  if (data['Error Message']) {
+    throw new Error('Alpha Vantage error: ' + data['Error Message']);
+  }
+
+  return data;
+}
+
+
+function buildFundamentalRow_(overview) {
+  const marketCap = cleanNumberText_(overview.MarketCapitalization);
+  const pe = cleanNumberText_(overview.PERatio);
+  const forwardPe = cleanNumberText_(overview.ForwardPE);
+  const ps = cleanNumberText_(overview.PriceToSalesRatioTTM);
+  const dividendYield = cleanPercentDecimal_(overview.DividendYield);
+  const profitMargin = cleanPercentDecimal_(overview.ProfitMargin);
+  const operatingMargin = cleanPercentDecimal_(overview.OperatingMarginTTM);
+  const roe = cleanPercentDecimal_(overview.ReturnOnEquityTTM);
+  const revenueTtm = cleanNumberText_(overview.RevenueTTM);
+  const revenueGrowth = cleanPercentDecimal_(overview.QuarterlyRevenueGrowthYOY);
+  const eps = cleanNumberText_(overview.EPS);
+  const weekHigh = cleanNumberText_(overview['52WeekHigh']);
+  const weekLow = cleanNumberText_(overview['52WeekLow']);
+
+  const summary = buildEarningsSummary_(overview);
+  const aiComment = buildSimpleFinancialComment_(overview);
+
+  return [
+    marketCap,
+    pe,
+    forwardPe,
+    ps,
+    dividendYield,
+    profitMargin,
+    operatingMargin,
+    roe,
+    revenueTtm,
+    revenueGrowth,
+    eps,
+    weekHigh,
+    weekLow,
+    new Date().toISOString(),
+    summary,
+    aiComment,
+    'Alpha Vantage OVERVIEW'
+  ];
+}
+
+
+function cleanNumberText_(value) {
+  if (value === null || value === undefined) return 'N/A';
+
+  const text = String(value).trim();
+
+  if (!text || text === 'None' || text === 'null' || text === '-' || text === 'NaN') {
+    return 'N/A';
+  }
+
+  return text;
+}
+
+
+function cleanPercentDecimal_(value) {
+  if (value === null || value === undefined) return 'N/A';
+
+  const text = String(value).trim();
+
+  if (!text || text === 'None' || text === 'null' || text === '-' || text === 'NaN') {
+    return 'N/A';
+  }
+
+  const num = Number(text);
+
+  if (isNaN(num)) return text;
+
+  // Alpha Vantage 的 DividendYield / ProfitMargin 通常已经是小数形式，比如 0.025。
+  return num;
+}
+
+
+function buildEarningsSummary_(overview) {
+  const name = overview.Name || overview.Symbol || '该公司';
+  const sector = overview.Sector || '未知行业';
+  const industry = overview.Industry || '未知细分行业';
+  const marketCap = cleanNumberText_(overview.MarketCapitalization);
+  const revenue = cleanNumberText_(overview.RevenueTTM);
+  const profitMargin = cleanNumberText_(overview.ProfitMargin);
+  const pe = cleanNumberText_(overview.PERatio);
+
+  return name
+    + ' 所属行业：' + sector
+    + ' / ' + industry
+    + '。市值：' + marketCap
+    + '，过去12月营收：' + revenue
+    + '，净利率：' + profitMargin
+    + '，P/E：' + pe
+    + '。';
+}
+
+
+function saveStockAnalysisToSheet_(spreadsheet, results) {
+  let sheet = spreadsheet.getSheetByName('11 Stock Analysis');
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet('11 Stock Analysis');
+  }
+
+  const headers = [
+    'Ticker',
+    '名称',
+    '当前价格',
+    '日变动%',
+    'Forward P/E',
+    'Beta',
+    '简化波动参考%',
+    '价值评分',
+    '风险评分',
+    '综合评分',
+    '行业',
+    '更新时间',
+    '备注text',
+    '中文名称',
+    '英文名称',
+    '类型',
+    '一句话说明',
+    '适合关注点',
+    '主题分类',
+    '市值 Market Cap',
+    'P/E 市盈率',
+    'Forward P/E 预期市盈率',
+    'P/S 市销率',
+    '股息率 Dividend Yield',
+    'Profit Margin 净利率',
+    'Operating Margin 营业利润率',
+    'ROE 净资产收益率',
+    'Revenue TTM 过去12月营收',
+    'Revenue Growth 营收增长',
+    'EPS 每股收益',
+    '52周高点',
+    '52周低点',
+    '财务数据更新时间',
+    '财报摘要',
+    'AI财务简评',
+    '基本面数据来源'
+  ];
+
+  const infoMap = getStockAnalysisInfoMap_();
+  const fixedTickers = Object.keys(infoMap);
+
+  // Preserve existing fundamentals T:AJ by ticker before rewriting A:S.
+  const lastRowBefore = sheet.getLastRow();
+  const existingFundamentalsByTicker = {};
+  if (lastRowBefore > 1) {
+    const existingValues = sheet.getRange(2, 1, lastRowBefore - 1, 36).getValues();
+    existingValues.forEach((row) => {
+      const ticker = String(row[0] || '').trim();
+      if (ticker) {
+        existingFundamentalsByTicker[ticker] = row.slice(19, 36);
+      }
+    });
+  }
+
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+  // Clear visible stock rows A:AJ, then rebuild from the single source stock pool below.
+  if (sheet.getLastRow() > 1) {
+    sheet.getRange(2, 1, sheet.getLastRow() - 1, headers.length).clearContent();
+  }
+
+  const resultMap = {};
+  (results || []).forEach((r) => {
+    const ticker = String(r.Ticker || r.ticker || '').trim();
+    if (ticker) resultMap[ticker] = r;
+  });
+
+  const rows = fixedTickers.map((ticker) => {
+    const r = resultMap[ticker] || {};
+    const info = infoMap[ticker];
+
+    const baseRow = [
+      ticker,
+      r.名称 || r.Name || ticker,
+      '',
+      '',
+      r.ForwardPE || r.ForwardPe || 'N/A',
+      r.Beta || 'N/A',
+      '',
+      r.价值评分 || '6',
+      r.风险评分 || '6',
+      r.综合评分 || '6',
+      r.行业 || info.industry || info.type || '其他',
+      r.更新时间 || new Date().toISOString(),
+      r.备注 || '供参考，仅家庭内部使用',
+      info.zh,
+      info.en,
+      info.type,
+      info.desc,
+      info.focus,
+      info.theme
+    ];
+
+    const preservedFundamentals = existingFundamentalsByTicker[ticker] || new Array(17).fill('');
+    return baseRow.concat(preservedFundamentals);
+  });
+
+  if (rows.length > 0) {
+    sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
+
+    // GOOGLEFINANCE formulas: C price, D daily change %, G simplified volatility reference.
+    for (let i = 0; i < rows.length; i++) {
+      const rowNum = i + 2;
+      const originalTicker = rows[i][0];
+
+      if (isPrivateOrPlaceholderTicker_(originalTicker)) {
+        sheet.getRange(rowNum, 3).setValue('N/A');
+        sheet.getRange(rowNum, 4).setValue('N/A');
+        sheet.getRange(rowNum, 7).setValue('N/A');
+        continue;
+      }
+
+      let gfTicker = originalTicker;
+
+      if (originalTicker.endsWith('.TO')) {
+        gfTicker = 'TSE:' + originalTicker.replace('.TO', '');
+      }
+
+      sheet.getRange(rowNum, 3).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","price"),"N/A")');
+      sheet.getRange(rowNum, 4).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","changepct"),"N/A")');
+      sheet.getRange(rowNum, 7).setFormula('=IFERROR(ABS(D' + rowNum + ')*8/100,"待更新")');
+    }
+
+    sheet.getRange(2, 7, rows.length, 1).setNumberFormat('0.00%');
+    sheet.getRange(2, 17, rows.length, 2).setWrap(true);
+    sheet.getRange(2, 34, rows.length, 3).setWrap(true);
+  }
+
+  sheet.getRange(1, 1, 1, headers.length)
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center');
+
+  SpreadsheetApp.flush();
+}
+
+
+function getStockAnalysisInfoMap_() {
+  return {
+    // Existing core watchlist
+    'NVDA': {
+      zh: '英伟达',
+      en: 'NVIDIA',
+      type: 'AI芯片/半导体',
+      industry: '科技/AI',
+      desc: 'AI GPU 和数据中心芯片龙头，是人工智能基础设施的重要公司。',
+      focus: 'AI 算力需求、数据中心增长、估值是否过热、芯片周期。',
+      theme: 'AI / 算力 / 半导体'
+    },
+    'TSLA': {
+      zh: '特斯拉',
+      en: 'Tesla',
+      type: '电动车/科技',
+      industry: 'EV/科技',
+      desc: '电动车、储能和自动驾驶概念公司，股价波动通常较大。',
+      focus: '交付量、毛利率、自动驾驶进展、市场情绪。',
+      theme: 'AI / 电动车'
+    },
+    'GOOGL': {
+      zh: '谷歌母公司',
+      en: 'Alphabet',
+      type: '互联网/AI/广告',
+      industry: '科技/AI',
+      desc: 'Google 搜索、YouTube、广告、云服务和 AI 业务的母公司。',
+      focus: '广告收入、AI竞争、云业务增长、监管风险。',
+      theme: 'AI / 云 / 平台'
+    },
+    'MSFT': {
+      zh: '微软',
+      en: 'Microsoft',
+      type: '软件/云/AI',
+      industry: '科技/AI',
+      desc: 'Windows、Office、Azure 云和 AI 生态的全球科技巨头。',
+      focus: 'Azure增长、AI商业化、企业软件需求、估值水平。',
+      theme: 'AI / 云 / 软件'
+    },
+    'AMZN': {
+      zh: '亚马逊',
+      en: 'Amazon',
+      type: '电商/云计算',
+      industry: '云计算/电商',
+      desc: '电商、物流、AWS 云计算和数字服务平台公司。',
+      focus: 'AWS利润、电商利润率、消费需求、AI云竞争。',
+      theme: 'AI / 云计算 / 电商'
+    },
+    'HSAI': {
+      zh: '禾赛科技',
+      en: 'Hesai Group',
+      type: '自动驾驶传感器',
+      industry: 'Auto Tech',
+      desc: '激光雷达 LiDAR 公司，服务自动驾驶和智能汽车市场。',
+      focus: '车企订单、自动驾驶发展、亏损风险、中概股波动。',
+      theme: 'AI / 自动驾驶'
+    },
+    'BABA': {
+      zh: '阿里巴巴',
+      en: 'Alibaba',
+      type: '中国科技/电商/云',
+      industry: '中国科技',
+      desc: '中国大型电商、云计算和数字平台公司。',
+      focus: '中国消费、云业务、监管环境、地缘政治风险。',
+      theme: '中国科技 / 云 / 电商'
+    },
+    'CVE.TO': {
+      zh: '森科能源',
+      en: 'Cenovus Energy',
+      type: '加拿大能源',
+      industry: '能源',
+      desc: '加拿大油砂、炼油和综合能源公司。',
+      focus: '油价、现金流、分红回购、能源周期。',
+      theme: '能源'
+    },
+    'SU.TO': {
+      zh: '森科尔能源',
+      en: 'Suncor Energy',
+      type: '加拿大能源',
+      industry: '能源',
+      desc: '加拿大大型油砂和综合能源公司。',
+      focus: '油价、运营成本、分红、能源政策。',
+      theme: '能源'
+    },
+    'XOM': {
+      zh: '埃克森美孚',
+      en: 'Exxon Mobil',
+      type: '能源/石油天然气',
+      industry: '能源',
+      desc: '全球大型石油天然气和综合能源公司。',
+      focus: '油价周期、现金流、资本开支、能源转型风险。',
+      theme: '能源'
+    },
+    'CVX': {
+      zh: '雪佛龙',
+      en: 'Chevron',
+      type: '能源/石油天然气',
+      industry: '能源',
+      desc: '美国大型综合能源公司，业务覆盖上游和下游。',
+      focus: '油价、分红稳定性、项目执行、能源政策。',
+      theme: '能源'
+    },
+    'REI': {
+      zh: 'Ring Energy',
+      en: 'Ring Energy',
+      type: '小型能源股',
+      industry: '能源',
+      desc: '美国小型油气勘探与生产公司，波动和风险通常较高。',
+      focus: '油价敏感度、债务、产量、流动性风险。',
+      theme: '能源 / 高波动'
+    },
+    'RY.TO': {
+      zh: '加拿大皇家银行',
+      en: 'Royal Bank of Canada',
+      type: '加拿大银行',
+      industry: '加拿大银行',
+      desc: '加拿大大型银行，业务包括个人银行、财富管理和资本市场。',
+      focus: '利率环境、贷款质量、分红、加拿大经济。',
+      theme: '银行 / 金融'
+    },
+    'TD.TO': {
+      zh: '道明银行',
+      en: 'Toronto-Dominion Bank',
+      type: '加拿大银行',
+      industry: '加拿大银行',
+      desc: '加拿大大型银行，北美零售银行业务占比较高。',
+      focus: '利率、美国业务、信用风险、监管问题。',
+      theme: '银行 / 金融'
+    },
+    'SHOP.TO': {
+      zh: 'Shopify',
+      en: 'Shopify',
+      type: '加拿大科技/电商软件',
+      industry: '加拿大科技',
+      desc: '加拿大电商建站、支付和商家服务软件平台。',
+      focus: '商家增长、支付业务、盈利能力、科技股估值。',
+      theme: '加拿大科技 / 电商软件'
+    },
+    'ENB.TO': {
+      zh: '恩桥',
+      en: 'Enbridge',
+      type: '能源管道/股息',
+      industry: '能源',
+      desc: '加拿大能源管道和基础设施公司，常被关注为股息型资产。',
+      focus: '现金流、债务、利率、分红可持续性。',
+      theme: '能源 / 管道 / 股息'
+    },
+    'XIC.TO': {
+      zh: '加拿大综合市场ETF',
+      en: 'iShares Core S&P/TSX Capped Composite ETF',
+      type: 'ETF/加拿大大盘',
+      industry: 'ETF',
+      desc: '跟踪加拿大整体股市的一篮子 ETF。',
+      focus: '加拿大大盘配置、行业集中度、长期分散投资。',
+      theme: 'ETF / 加拿大大盘'
+    },
+    'XIU.TO': {
+      zh: '加拿大TSX 60 ETF',
+      en: 'iShares S&P/TSX 60 ETF',
+      type: 'ETF/加拿大蓝筹',
+      industry: 'ETF',
+      desc: '跟踪加拿大 60 家大型蓝筹公司的 ETF。',
+      focus: '加拿大蓝筹暴露、银行能源权重、分红稳定性。',
+      theme: 'ETF / 加拿大蓝筹'
+    },
+    'AAPL': {
+      zh: '苹果',
+      en: 'Apple',
+      type: '消费电子/服务',
+      industry: '消费科技',
+      desc: 'iPhone、Mac、可穿戴设备和服务生态的全球科技公司。',
+      focus: 'iPhone周期、服务收入、AI设备生态、估值。',
+      theme: '消费科技 / AI设备'
+    },
+    'V': {
+      zh: 'Visa',
+      en: 'Visa',
+      type: '支付网络',
+      industry: '金融科技',
+      desc: '全球银行卡支付网络公司，不直接发放贷款，主要赚交易网络费用。',
+      focus: '消费支付量、跨境交易、监管费率、金融科技竞争。',
+      theme: '支付网络 / 金融科技'
+    },
+    'MA': {
+      zh: '万事达',
+      en: 'Mastercard',
+      type: '支付网络',
+      industry: '金融科技',
+      desc: '全球支付网络公司，连接银行、商户和消费者。',
+      focus: '消费趋势、跨境支付、费率监管、数字支付增长。',
+      theme: '支付网络 / 金融科技'
+    },
+    'LLY': {
+      zh: '礼来',
+      en: 'Eli Lilly',
+      type: '医药/制药',
+      industry: '医药',
+      desc: '美国大型制药公司，糖尿病、减重药和创新药是重要增长点。',
+      focus: '药品销售、研发管线、医保定价、估值是否过高。',
+      theme: '医药 / 制药'
+    },
+    'JPM': {
+      zh: '摩根大通',
+      en: 'JPMorgan Chase',
+      type: '美国银行/金融',
+      industry: '银行/金融',
+      desc: '美国大型综合银行，业务包括商业银行、投资银行、信用卡和资产管理。',
+      focus: '利率、信贷周期、资本市场收入、监管要求。',
+      theme: '银行 / 金融'
+    },
+
+    // AI / compute / semiconductor expansion
+    'AMD': {
+      zh: '超威半导体',
+      en: 'AMD',
+      type: 'AI芯片/半导体',
+      industry: '科技/AI',
+      desc: 'CPU、GPU 和 AI 加速芯片公司，是英伟达之外的重要 AI 算力竞争者。',
+      focus: 'AI GPU 份额、数据中心收入、毛利率、与 NVIDIA 的竞争。',
+      theme: 'AI / 算力 / 半导体'
+    },
+    'AVGO': {
+      zh: '博通',
+      en: 'Broadcom',
+      type: 'AI网络芯片/半导体',
+      industry: '科技/AI',
+      desc: '半导体和基础设施软件公司，受益于 AI 数据中心网络和定制芯片需求。',
+      focus: 'AI网络芯片、定制ASIC、VMware整合、现金流和估值。',
+      theme: 'AI / 算力 / 半导体'
+    },
+    'TSM': {
+      zh: '台积电',
+      en: 'Taiwan Semiconductor',
+      type: '晶圆代工/半导体',
+      industry: '科技/AI',
+      desc: '全球领先晶圆代工厂，是 AI 芯片产业链的核心制造环节。',
+      focus: '先进制程、AI芯片订单、地缘政治、资本开支。',
+      theme: 'AI / 算力 / 半导体'
+    },
+    'META': {
+      zh: 'Meta',
+      en: 'Meta Platforms',
+      type: '社交平台/AI',
+      industry: '科技/AI',
+      desc: 'Facebook、Instagram 和 WhatsApp 母公司，同时大规模投入 AI 模型和基础设施。',
+      focus: '广告收入、AI推荐效率、Reality Labs亏损、资本开支。',
+      theme: 'AI / 平台 / 广告'
+    },
+    'ORCL': {
+      zh: '甲骨文',
+      en: 'Oracle',
+      type: '企业软件/云/AI',
+      industry: '科技/AI',
+      desc: '企业数据库和云基础设施公司，AI云算力需求推动市场关注。',
+      focus: '云基础设施增长、AI训练客户、债务、利润率。',
+      theme: 'AI / 云 / 软件'
+    },
+    'CRM': {
+      zh: '赛富时',
+      en: 'Salesforce',
+      type: '企业软件/AI',
+      industry: '科技/AI',
+      desc: '企业客户关系管理软件龙头，正在把 AI 嵌入企业软件流程。',
+      focus: '企业软件需求、AI商业化、利润率、订阅增长。',
+      theme: 'AI / 云 / 软件'
+    },
+    'PLTR': {
+      zh: 'Palantir',
+      en: 'Palantir',
+      type: '数据分析/AI软件',
+      industry: '科技/AI',
+      desc: '数据分析和 AI 软件公司，政府及企业客户需求是核心观察点。',
+      focus: 'AIP平台增长、政府合同、商业客户扩张、估值波动。',
+      theme: 'AI / 数据 / 软件'
+    },
+    'ARM': {
+      zh: '安谋',
+      en: 'Arm Holdings',
+      type: '芯片架构/IP',
+      industry: '科技/AI',
+      desc: '芯片架构授权公司，移动、服务器和 AI 边缘计算都与其生态相关。',
+      focus: '授权收入、AI边缘设备、服务器渗透率、估值。',
+      theme: 'AI / 算力 / 半导体'
+    },
+    'ASML': {
+      zh: '阿斯麦',
+      en: 'ASML',
+      type: '半导体设备',
+      industry: '科技/AI',
+      desc: '先进光刻机龙头，是全球先进芯片制造供应链的关键公司。',
+      focus: 'EUV订单、先进制程扩产、出口限制、半导体周期。',
+      theme: 'AI / 半导体设备'
+    },
+    'SMCI': {
+      zh: '超微电脑',
+      en: 'Super Micro Computer',
+      type: 'AI服务器',
+      industry: '科技/AI',
+      desc: 'AI服务器和数据中心硬件公司，受 AI 基础设施建设周期影响很大。',
+      focus: 'AI服务器订单、毛利率、供应链、财务透明度。',
+      theme: 'AI / 服务器 / 数据中心'
+    },
+    'MU': {
+      zh: '美光科技',
+      en: 'Micron Technology',
+      type: '存储芯片',
+      industry: '科技/AI',
+      desc: '存储芯片公司，HBM 和数据中心存储需求与 AI 算力周期相关。',
+      focus: 'HBM需求、DRAM价格、周期复苏、资本开支。',
+      theme: 'AI / 存储 / 半导体'
+    },
+    'ANET': {
+      zh: 'Arista Networks',
+      en: 'Arista Networks',
+      type: '数据中心网络设备',
+      industry: '科技/AI',
+      desc: '数据中心网络设备公司，AI集群网络建设是重要需求来源。',
+      focus: '云厂商资本开支、AI网络升级、竞争格局、利润率。',
+      theme: 'AI / 网络 / 数据中心'
+    },
+    'VRT': {
+      zh: 'Vertiv',
+      en: 'Vertiv',
+      type: '数据中心电力与散热',
+      industry: 'AI数据中心',
+      desc: '数据中心电力、散热和基础设施公司，受益于 AI 数据中心建设。',
+      focus: '数据中心建设、电力与冷却需求、订单增长、估值。',
+      theme: 'AI / 数据中心 / 电力'
+    },
+    'DELL': {
+      zh: '戴尔',
+      en: 'Dell Technologies',
+      type: 'AI服务器/企业硬件',
+      industry: '科技/AI',
+      desc: '企业硬件和服务器公司，AI服务器需求提升其市场关注度。',
+      focus: 'AI服务器订单、利润率、PC周期、企业需求。',
+      theme: 'AI / 服务器 / 硬件'
+    },
+
+    // Energy / electricity / AI data center power
+    'CNQ.TO': {
+      zh: '加拿大自然资源',
+      en: 'Canadian Natural Resources',
+      type: '加拿大能源',
+      industry: '能源',
+      desc: '加拿大大型油气生产商，油价和现金流是核心变量。',
+      focus: '油价、产量、自由现金流、分红回购。',
+      theme: '能源'
+    },
+    'TRP.TO': {
+      zh: 'TC Energy',
+      en: 'TC Energy',
+      type: '能源管道',
+      industry: '能源',
+      desc: '北美能源基础设施和管道公司，偏防御和现金流型观察。',
+      focus: '管道资产、债务、利率、分红可持续性。',
+      theme: '能源 / 管道 / 股息'
+    },
+    'PPL.TO': {
+      zh: 'Pembina Pipeline',
+      en: 'Pembina Pipeline',
+      type: '能源管道',
+      industry: '能源',
+      desc: '加拿大能源管道和中游基础设施公司。',
+      focus: '现金流、分红、能源运输需求、利率。',
+      theme: '能源 / 管道 / 股息'
+    },
+    'CEG': {
+      zh: 'Constellation Energy',
+      en: 'Constellation Energy',
+      type: '核电/电力',
+      industry: '电力',
+      desc: '美国核电和清洁电力公司，AI数据中心用电需求提升市场关注。',
+      focus: '电价、核电资产、数据中心供电合同、政策。',
+      theme: 'AI / 电力 / 核能'
+    },
+    'NEE': {
+      zh: '新纪元能源',
+      en: 'NextEra Energy',
+      type: '公用事业/清洁能源',
+      industry: '电力',
+      desc: '美国大型公用事业和清洁能源公司。',
+      focus: '利率、可再生能源项目、用电增长、分红。',
+      theme: '电力 / 公用事业'
+    },
+
+    // Minerals / raw materials
+    'CCJ.TO': {
+      zh: 'Cameco',
+      en: 'Cameco',
+      type: '铀矿/核能原料',
+      industry: '矿产',
+      desc: '加拿大铀矿公司，与核能和电力需求主题相关。',
+      focus: '铀价、核电需求、矿山供应、GoogleFinance代码稳定性。',
+      theme: '矿产 / 核能'
+    },
+    'TECK.B.TO': {
+      zh: '泰克资源',
+      en: 'Teck Resources',
+      type: '矿业/铜/原材料',
+      industry: '矿产',
+      desc: '加拿大大型矿业公司，铜和基础金属业务受全球周期影响。',
+      focus: '铜价、煤炭业务变化、资本开支、中国需求。',
+      theme: '矿产 / 原材料'
+    },
+    'FCX': {
+      zh: '自由港麦克莫兰',
+      en: 'Freeport-McMoRan',
+      type: '铜矿/黄金',
+      industry: '矿产',
+      desc: '大型铜矿公司，受电气化、AI电力建设和全球工业周期影响。',
+      focus: '铜价、矿山产量、成本、全球需求。',
+      theme: '矿产 / 铜'
+    },
+    'NEM': {
+      zh: '纽蒙特',
+      en: 'Newmont',
+      type: '黄金矿业',
+      industry: '矿产',
+      desc: '全球大型黄金矿业公司，常被用于观察黄金和避险资产周期。',
+      focus: '金价、矿山成本、现金流、并购整合。',
+      theme: '矿产 / 黄金'
+    },
+
+    // Canadian banks / finance
+    'BNS.TO': {
+      zh: '丰业银行',
+      en: 'Bank of Nova Scotia',
+      type: '加拿大银行',
+      industry: '加拿大银行',
+      desc: '加拿大大型银行，国际业务占比较高。',
+      focus: '加拿大贷款质量、国际业务风险、利率、分红。',
+      theme: '银行 / 金融'
+    },
+    'BMO.TO': {
+      zh: '蒙特利尔银行',
+      en: 'Bank of Montreal',
+      type: '加拿大银行',
+      industry: '加拿大银行',
+      desc: '加拿大大型银行，北美银行和财富管理业务是重要组成。',
+      focus: '贷款质量、美国业务、资本充足率、分红。',
+      theme: '银行 / 金融'
+    },
+    'CM.TO': {
+      zh: '加拿大帝国商业银行',
+      en: 'CIBC',
+      type: '加拿大银行',
+      industry: '加拿大银行',
+      desc: '加拿大大型银行，对加拿大房贷和消费信贷周期较敏感。',
+      focus: '房贷风险、加拿大经济、利率、分红稳定性。',
+      theme: '银行 / 金融'
+    },
+
+    // Healthcare / defensive / ETFs
+    'JNJ': {
+      zh: '强生',
+      en: 'Johnson & Johnson',
+      type: '医药/防御',
+      industry: '医药',
+      desc: '大型医疗健康公司，业务覆盖制药和医疗科技，防御属性较强。',
+      focus: '药品管线、诉讼风险、分红、稳定现金流。',
+      theme: '医药 / 防御'
+    },
+    'UNH': {
+      zh: '联合健康',
+      en: 'UnitedHealth Group',
+      type: '医疗保险/健康服务',
+      industry: '医药',
+      desc: '美国大型医疗保险和健康服务公司。',
+      focus: '医保政策、成本率、监管风险、盈利稳定性。',
+      theme: '医药 / 防御'
+    },
+    'MRK': {
+      zh: '默沙东',
+      en: 'Merck',
+      type: '医药/制药',
+      industry: '医药',
+      desc: '美国大型制药公司，肿瘤药和疫苗业务是重要观察点。',
+      focus: '核心药品专利、研发管线、销售增长、估值。',
+      theme: '医药 / 制药'
+    },
+    'VFV.TO': {
+      zh: 'Vanguard 标普500 ETF',
+      en: 'Vanguard S&P 500 Index ETF',
+      type: 'ETF/美股大盘',
+      industry: 'ETF',
+      desc: '加拿大上市的标普500 ETF，用于观察美国大盘长期配置。',
+      focus: '美股大盘估值、汇率、长期分散配置。',
+      theme: 'ETF / 美股大盘'
+    },
+    'XQQ.TO': {
+      zh: 'iShares 纳斯达克100 ETF',
+      en: 'iShares NASDAQ 100 ETF',
+      type: 'ETF/科技成长',
+      industry: 'ETF',
+      desc: '加拿大上市的纳斯达克100 ETF，科技成长股权重较高。',
+      focus: '大型科技股估值、AI主题集中度、汇率。',
+      theme: 'ETF / 科技成长'
+    },
+    'SMH': {
+      zh: 'VanEck 半导体ETF',
+      en: 'VanEck Semiconductor ETF',
+      type: 'ETF/半导体',
+      industry: 'ETF',
+      desc: '半导体主题 ETF，用于观察 AI 芯片产业链整体表现。',
+      focus: '半导体周期、AI芯片估值、行业集中度。',
+      theme: 'ETF / 半导体'
+    },
+    'QQQ': {
+      zh: '纳斯达克100 ETF',
+      en: 'Invesco QQQ Trust',
+      type: 'ETF/科技成长',
+      industry: 'ETF',
+      desc: '跟踪纳斯达克100指数的美国上市 ETF，科技股权重较高。',
+      focus: '大型科技股估值、利率、AI主题集中度。',
+      theme: 'ETF / 科技成长'
+    },
+
+    // Public / listed Space + AI infrastructure
+    'SPCX': {
+      zh: 'SpaceX',
+      en: 'SpaceX',
+      type: '航天/卫星互联网/AI基础设施',
+      industry: '航天/AI/通信',
+      desc: '航天、卫星互联网和发射服务公司，Starlink 是其重要增长业务。',
+      focus: 'Starlink增长、发射业务、现金流、估值、AI数据通信基础设施。',
+      theme: 'AI / 航天 / 卫星互联网'
+    },
+    'OPENAI': {
+      zh: 'OpenAI',
+      en: 'OpenAI',
+      type: '未上市/AI模型公司',
+      industry: '未上市观察',
+      desc: 'AI大模型和应用公司，暂未公开上市。',
+      focus: '模型能力、商业化、算力成本、合作伙伴。',
+      theme: '未上市 / IPO观察'
+    },
+    'ANTHROPIC': {
+      zh: 'Anthropic',
+      en: 'Anthropic',
+      type: '未上市/AI模型公司',
+      industry: '未上市观察',
+      desc: 'Claude 背后的 AI 大模型公司，暂未公开上市。',
+      focus: '模型能力、企业客户、融资估值、算力合作。',
+      theme: '未上市 / IPO观察'
+    },
+    'CURSOR': {
+      zh: 'Cursor / Anysphere',
+      en: 'Cursor / Anysphere',
+      type: '未上市/AI编程工具',
+      industry: '未上市观察',
+      desc: 'AI 编程工具公司，暂未公开上市。',
+      focus: '开发者采用率、订阅增长、AI编程竞争、未来融资或IPO。',
+      theme: '未上市 / IPO观察'
+    }
+  };
+}
+
+function updateStockFundamentalsForStockAnalysis_(params) {
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = spreadsheet.getSheetByName('11 Stock Analysis');
+
+  if (!sheet) {
+    throw new Error('11 Stock Analysis sheet not found.');
+  }
+
+  const apiKey = getAlphaVantageApiKey_();
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow < 2) {
+    return {
+      updated: 0,
+      skipped: 0,
+      errors: [],
+      message: 'No stock rows found.',
+    };
+  }
+
+  const maxParam = params && params.max ? Number(params.max) : 5;
+  const maxToUpdate = Math.max(1, Math.min(maxParam, 10));
+
+  const values = sheet.getRange(2, 1, lastRow - 1, 36).getValues();
+  const errors = [];
+  let updated = 0;
+  let skipped = 0;
+
+  for (let i = 0; i < values.length; i++) {
+    if (updated >= maxToUpdate) break;
+
+    const row = values[i];
+    const rowNum = i + 2;
+    const ticker = String(row[0] || '').trim();
+
+    if (!ticker) {
+      skipped++;
+      continue;
+    }
+
+    // 跳过未上市或无法从 Alpha Vantage 抓基本面的观察项
+    if (isPrivateOrPlaceholderTicker_(ticker)) {
+      sheet.getRange(rowNum, 20, 1, 17).setValues([[
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        'N/A',
+        new Date().toISOString(),
+        '未上市或非标准公开股票，暂不抓取基本面数据。',
+        '作为主题观察项保留，不能按普通上市公司财务指标直接比较。',
+        'Manual / Watch only'
+      ]]);
+      updated++;
+      continue;
+    }
+
+    // 如果已经有“基本面数据来源”，默认先跳过，避免浪费 API 次数
+    const existingSource = String(row[35] || '').trim();
+    const force = params && String(params.force || '').toLowerCase() === 'true';
+
+    if (existingSource && !force) {
+      skipped++;
+      continue;
+    }
+
+    try {
+      const avSymbol = normalizeTickerForAlphaVantage_(ticker);
+      const overview = fetchAlphaVantageOverview_(avSymbol, apiKey);
+
+      if (!overview || !overview.Symbol) {
+        errors.push({
+          row: rowNum,
+          ticker,
+          error: 'No overview data returned from Alpha Vantage.',
+        });
+        skipped++;
+        continue;
+      }
+
+      const financialRow = buildFundamentalRow_(overview);
+      sheet.getRange(rowNum, 20, 1, 17).setValues([financialRow]);
+
+      updated++;
+
+      // 避免触发 Alpha Vantage 频率限制。免费 API 通常不适合一次抓太多。
+      Utilities.sleep(13000);
+
+    } catch (err) {
+      errors.push({
+        row: rowNum,
+        ticker,
+        error: String(err && err.message ? err.message : err),
+      });
+      skipped++;
+    }
+  }
+
+  // 设置百分比格式：X 股息率、Y 净利率、Z 营业利润率、AA ROE、AC 营收增长
+  if (lastRow > 1) {
+    sheet.getRange(2, 24, lastRow - 1, 1).setNumberFormat('0.00%'); // X
+    sheet.getRange(2, 25, lastRow - 1, 1).setNumberFormat('0.00%'); // Y
+    sheet.getRange(2, 26, lastRow - 1, 1).setNumberFormat('0.00%'); // Z
+    sheet.getRange(2, 27, lastRow - 1, 1).setNumberFormat('0.00%'); // AA
+    sheet.getRange(2, 29, lastRow - 1, 1).setNumberFormat('0.00%'); // AC
+
+    // AH-AJ 长文本换行
+    sheet.getRange(2, 34, lastRow - 1, 3).setWrap(true);
+  }
+
+  SpreadsheetApp.flush();
+
+  return {
+    updated,
+    skipped,
+    errors,
+    message: 'Fundamentals update completed. Use max parameter to control API usage.',
+  };
+}
+
+
+function getAlphaVantageApiKey_() {
+  const props = PropertiesService.getScriptProperties();
+
+  const possibleNames = [
+    'ALPHA_VANTAGE_API_KEY',
+    'ALPHAVANTAGE_API_KEY',
+    'ALPHA_VANTAGE_KEY',
+    'ALPHAVANTAGE_KEY'
+  ];
+
+  for (let i = 0; i < possibleNames.length; i++) {
+    const value = props.getProperty(possibleNames[i]);
+    if (value) return value;
+  }
+
+  throw new Error('Alpha Vantage API key not found in Script Properties.');
+}
+
+
+function normalizeTickerForAlphaVantage_(ticker) {
+  const t = String(ticker || '').trim();
+
+  // Alpha Vantage 对加拿大 ticker 支持不如美股稳定。
+  // 这里先尝试去掉 .TO，让脚本不报错；如果无数据，会在结果里记录 skipped/error。
+  if (t.endsWith('.TO')) {
+    return t.replace('.TO', '');
+  }
+
+  // BRK.B 在不同数据源可能是 BRK.B 或 BRK-B，这里先保留原样。
+  return t;
+}
+
+
+function isPrivateOrPlaceholderTicker_(ticker) {
+  const t = String(ticker || '').toUpperCase().trim();
+
+  return [
+    'OPENAI',
+    'ANTHROPIC',
+    'CURSOR',
+    'ANYSphere'.toUpperCase()
+  ].includes(t);
+}
+
+
+function fetchAlphaVantageOverview_(symbol, apiKey) {
+  const url =
+    'https://www.alphavantage.co/query'
+    + '?function=OVERVIEW'
+    + '&symbol=' + encodeURIComponent(symbol)
+    + '&apikey=' + encodeURIComponent(apiKey);
+
+  const response = UrlFetchApp.fetch(url, {
+    method: 'get',
+    muteHttpExceptions: true,
+  });
+
+  const status = response.getResponseCode();
+  const text = response.getContentText();
+
+  if (status < 200 || status >= 300) {
+    throw new Error('Alpha Vantage HTTP error ' + status + ': ' + text.slice(0, 200));
+  }
+
+  const data = JSON.parse(text);
+
+  if (data.Note) {
+    throw new Error('Alpha Vantage rate limit / note: ' + data.Note);
+  }
+
+  if (data.Information) {
+    throw new Error('Alpha Vantage information: ' + data.Information);
+  }
+
+  if (data['Error Message']) {
+    throw new Error('Alpha Vantage error: ' + data['Error Message']);
+  }
+
+  return data;
+}
+
+
+function buildFundamentalRow_(overview) {
+  const marketCap = cleanNumberText_(overview.MarketCapitalization);
+  const pe = cleanNumberText_(overview.PERatio);
+  const forwardPe = cleanNumberText_(overview.ForwardPE);
+  const ps = cleanNumberText_(overview.PriceToSalesRatioTTM);
+  const dividendYield = cleanPercentDecimal_(overview.DividendYield);
+  const profitMargin = cleanPercentDecimal_(overview.ProfitMargin);
+  const operatingMargin = cleanPercentDecimal_(overview.OperatingMarginTTM);
+  const roe = cleanPercentDecimal_(overview.ReturnOnEquityTTM);
+  const revenueTtm = cleanNumberText_(overview.RevenueTTM);
+  const revenueGrowth = cleanPercentDecimal_(overview.QuarterlyRevenueGrowthYOY);
+  const eps = cleanNumberText_(overview.EPS);
+  const weekHigh = cleanNumberText_(overview['52WeekHigh']);
+  const weekLow = cleanNumberText_(overview['52WeekLow']);
+
+  const summary = buildEarningsSummary_(overview);
+  const aiComment = buildSimpleFinancialComment_(overview);
+
+  return [
+    marketCap,
+    pe,
+    forwardPe,
+    ps,
+    dividendYield,
+    profitMargin,
+    operatingMargin,
+    roe,
+    revenueTtm,
+    revenueGrowth,
+    eps,
+    weekHigh,
+    weekLow,
+    new Date().toISOString(),
+    summary,
+    aiComment,
+    'Alpha Vantage OVERVIEW'
+  ];
+}
+
+
+function cleanNumberText_(value) {
+  if (value === null || value === undefined) return 'N/A';
+
+  const text = String(value).trim();
+
+  if (!text || text === 'None' || text === 'null' || text === '-' || text === 'NaN') {
+    return 'N/A';
+  }
+
+  return text;
+}
+
+
+function cleanPercentDecimal_(value) {
+  if (value === null || value === undefined) return 'N/A';
+
+  const text = String(value).trim();
+
+  if (!text || text === 'None' || text === 'null' || text === '-' || text === 'NaN') {
+    return 'N/A';
+  }
+
+  const num = Number(text);
+
+  if (isNaN(num)) return text;
+
+  // Alpha Vantage 的 DividendYield / ProfitMargin 通常已经是小数形式，比如 0.025。
+  return num;
+}
+
+
+function buildEarningsSummary_(overview) {
+  const name = overview.Name || overview.Symbol || '该公司';
+  const sector = overview.Sector || '未知行业';
+  const industry = overview.Industry || '未知细分行业';
+  const marketCap = cleanNumberText_(overview.MarketCapitalization);
+  const revenue = cleanNumberText_(overview.RevenueTTM);
+  const profitMargin = cleanNumberText_(overview.ProfitMargin);
+  const pe = cleanNumberText_(overview.PERatio);
+
+  return name
+    + ' 所属行业：' + sector
+    + ' / ' + industry
+    + '。市值：' + marketCap
+    + '，过去12月营收：' + revenue
+    + '，净利率：' + profitMargin
+    + '，P/E：' + pe
+    + '。';
+}
+
+
+function buildSimpleFinancialComment_(overview) {
+  const pe = Number(overview.PERatio);
+  const profitMargin = Number(overview.ProfitMargin);
+  const revenueGrowth = Number(overview.QuarterlyRevenueGrowthYOY);
+  const beta = Number(overview.Beta);
+
+  const comments = [];
+
+  if (!isNaN(pe)) {
+    if (pe > 60) {
+      comments.push('估值较高，需要确认增长是否能持续支撑。');
+    } else if (pe > 30) {
+      comments.push('估值偏成长型，适合结合增长率观察。');
+    } else if (pe > 0) {
+      comments.push('估值相对没有极端偏高，但仍需结合行业比较。');
+    }
+  }
+
+  if (!isNaN(profitMargin)) {
+    if (profitMargin > 0.25) {
+      comments.push('净利率较强，盈利质量值得关注。');
+    } else if (profitMargin > 0.1) {
+      comments.push('净利率中等偏稳。');
+    } else if (profitMargin >= 0) {
+      comments.push('净利率偏低，需要观察成本和规模效应。');
+    } else {
+      comments.push('目前可能亏损或利润压力较大。');
+    }
+  }
+
+  if (!isNaN(revenueGrowth)) {
+    if (revenueGrowth > 0.2) {
+      comments.push('营收增长较快，属于成长型观察。');
+    } else if (revenueGrowth > 0.05) {
+      comments.push('营收仍在增长，但速度不算特别激进。');
+    } else if (revenueGrowth < 0) {
+      comments.push('营收下滑，需要关注周期或竞争压力。');
+    }
+  }
+
+  if (!isNaN(beta)) {
+    if (beta > 1.5) {
+      comments.push('Beta 较高，股价波动风险较大。');
+    } else if (beta < 0.8) {
+      comments.push('Beta 较低，波动相对温和。');
+    }
+  }
+
+  if (comments.length === 0) {
+    return '基本面数据有限，建议结合财报、新闻和行业趋势继续观察。';
+  }
+
+  return comments.join(' ');
 }

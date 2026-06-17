@@ -21,6 +21,7 @@ const STRINGS = {
     nav_alerts:            "Priority Alerts",
     nav_news:              "Daily News",
     nav_market:            "Market Radar",
+    nav_stock_analysis:    "Stock Radar",
     nav_decisions:         "Decision Log",
     nav_settings:          "Settings",
 
@@ -29,6 +30,7 @@ const STRINGS = {
     mtab_holdings:         "Holdings",
     mtab_watchlist:        "Watchlist",
     mtab_decisions:        "Log",
+    mtab_stock_analysis:   "Stocks",
 
     // ── Header ────────────────────────────────────────────────────────────────
     header_title:          "Family Investment Radar",
@@ -82,8 +84,8 @@ const STRINGS = {
 
     // ── Summary cards ─────────────────────────────────────────────────────────
     summary_family:        "Family Summary",
-    summary_mabel:         "Mabel Portfolio Summary",
-    summary_victor:        "Victor Portfolio Summary",
+    summary_mabel:         "Portfolio A Summary",
+    summary_victor:        "Portfolio B Summary",
     summary_watchlist:     "Watchlist Snapshot",
     summary_reminders:     "Decision Reminder",
     summary_empty:         "No rows",
@@ -102,8 +104,8 @@ const STRINGS = {
     holdings_page_subtitle:"Currently held ETF, funds, stocks and cash assets",
     live_pill_real:        "Real Data",
     holdings_total:        "Total Holdings",
-    holdings_mabel:        "Mabel Holdings",
-    holdings_victor:       "Victor Holdings",
+    holdings_mabel:        "Portfolio A Holdings",
+    holdings_victor:       "Portfolio B Holdings",
     holdings_need_review:  "Need Review",
 
     // Holdings table columns
@@ -126,8 +128,8 @@ const STRINGS = {
 
     // Holdings filter labels
     filter_all:            "All",
-    filter_mabel:          "Mabel",
-    filter_victor:         "Victor",
+    filter_mabel:          "Portfolio A",
+    filter_victor:         "Portfolio B",
     filter_etf:            "ETF",
     filter_stock:          "Stock",
     filter_high_risk:      "High Risk",
@@ -152,8 +154,8 @@ const STRINGS = {
     watchlist_page_title:      "Watchlist",
     watchlist_page_subtitle:   "Stocks, ETFs, funds and sectors under observation",
     watchlist_total:           "Total Watchlist",
-    watchlist_mabel:           "Mabel Watching",
-    watchlist_victor:          "Victor Watching",
+    watchlist_mabel:           "Portfolio A Watchlist",
+    watchlist_victor:          "Portfolio B Watchlist",
     watchlist_high_priority:   "High Priority",
     watchlist_add_title:       "Add to Watchlist",
     watchlist_table_title:     "Watchlist Items",
@@ -200,8 +202,8 @@ const STRINGS = {
     decisions_page_title:      "Decision Log",
     decisions_page_subtitle:   "Record buy, sell, watch, hold and review decisions",
     decisions_total:           "Total Decisions",
-    decisions_mabel:           "Mabel Decisions",
-    decisions_victor:          "Victor Decisions",
+    decisions_mabel:           "Portfolio A Decisions",
+    decisions_victor:          "Portfolio B Decisions",
     decisions_needs_review:    "Needs Review",
     decisions_add_title:       "Add Decision Log",
     decisions_list_title:      "Decision Records",
@@ -260,6 +262,8 @@ const STRINGS = {
     status_decision_failed:    "Write failed: ",
     status_decision_validation:"Please fill in date, owner, action type, and ticker or name.",
     status_unknown_error:      "Unknown error",
+    status_refreshing_stock:    "Refreshing stock analysis...",
+    status_stock_refreshed:     "Stock analysis refreshed.",
 
     // ── Common ────────────────────────────────────────────────────────────────
     value_missing:             "—",
@@ -284,6 +288,7 @@ const STRINGS = {
     nav_alerts:            "重点提醒",
     nav_news:              "每日新闻",
     nav_market:            "市场雷达",
+    nav_stock_analysis:    "股市雷达",
     nav_decisions:         "决策记录",
     nav_settings:          "设置",
 
@@ -292,6 +297,7 @@ const STRINGS = {
     mtab_holdings:         "持仓",
     mtab_watchlist:        "观察",
     mtab_decisions:        "记录",
+    mtab_stock_analysis:   "股市",
 
     // ── Header ────────────────────────────────────────────────────────────────
     header_title:          "家庭投资雷达",
@@ -345,8 +351,8 @@ const STRINGS = {
 
     // ── Summary cards ─────────────────────────────────────────────────────────
     summary_family:        "家庭总览",
-    summary_mabel:         "Mabel 稳健投资（组合摘要）",
-    summary_victor:        "Victor 主动投资雷达（组合摘要）",
+    summary_mabel:         "稳健投资组合（组合摘要）",
+    summary_victor:        "主动投资组合（组合摘要）",
     summary_watchlist:     "观察清单速览",
     summary_reminders:     "决策提醒",
     summary_empty:         "暂无数据",
@@ -365,8 +371,8 @@ const STRINGS = {
     holdings_page_subtitle:"家庭当前已持有的 ETF、基金、股票与现金类资产",
     live_pill_real:        "真实数据",
     holdings_total:        "总持仓数量",
-    holdings_mabel:        "Mabel 持仓",
-    holdings_victor:       "Victor 持仓",
+    holdings_mabel:        "稳健组合持仓",
+    holdings_victor:       "主动组合持仓",
     holdings_need_review:  "需复核",
 
     // Holdings table columns
@@ -389,8 +395,8 @@ const STRINGS = {
 
     // Holdings filter labels
     filter_all:            "全部",
-    filter_mabel:          "Mabel",
-    filter_victor:         "Victor",
+    filter_mabel:          "Portfolio A",
+    filter_victor:         "Portfolio B",
     filter_etf:            "ETF",
     filter_stock:          "股票",
     filter_high_risk:      "高风险",
@@ -398,9 +404,9 @@ const STRINGS = {
 
     // Holding detail
     holding_detail_title:      "持仓详情",
-    holding_owner_mabel_title: "Mabel 稳健投资视角",
+    holding_owner_mabel_title: "稳健投资组合视角",
     holding_owner_mabel_desc:  "重点看 ETF、基金、GIC、退休规划、风险比较。",
-    holding_owner_victor_title:"Victor 主动投资雷达",
+    holding_owner_victor_title:"主动投资组合雷达",
     holding_owner_victor_desc: "重点看股票、能源、油气、矿产、高波动复核。",
     holding_owner_family_title:"家庭共同视角",
     holding_owner_family_desc: "仅做信息监控，不提供买卖建议。",
@@ -415,8 +421,8 @@ const STRINGS = {
     watchlist_page_title:      "观察清单",
     watchlist_page_subtitle:   "未买入但正在观察的股票、ETF、基金和行业主题",
     watchlist_total:           "观察项目总数",
-    watchlist_mabel:           "Mabel 观察",
-    watchlist_victor:          "Victor 观察",
+    watchlist_mabel:           "稳健组合观察",
+    watchlist_victor:          "主动组合观察",
     watchlist_high_priority:   "高优先级",
     watchlist_add_title:       "加入观察清单",
     watchlist_table_title:     "观察列表",
@@ -463,8 +469,8 @@ const STRINGS = {
     decisions_page_title:      "决策记录",
     decisions_page_subtitle:   "记录买入、卖出、观察、持有和复盘理由",
     decisions_total:           "总记录",
-    decisions_mabel:           "Mabel 记录",
-    decisions_victor:          "Victor 记录",
+    decisions_mabel:           "稳健组合记录",
+    decisions_victor:          "主动组合记录",
     decisions_needs_review:    "待复核",
     decisions_add_title:       "新增决策记录",
     decisions_list_title:      "决策记录列表",
@@ -523,6 +529,8 @@ const STRINGS = {
     status_decision_failed:    "写入失败：",
     status_decision_validation:"请填写日期、所属人、操作类型，以及代码或名称。",
     status_unknown_error:      "未知错误",
+    status_refreshing_stock:    "正在刷新股市分析...",
+    status_stock_refreshed:     "股市分析已刷新。",
 
     // ── Common ────────────────────────────────────────────────────────────────
     value_missing:             "—",

@@ -119,6 +119,15 @@ export async function addDecisionLog(payload) {
   return await fetchJson(url);
 }
 
+export async function loadStockAnalysisPageSource() {
+  return await loadSheetTab(SHEET_CONFIG.tabs.stockAnalysis);
+}
+
+export async function refreshStockAnalysis() {
+  const url = buildApiUrl("analyze_stocks", { industry: "all" });
+  return await fetchJson(url);
+}
+
 function buildApiUrl(action, params = {}, apiUrl = FAMILY_INVESTMENT_API_URL) {
   if (!apiUrl) {
     throw new Error(

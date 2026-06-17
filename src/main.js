@@ -4,10 +4,12 @@ import {
   loadDashboardSource,
   loadDecisionLogPageSource,
   loadHoldingsPageSource,
+  loadStockAnalysisPageSource,
   loadWatchlistPageSource,
   refreshMarketData,
   syncNewsFromSheet,
   syncMorningBrief,
+  refreshStockAnalysis,
 } from "./data/googleSheets.js";
 import { buildDashboardModel } from "./data/dashboardMapper.js";
 import { buildHoldingsModel } from "./data/holdingsMapper.js";
@@ -26,6 +28,7 @@ import {
   MarketSection,
   MorningBriefPanel,
   SummaryCards,
+  StockAnalysisPage,
   WatchlistPage,
   WatchlistPopupHtml,
 } from "./components.js";
@@ -118,6 +121,7 @@ const state = {
   holdingsSource: null,
   watchlistSource: null,
   decisionLogSource: null,
+  stockAnalysisSource: null,
   decisionLogFilter: "all",
 };
 
@@ -166,6 +170,13 @@ async function renderCurrentPage() {
     const source = await loadDecisionLogPageSource();
     state.decisionLogSource = source;
     renderDecisionLog();
+    return;
+  }
+
+  if (state.page === "stock-analysis") {
+    const source = await loadStockAnalysisPageSource();
+    state.stockAnalysisSource = source;
+    renderStockAnalysis();
     return;
   }
 
@@ -438,6 +449,36 @@ function openWatchlistPopup(id) {
   document.addEventListener("keydown", onKey);
 }
 
+// ── Stock Analysis ────────────────────────────────────────────────────────────
+
+function renderStockAnalysis() {
+  app.innerHTML = AppShell(StockAnalysisPage(state.stockAnalysisSource ?? []), "stock-analysis");
+  bindStockAnalysisInteractions();
+  bindGlobalActions();
+}
+
+function bindStockAnalysisInteractions() {
+  const btn = document.getElementById("btn-refresh-stock-analysis");
+  const statusEl = document.getElementById("stock-refresh-status");
+  if (!btn || !statusEl) return;
+
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    statusEl.textContent = t("status_refreshing_stock");
+    statusEl.className = "news-refresh-status loading";
+
+    try {
+      await refreshStockAnalysis();
+      state.stockAnalysisSource = await loadStockAnalysisPageSource();
+      renderStockAnalysis();
+    } catch (err) {
+      statusEl.textContent = t("status_refresh_failed") + (err.message || t("status_unknown_error"));
+      statusEl.className = "news-refresh-status error";
+      btn.disabled = false;
+    }
+  });
+}
+
 // ── Decision Log ──────────────────────────────────────────────────────────────
 
 function renderDecisionLog() {
@@ -548,6 +589,7 @@ function getPageFromUrl() {
   if (hashPage === "holdings")  return "holdings";
   if (hashPage === "watchlist") return "watchlist";
   if (hashPage === "decisions") return "decisions";
+  if (hashPage === "stock-analysis") return "stock-analysis";
   return "dashboard";
 }
 
