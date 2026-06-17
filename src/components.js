@@ -8,6 +8,7 @@ const MOBILE_TABS = [
   ["mtab_dashboard", "⌂", "dashboard"],
   ["mtab_holdings",  "▣", "holdings"],
   ["mtab_watchlist", "◇", "watchlist"],
+  ["mtab_stock_analysis", "↗", "stock-analysis"],
   ["mtab_decisions", "□", "decisions"],
 ];
 
@@ -893,8 +894,8 @@ function WatchlistAddForm() {
             <span>${t("col_owner")}</span>
             <select name="owner">
               <option value="">${sp}</option>
-              <option value="Mabel">Mabel</option>
-              <option value="Victor">Victor</option>
+              <option value="Mabel">Portfolio A</option>
+              <option value="Victor">Portfolio B</option>
               <option value="Both">Both</option>
             </select>
           </label>
@@ -1231,11 +1232,11 @@ function PopupResearch(research) {
 // ─── Decision Log Page ────────────────────────────────────────────────────────
 
 // Filter entries: [filter-id, label-or-key]
-// Static labels (mabel/victor/buy/sell/hold/watch/review) are the same in both langs
+// Static labels (portfolio-a/portfolio-b/buy/sell/hold/watch/review) are the same in both langs
 const DL_FILTERS = [
   ["all",       "dl_filter_all"],     // → t("dl_filter_all")
-  ["mabel",     "Mabel"],
-  ["victor",    "Victor"],
+  ["mabel",     "Portfolio A"],
+  ["victor",    "Portfolio B"],
   ["buy",       "Buy"],
   ["sell",      "Sell"],
   ["hold",      "Hold"],
@@ -1317,8 +1318,8 @@ function DecisionLogAddForm() {
             <span>${t("dl_form_owner")} <em>${req}</em></span>
             <select name="owner" required>
               <option value="">${sp}</option>
-              <option value="Mabel">Mabel</option>
-              <option value="Victor">Victor</option>
+              <option value="Mabel">Portfolio A</option>
+              <option value="Victor">Portfolio B</option>
               <option value="Both">Both</option>
             </select>
           </label>
@@ -1534,6 +1535,340 @@ function decisionLogRow(row) {
   `;
 }
 
+// ─── Stock Analysis Page ─────────────────────────────────────────────────────
+
+export function StockAnalysisPage(rows = []) {
+  const allItems = Array.isArray(rows) ? rows : [];
+  const lang = getLang();
+  const selectedTheme = currentStockTheme();
+  const filters = stockThemeFilters(lang);
+  const activeFilter = filters.find((filter) => filter.key === selectedTheme) || filters[0];
+  const items = selectedTheme === "all"
+    ? allItems
+    : allItems.filter((row) => matchesStockTheme(row, selectedTheme));
+  const title = lang === "zh" ? "股市雷达 / Stock Radar" : "Stock Radar / 股市雷达";
+  const subtitle = lang === "zh"
+    ? "按 AI、能源、银行、ETF、医药等主题查看股票。价格和日变动来自 GOOGLEFINANCE；简化波动参考% 不是正式历史年化波动率。"
+    : "View stocks by themes such as AI, Energy, Banks, ETFs, and Healthcare. Price and daily change come from GOOGLEFINANCE; Simple Volatility Reference % is not formal historical annualized volatility.";
+  const refreshed = latestStockUpdate(allItems);
+  const themeSummary = stockThemeSummary(allItems, selectedTheme, lang);
+
+  return `
+    <header class="page-header">
+      <div>
+        <h1>📈 ${title}</h1>
+        <p>${escapeHtml(subtitle)}</p>
+      </div>
+      <div class="stock-actions">
+        <button id="btn-refresh-stock-analysis" class="refresh-news-btn" type="button">
+          ${lang === "zh" ? "刷新股票分析" : "Refresh Stock Analysis"}
+        </button>
+        <button id="btn-update-stock-fundamentals" class="refresh-news-btn" type="button">
+          ${lang === "zh" ? "更新基本面数据" : "Update Fundamentals"}
+        </button>
+        <span id="stock-refresh-status" class="news-refresh-status"></span>
+        <span id="stock-fundamentals-status" class="news-refresh-status"></span>
+      </div>
+    </header>
+
+    <section class="stock-theme-panel">
+      <div class="stock-theme-heading">
+        <div>
+          <strong>${lang === "zh" ? "主题筛选" : "Theme Filter"}</strong>
+          <span>${escapeHtml(themeSummary)}</span>
+        </div>
+        <small>${lang === "zh" ? "当前显示" : "Showing"}: ${escapeHtml(activeFilter.label)}</small>
+      </div>
+      <div class="stock-theme-tabs" role="list">
+        ${filters.map((filter) => {
+          const count = filter.key === "all"
+            ? allItems.length
+            : allItems.filter((row) => matchesStockTheme(row, filter.key)).length;
+          const active = filter.key === selectedTheme ? " active" : "";
+          return `<a class="stock-theme-tab${active}" href="#/stock-analysis?theme=${encodeURIComponent(filter.key)}" role="listitem">${escapeHtml(filter.label)} <span>${count}</span></a>`;
+        }).join("")}
+      </div>
+    </section>
+
+    <section class="stock-summary-grid">
+      <article class="mini-stat-card"><span>${lang === "zh" ? "当前显示" : "Showing"}</span><strong>${items.length}</strong></article>
+      <article class="mini-stat-card"><span>${lang === "zh" ? "全部股票" : "All Stocks"}</span><strong>${allItems.length}</strong></article>
+      <article class="mini-stat-card"><span>${lang === "zh" ? "加拿大" : "Canada"}</span><strong>${items.filter((r) => String(get(r, "Ticker")).includes(".TO")).length}</strong></article>
+      <article class="mini-stat-card"><span>${lang === "zh" ? "最新更新时间" : "Latest Update"}</span><small>${escapeHtml(refreshed || "—")}</small></article>
+    </section>
+
+    <section class="panel stock-table-panel">
+      ${items.length ? stockAnalysisTable(items, lang) : EmptyState(lang === "zh" ? "这个主题下暂无股票" : "No stocks in this theme yet", lang === "zh" ? "可以切换到“全部”，或稍后在表格里增加更多股票。" : "Switch to All, or add more tickers to this theme later.")}
+    </section>
+  `;
+}
+
+function currentStockTheme() {
+  const hash = window.location.hash || "";
+  const query = hash.includes("?") ? hash.slice(hash.indexOf("?") + 1) : "";
+  try {
+    return new URLSearchParams(query).get("theme") || "all";
+  } catch (_) {
+    return "all";
+  }
+}
+
+function stockThemeFilters(lang) {
+  return [
+    { key: "all", label: lang === "zh" ? "全部" : "All" },
+    { key: "ai", label: lang === "zh" ? "AI" : "AI" },
+    { key: "energy", label: lang === "zh" ? "能源" : "Energy" },
+    { key: "bank", label: lang === "zh" ? "银行 / 金融" : "Banks / Finance" },
+    { key: "etf", label: lang === "zh" ? "ETF" : "ETFs" },
+    { key: "healthcare", label: lang === "zh" ? "医药" : "Healthcare" },
+    { key: "china", label: lang === "zh" ? "中国科技" : "China Tech" },
+    { key: "canada-tech", label: lang === "zh" ? "加拿大科技" : "Canada Tech" },
+    { key: "payment", label: lang === "zh" ? "支付网络" : "Payments" },
+  ];
+}
+
+function matchesStockTheme(row, key) {
+  const theme = String(get(row, "主题分类") || "").toLowerCase();
+  const type = String(get(row, "类型") || "").toLowerCase();
+  const sector = String(get(row, "行业") || "").toLowerCase();
+  const text = `${theme} ${type} ${sector}`;
+
+  if (key === "ai") return text.includes("ai") || text.includes("算力") || text.includes("自动驾驶") || text.includes("云");
+  if (key === "energy") return text.includes("能源") || text.includes("管道") || text.includes("energy") || text.includes("oil") || text.includes("gas");
+  if (key === "bank") return text.includes("银行") || text.includes("金融");
+  if (key === "etf") return text.includes("etf");
+  if (key === "healthcare") return text.includes("医药") || text.includes("制药") || text.includes("health") || text.includes("pharma");
+  if (key === "china") return text.includes("中国科技") || text.includes("china");
+  if (key === "canada-tech") return text.includes("加拿大科技") || text.includes("canada tech");
+  if (key === "payment") return text.includes("支付") || text.includes("payment");
+  return true;
+}
+
+function stockThemeSummary(items, selectedTheme, lang) {
+  if (selectedTheme === "all") {
+    return lang === "zh"
+      ? "从整体上看家庭关注的股票池。"
+      : "Review the full family watch pool.";
+  }
+
+  const descriptions = {
+    ai: lang === "zh" ? "AI 主题包括算力、云平台、软件、自动驾驶和电动车相关公司。" : "AI includes compute, cloud platforms, software, autonomous driving, and EV-related names.",
+    energy: lang === "zh" ? "能源主题关注油气、管道、现金流、股息和 AI 数据中心带来的电力需求。" : "Energy focuses on oil & gas, pipelines, cash flow, dividends, and power demand from AI data centers.",
+    bank: lang === "zh" ? "银行金融主题关注利率、贷款质量、分红、支付网络和经济周期。" : "Banks and finance focus on rates, credit quality, dividends, payment networks, and the economic cycle.",
+    etf: lang === "zh" ? "ETF 主题用于观察加拿大大盘和蓝筹指数型配置。" : "ETF theme tracks broad Canada market and blue-chip index exposure.",
+    healthcare: lang === "zh" ? "医药主题关注创新药、销售增长、医保定价和估值风险。" : "Healthcare focuses on drug pipelines, sales growth, pricing, and valuation risk.",
+    china: lang === "zh" ? "中国科技主题关注消费、云业务、监管和地缘政治风险。" : "China Tech focuses on consumption, cloud, regulation, and geopolitical risk.",
+    "canada-tech": lang === "zh" ? "加拿大科技主题关注软件平台、盈利能力和科技股估值。" : "Canada Tech focuses on software platforms, profitability, and tech valuations.",
+    payment: lang === "zh" ? "支付网络主题关注消费支付量、跨境交易和金融科技竞争。" : "Payments focus on payment volume, cross-border activity, and fintech competition.",
+  };
+
+  return descriptions[selectedTheme] || (lang === "zh" ? "按主题查看相关股票。" : "View stocks by theme.");
+}
+
+function stockAnalysisTable(items, lang) {
+  return `
+    <div class="stock-card-list">
+      ${items.map((row) => stockAnalysisRow(row, lang)).join("")}
+    </div>
+  `;
+}
+
+function stockAnalysisRow(row, lang) {
+  const ticker = get(row, "Ticker");
+  const zhName = get(row, "中文名称") || get(row, "名称") || ticker || "—";
+  const enName = get(row, "英文名称") || get(row, "名称") || ticker || "—";
+  const type = get(row, "类型") || get(row, "行业") || (lang === "zh" ? "其他" : "Other");
+  const desc = get(row, "一句话说明") || "";
+  const focus = get(row, "适合关注点") || "";
+  const daily = get(row, "日变动%") || get(row, "日变动");
+  const dailyClass = numberToneClass(daily);
+  const overall = get(row, "综合评分");
+  const overallClass = scoreToneClass(overall);
+  const price = get(row, "当前价格") || "—";
+  const volatility = get(row, "简化波动参考%") || get(row, "年化波动率%") || "—";
+  const updated = formatStockUpdate(get(row, "更新时间"));
+  const fundamentalsHtml = stockFundamentalsBlock(row, lang);
+
+  return `
+    <article class="stock-card">
+      <div class="stock-card-main">
+        <div class="stock-identity">
+          <strong class="wl-ticker stock-ticker-large">${escapeHtml(ticker || "—")}</strong>
+          <div>
+            <div class="stock-name-line">${escapeHtml(zhName)} <span>${escapeHtml(enName)}</span></div>
+            <div class="stock-type-pill">${escapeHtml(type)}</div>
+          </div>
+        </div>
+        <div class="stock-metrics">
+          <div><span>${lang === "zh" ? "价格" : "Price"}</span><strong>${escapeHtml(price)}</strong></div>
+          <div><span>${lang === "zh" ? "日变动" : "Daily"}</span><strong class="${dailyClass}">${escapeHtml(daily || "—")}</strong></div>
+          <div><span>${lang === "zh" ? "波动参考" : "Volatility Ref."}</span><strong>${escapeHtml(volatility)}</strong></div>
+          <div><span>${lang === "zh" ? "综合评分" : "Overall"}</span><strong class="stock-score ${overallClass}">${escapeHtml(overall || "—")}</strong></div>
+        </div>
+      </div>
+
+      <div class="stock-card-details">
+        <p>${escapeHtml(desc || (lang === "zh" ? "暂无公司说明。" : "No company description yet."))}</p>
+        <p><strong>${lang === "zh" ? "关注点：" : "Watch: "}</strong>${escapeHtml(focus || (lang === "zh" ? "待补充。" : "To be added."))}</p>
+      </div>
+
+      ${fundamentalsHtml}
+
+      <div class="stock-card-foot">
+        <span>Forward P/E: ${escapeHtml(pickStockValue(row, ["Forward P/E", "ForwardPE", "Forward PE"]) || "N/A")}</span>
+        <span>Beta: ${escapeHtml(pickStockValue(row, ["Beta", "贝塔系数"]) || "N/A")}</span>
+        <span>${lang === "zh" ? "行业" : "Sector"}: ${escapeHtml(pickStockValue(row, ["行业", "Sector"]) || type || "—")}</span>
+        <span>${lang === "zh" ? "更新时间" : "Updated"}: ${escapeHtml(updated || "—")}</span>
+      </div>
+    </article>
+  `;
+}
+
+function numberToneClass(value) {
+  const n = Number(String(value || "").replace("%", ""));
+  if (!Number.isFinite(n) || n === 0) return "stock-neutral";
+  return n > 0 ? "stock-positive" : "stock-negative";
+}
+
+function scoreToneClass(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "neutral";
+  if (n >= 7.5) return "positive";
+  if (n >= 6) return "neutral";
+  return "negative";
+}
+
+function stockFundamentalsBlock(row, lang) {
+  const zh = lang === "zh";
+
+  const businessItems = [
+    [zh ? "中文名称" : "Chinese Name", get(row, "中文名称")],
+    [zh ? "英文名称" : "English Name", get(row, "英文名称")],
+    [zh ? "类型" : "Type", get(row, "类型")],
+    [zh ? "主题分类" : "Theme", get(row, "主题分类")],
+    [zh ? "行业" : "Sector", get(row, "行业")],
+  ].filter(([, value]) => hasDisplayValue(value));
+
+  const valuationItems = [
+    [zh ? "市值" : "Market Cap", formatLargeNumber(get(row, "市值 Market Cap"))],
+    [zh ? "P/E 市盈率" : "P/E", get(row, "P/E 市盈率")],
+    [zh ? "Forward P/E 预期市盈率" : "Forward P/E", get(row, "Forward P/E 预期市盈率") || get(row, "Forward P/E")],
+    [zh ? "P/S 市销率" : "P/S", get(row, "P/S 市销率")],
+    [zh ? "股息率" : "Dividend Yield", formatYieldValue(get(row, "股息率 Dividend Yield"))],
+  ].filter(([, value]) => hasDisplayValue(value));
+
+  const profitabilityItems = [
+    [zh ? "净利率" : "Profit Margin", formatYieldValue(get(row, "Profit Margin 净利率"))],
+    [zh ? "营业利润率" : "Operating Margin", formatYieldValue(get(row, "Operating Margin 营业利润率"))],
+    [zh ? "ROE 净资产收益率" : "ROE", formatYieldValue(get(row, "ROE 净资产收益率"))],
+    [zh ? "过去12月营收" : "Revenue TTM", formatLargeNumber(get(row, "Revenue TTM 过去12月营收"))],
+    [zh ? "营收增长" : "Revenue Growth", formatYieldValue(get(row, "Revenue Growth 营收增长"))],
+    [zh ? "EPS 每股收益" : "EPS", get(row, "EPS 每股收益")],
+  ].filter(([, value]) => hasDisplayValue(value));
+
+  const rangeItems = [
+    [zh ? "52周高点" : "52W High", get(row, "52周高点")],
+    [zh ? "52周低点" : "52W Low", get(row, "52周低点")],
+    [zh ? "财务数据更新时间" : "Financial Updated", formatStockUpdate(get(row, "财务数据更新时间"))],
+    [zh ? "基本面数据来源" : "Source", get(row, "基本面数据来源")],
+  ].filter(([, value]) => hasDisplayValue(value));
+
+  const oneLine = get(row, "一句话说明");
+  const focus = get(row, "适合关注点");
+  const reportSummary = get(row, "财报摘要");
+  const aiComment = get(row, "AI财务简评");
+
+  const hasAny = businessItems.length || valuationItems.length || profitabilityItems.length || rangeItems.length ||
+    hasDisplayValue(oneLine) || hasDisplayValue(focus) || hasDisplayValue(reportSummary) || hasDisplayValue(aiComment);
+
+  if (!hasAny) return "";
+
+  const section = (title, items) => items.length ? `
+    <div class="stock-fundamentals-section">
+      <div class="stock-fundamentals-section-title">${escapeHtml(title)}</div>
+      <div class="stock-fundamentals-grid">${items.map(([label, value]) => `
+        <div>
+          <span>${escapeHtml(label)}</span>
+          <strong>${escapeHtml(value)}</strong>
+        </div>
+      `).join("")}</div>
+    </div>
+  ` : "";
+
+  return `
+    <div class="stock-fundamentals-block">
+      <div class="stock-fundamentals-title">${zh ? "基本面数据" : "Fundamentals"}</div>
+
+      ${section(zh ? "公司与主题" : "Company & Theme", businessItems)}
+      ${hasDisplayValue(oneLine) ? `<p class="stock-fundamentals-summary"><strong>${zh ? "一句话说明：" : "One-line: "}</strong>${escapeHtml(oneLine)}</p>` : ""}
+      ${hasDisplayValue(focus) ? `<p class="stock-fundamentals-summary"><strong>${zh ? "适合关注点：" : "Watch points: "}</strong>${escapeHtml(focus)}</p>` : ""}
+
+      ${section(zh ? "估值数据" : "Valuation", valuationItems)}
+      ${section(zh ? "盈利与增长" : "Profitability & Growth", profitabilityItems)}
+      ${section(zh ? "价格区间与来源" : "Price Range & Source", rangeItems)}
+
+      ${hasDisplayValue(reportSummary) ? `<p class="stock-fundamentals-summary"><strong>${zh ? "财报摘要：" : "Report Summary: "}</strong>${escapeHtml(reportSummary)}</p>` : ""}
+      ${hasDisplayValue(aiComment) ? `<p class="stock-fundamentals-ai"><strong>${zh ? "AI财务简评：" : "AI Comment: "}</strong>${escapeHtml(aiComment)}</p>` : ""}
+    </div>
+  `;
+}
+
+function pickStockValue(row, keys) {
+  for (const key of keys) {
+    const value = get(row, key);
+    if (hasDisplayValue(value)) return String(value).trim();
+  }
+  return "";
+}
+
+function hasDisplayValue(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return false;
+  return !["na", "n/a", "null", "undefined", "—", "-"].includes(text.toLowerCase());
+}
+
+function formatYieldValue(value) {
+  if (!hasDisplayValue(value)) return "";
+  const text = String(value).trim();
+  if (text.includes("%")) return text;
+  const n = Number(text);
+  if (!Number.isFinite(n)) return text;
+  if (Math.abs(n) > 1) return `${n.toFixed(2)}%`;
+  return `${(n * 100).toFixed(2)}%`;
+}
+
+function formatLargeNumber(value) {
+  if (!hasDisplayValue(value)) return "";
+  const text = String(value).replace(/,/g, "").trim();
+  const n = Number(text);
+  if (!Number.isFinite(n)) return String(value);
+  if (Math.abs(n) >= 1_000_000_000_000) return `${(n / 1_000_000_000_000).toFixed(2)}T`;
+  if (Math.abs(n) >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(2)}B`;
+  if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
+  return String(value);
+}
+
+function latestStockUpdate(items) {
+  const dates = items
+    .map((row) => Date.parse(get(row, "更新时间")))
+    .filter((value) => Number.isFinite(value));
+  if (!dates.length) return "";
+  return formatStockUpdate(new Date(Math.max(...dates)).toISOString());
+}
+
+function formatStockUpdate(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString(getLang() === "zh" ? "zh-CN" : "en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function actionLabelClass(action) {
@@ -1598,3 +1933,60 @@ function formatChangeValue(value) {
 function formatTextValue(value) {
   return hasUsableValue(value) ? String(value).trim() : "—";
 }
+
+
+// ─── Stock Fundamentals Update Button ────────────────────────────────────────
+// Minimal front-end handler: updates only 5 tickers per click to avoid
+// Alpha Vantage free-tier throttling and Apps Script timeout risk.
+document.addEventListener("click", async (event) => {
+  const btn = event.target.closest("#btn-update-stock-fundamentals");
+  if (!btn) return;
+
+  const status = document.getElementById("stock-fundamentals-status");
+  const lang = getLang();
+
+  btn.disabled = true;
+  if (status) {
+    status.textContent = lang === "zh" ? "基本面数据更新中..." : "Updating fundamentals...";
+  }
+
+  try {
+    const url =
+      window.location.origin +
+      window.location.pathname +
+      "?action=update_stock_fundamentals&max=5";
+
+    const response = await fetch(url, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    const text = await response.text();
+
+    if (!response.ok) {
+      throw new Error(text || `HTTP ${response.status}`);
+    }
+
+    let message = text;
+    try {
+      const data = JSON.parse(text);
+      message = data.message || data.summary || JSON.stringify(data);
+    } catch {
+      // Backend may return plain text. Keep it as-is.
+    }
+
+    if (status) {
+      status.textContent = (lang === "zh" ? "更新完成：" : "Updated: ") + message;
+    }
+  } catch (error) {
+    console.error(error);
+    if (status) {
+      status.textContent =
+        lang === "zh"
+          ? "更新失败，请稍后再试"
+          : "Update failed. Please try again later.";
+    }
+  } finally {
+    btn.disabled = false;
+  }
+});
