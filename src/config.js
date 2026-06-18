@@ -12,6 +12,7 @@ export const SHEET_CONFIG = {
     settings: "99 Settings",
     marketRadar: "05 Market Radar",
     stockAnalysis: "11 Stock Analysis",
+    aiMarketTrend: "13 AI Market Trend",
   },
 };
 

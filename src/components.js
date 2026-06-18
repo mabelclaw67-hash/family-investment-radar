@@ -250,34 +250,30 @@ export function StockRadarHomeEntry() {
   `;
 }
 
-export function AiMarketRadarPanel(summary = null, sources = []) {
-  const sections = [
-    ["ai_radar_us_title", "ai_radar_us_text"],
-    ["ai_radar_ca_title", "ai_radar_ca_text"],
-    ["ai_radar_risk_title", "ai_radar_risk_text"],
-    ["ai_radar_watch_title", "ai_radar_watch_text"],
-  ];
+export function AiMarketRadarPanel(summary = null, sources = [], isAdmin = false) {
+  const emptyMessageKey = isAdmin ? "ai_radar_empty_prompt" : "ai_radar_no_saved_summary";
 
   return `
     <section class="panel ai-market-radar-panel">
       <div class="panel-title">
         <h2>${t("ai_radar_title")}</h2>
-        <div class="news-refresh-row">
-          <button id="btn-update-ai-market-trend" class="refresh-news-btn" type="button">${t("btn_update_ai_trend")}</button>
-          <span id="ai-market-trend-status" class="news-refresh-status"></span>
-        </div>
+        ${
+          isAdmin
+            ? `<div class="news-refresh-row">
+                <button id="btn-update-ai-market-trend" class="refresh-news-btn" type="button">${t("btn_update_ai_trend")}</button>
+                <span id="ai-market-trend-status" class="news-refresh-status"></span>
+              </div>`
+            : ""
+        }
       </div>
       <div id="ai-market-trend-result">
         ${
           summary
             ? ""
             : `<div class="ai-market-radar-list">
-                ${sections.map(([titleKey, textKey]) => `
-                  <article class="ai-market-radar-item">
-                    <strong>${escapeHtml(t(titleKey))}</strong>
-                    <p>${escapeHtml(t(textKey))}</p>
-                  </article>
-                `).join("")}
+                <article class="ai-market-radar-item ai-market-radar-empty">
+                  <p>${escapeHtml(t(emptyMessageKey))}</p>
+                </article>
               </div>`
         }
       </div>
@@ -1587,7 +1583,7 @@ function decisionLogRow(row) {
 
 // ─── Stock Analysis Page ─────────────────────────────────────────────────────
 
-export function StockAnalysisPage(rows = []) {
+export function StockAnalysisPage(rows = [], isAdmin = false) {
   const allItems = Array.isArray(rows) ? rows : [];
   const lang = getLang();
   const selectedTheme = currentStockTheme();
@@ -1607,16 +1603,18 @@ export function StockAnalysisPage(rows = []) {
         <h1>📈 ${title}</h1>
         <p>${escapeHtml(subtitle)}</p>
       </div>
-      <div class="stock-actions">
-        <button id="btn-refresh-stock-analysis" class="refresh-news-btn" type="button">
-          ${t("btn_refresh_stock_analysis")}
-        </button>
-        <button id="btn-update-stock-fundamentals" class="refresh-news-btn" type="button">
-          ${t("btn_update_fundamentals")}
-        </button>
-        <span id="stock-refresh-status" class="news-refresh-status"></span>
-        <span id="stock-fundamentals-status" class="news-refresh-status"></span>
-      </div>
+      ${isAdmin ? `
+        <div class="stock-actions">
+          <button id="btn-refresh-stock-analysis" class="refresh-news-btn" type="button">
+            ${t("btn_refresh_stock_analysis")}
+          </button>
+          <button id="btn-update-stock-fundamentals" class="refresh-news-btn" type="button">
+            ${t("btn_update_fundamentals")}
+          </button>
+          <span id="stock-refresh-status" class="news-refresh-status"></span>
+          <span id="stock-fundamentals-status" class="news-refresh-status"></span>
+        </div>
+      ` : ""}
     </header>
 
     <section class="stock-theme-panel">
@@ -1781,13 +1779,51 @@ function stockThemeSummary(items, selectedTheme, lang) {
 
 function stockAnalysisTable(items, lang) {
   return `
-    <div class="stock-card-list">
-      ${items.map((row) => stockAnalysisRow(row, lang)).join("")}
+    <div class="stock-research-layout">
+      <div class="stock-research-list" role="list" aria-label="${escapeHtml(t("stock_select_label"))}">
+        ${items.map((row, index) => stockAnalysisListItem(row, lang, stockDetailId(row, index), index === 0)).join("")}
+      </div>
+      <div class="stock-research-detail">
+        ${items.map((row, index) => stockAnalysisRow(row, lang, stockDetailId(row, index), index === 0)).join("")}
+      </div>
     </div>
   `;
 }
 
-function stockAnalysisRow(row, lang) {
+function stockDetailId(row, index) {
+  const ticker = String(get(row, "Ticker") || `stock-${index}`).replace(/[^a-z0-9_-]+/gi, "-");
+  return `${ticker}-${index}`;
+}
+
+function stockAnalysisListItem(row, lang, detailId, active) {
+  const ticker = get(row, "Ticker");
+  const name = lang === "zh"
+    ? (get(row, "中文名称") || get(row, "名称") || ticker || "—")
+    : (get(row, "英文名称") || get(row, "名称") || ticker || "—");
+  const type = get(row, "类型") || get(row, "行业") || (lang === "zh" ? "其他" : "Other");
+  const price = get(row, "当前价格") || "—";
+  const daily = get(row, "日变动%") || get(row, "日变动");
+  const dailyClass = numberToneClass(daily);
+  const overall = get(row, "综合评分");
+  const overallClass = scoreToneClass(overall);
+
+  return `
+    <button class="stock-list-item${active ? " active" : ""}" type="button" data-stock-detail-target="${escapeHtml(detailId)}" role="listitem">
+      <span class="stock-list-top">
+        <strong>${escapeHtml(ticker || "—")}</strong>
+        <span class="${dailyClass}">${escapeHtml(daily || "—")}</span>
+      </span>
+      <span class="stock-list-name">${escapeHtml(name)}</span>
+      <span class="stock-list-meta">
+        <span>${escapeHtml(type)}</span>
+        <span>${escapeHtml(price)}</span>
+        <span class="stock-score ${overallClass}">${escapeHtml(overall || "—")}</span>
+      </span>
+    </button>
+  `;
+}
+
+function stockAnalysisRow(row, lang, detailId, active) {
   const ticker = get(row, "Ticker");
   const zhName = get(row, "中文名称") || get(row, "名称") || ticker || "—";
   const enName = get(row, "英文名称") || get(row, "名称") || ticker || "—";
@@ -1804,7 +1840,7 @@ function stockAnalysisRow(row, lang) {
   const fundamentalsHtml = stockFundamentalsBlock(row, lang);
 
   return `
-    <article class="stock-card">
+    <article class="stock-card stock-detail-panel${active ? " active" : ""}" data-stock-detail-panel="${escapeHtml(detailId)}" ${active ? "" : "hidden"}>
       <div class="stock-card-main">
         <div class="stock-identity">
           <strong class="wl-ticker stock-ticker-large">${escapeHtml(ticker || "—")}</strong>
@@ -1827,6 +1863,7 @@ function stockAnalysisRow(row, lang) {
       </div>
 
       ${fundamentalsHtml}
+      ${stockOfficialLinks(row, lang)}
 
       <div class="stock-card-foot">
         <span>Forward P/E: ${escapeHtml(pickStockValue(row, ["Forward P/E", "ForwardPE", "Forward PE"]) || "N/A")}</span>
@@ -1837,6 +1874,107 @@ function stockAnalysisRow(row, lang) {
     </article>
   `;
 }
+
+function stockOfficialLinks(row, lang) {
+  const ticker = String(get(row, "Ticker") || "").trim().toUpperCase();
+  const fallback = OFFICIAL_STOCK_LINKS[ticker] || {};
+  const links = [
+    {
+      label: t("stock_link_official"),
+      url: pickStockValue(row, ["officialWebsite", "Official Website", "官方网站", "公司官网"]) || fallback.officialWebsite,
+    },
+    {
+      label: t("stock_link_ir"),
+      url: pickStockValue(row, ["investorRelations", "Investor Relations", "投资者关系"]) || fallback.investorRelations,
+    },
+    {
+      label: t("stock_link_reports"),
+      url: pickStockValue(row, ["financialReports", "Financial Reports", "财报", "财务报告"]) || fallback.financialReports,
+    },
+  ].filter((item) => isOfficialUrl(item.url));
+
+  return `
+    <div class="stock-official-links">
+      <div class="stock-official-title">${escapeHtml(t("stock_official_links"))}</div>
+      ${
+        links.length
+          ? `<div class="stock-link-grid">${links.map((item) => `
+              <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.label)}</a>
+            `).join("")}</div>`
+          : `<p>${escapeHtml(t("stock_links_pending"))}</p>`
+      }
+    </div>
+  `;
+}
+
+function isOfficialUrl(url) {
+  const text = String(url || "").trim();
+  if (!/^https?:\/\//i.test(text)) return false;
+  return !/(finance\.yahoo|marketwatch|morningstar|seekingalpha|tipranks|benzinga|fool|nasdaq\.com|reuters\.com|cnbc\.com|bloomberg\.com)/i.test(text);
+}
+
+const OFFICIAL_STOCK_LINKS = {
+  NVDA: { officialWebsite: "https://www.nvidia.com/", investorRelations: "https://investor.nvidia.com/", financialReports: "https://investor.nvidia.com/financial-info/quarterly-results/default.aspx" },
+  TSLA: { officialWebsite: "https://www.tesla.com/", investorRelations: "https://ir.tesla.com/", financialReports: "https://ir.tesla.com/#quarterly-disclosure" },
+  GOOGL: { officialWebsite: "https://abc.xyz/", investorRelations: "https://abc.xyz/investor/", financialReports: "https://abc.xyz/investor/" },
+  MSFT: { officialWebsite: "https://www.microsoft.com/", investorRelations: "https://www.microsoft.com/en-us/Investor/", financialReports: "https://www.microsoft.com/en-us/Investor/earnings" },
+  AMZN: { officialWebsite: "https://www.aboutamazon.com/", investorRelations: "https://ir.aboutamazon.com/", financialReports: "https://ir.aboutamazon.com/quarterly-results/default.aspx" },
+  HSAI: { officialWebsite: "https://www.hesaitech.com/", investorRelations: "https://investor.hesaitech.com/", financialReports: "https://investor.hesaitech.com/financials/quarterly-results/default.aspx" },
+  BABA: { officialWebsite: "https://www.alibabagroup.com/", investorRelations: "https://www.alibabagroup.com/en-US/ir-home", financialReports: "https://www.alibabagroup.com/en-US/ir-financial-reports" },
+  "CVE.TO": { officialWebsite: "https://www.cenovus.com/", investorRelations: "https://www.cenovus.com/Investors", financialReports: "https://www.cenovus.com/Investors/Financial-information" },
+  "SU.TO": { officialWebsite: "https://www.suncor.com/", investorRelations: "https://www.suncor.com/en-ca/investors", financialReports: "https://www.suncor.com/en-ca/investors/financial-reports" },
+  XOM: { officialWebsite: "https://corporate.exxonmobil.com/", investorRelations: "https://investor.exxonmobil.com/", financialReports: "https://investor.exxonmobil.com/sec-filings" },
+  CVX: { officialWebsite: "https://www.chevron.com/", investorRelations: "https://www.chevron.com/investors", financialReports: "https://www.chevron.com/investors/financial-information" },
+  REI: { officialWebsite: "https://www.ringenergy.com/", investorRelations: "https://www.ringenergy.com/investors", financialReports: "https://www.ringenergy.com/investors/sec-filings" },
+  "RY.TO": { officialWebsite: "https://www.rbc.com/", investorRelations: "https://www.rbc.com/investor-relations.html", financialReports: "https://www.rbc.com/investor-relations/financial-information.html" },
+  "TD.TO": { officialWebsite: "https://www.td.com/", investorRelations: "https://www.td.com/ca/en/about-td/for-investors", financialReports: "https://www.td.com/ca/en/about-td/for-investors/investor-relations/financial-information/quarterly-results" },
+  "SHOP.TO": { officialWebsite: "https://www.shopify.com/", investorRelations: "https://investors.shopify.com/", financialReports: "https://investors.shopify.com/financial-reports" },
+  "ENB.TO": { officialWebsite: "https://www.enbridge.com/", investorRelations: "https://www.enbridge.com/investment-center", financialReports: "https://www.enbridge.com/investment-center/reports-and-filings" },
+  "XIC.TO": { officialWebsite: "https://www.blackrock.com/ca/investors/en/products/239837/ishares-sptsx-capped-composite-index-etf", investorRelations: "https://www.blackrock.com/ca/investors/en/products/239837/ishares-sptsx-capped-composite-index-etf", financialReports: "https://www.blackrock.com/ca/investors/en/products/239837/ishares-sptsx-capped-composite-index-etf" },
+  "XIU.TO": { officialWebsite: "https://www.blackrock.com/ca/investors/en/products/239832/ishares-sptsx-60-index-etf", investorRelations: "https://www.blackrock.com/ca/investors/en/products/239832/ishares-sptsx-60-index-etf", financialReports: "https://www.blackrock.com/ca/investors/en/products/239832/ishares-sptsx-60-index-etf" },
+  AAPL: { officialWebsite: "https://www.apple.com/", investorRelations: "https://investor.apple.com/", financialReports: "https://investor.apple.com/sec-filings/default.aspx" },
+  V: { officialWebsite: "https://usa.visa.com/", investorRelations: "https://investor.visa.com/", financialReports: "https://investor.visa.com/financial-information/sec-filings" },
+  MA: { officialWebsite: "https://www.mastercard.com/", investorRelations: "https://investor.mastercard.com/", financialReports: "https://investor.mastercard.com/financials/sec-filings/default.aspx" },
+  LLY: { officialWebsite: "https://www.lilly.com/", investorRelations: "https://investor.lilly.com/", financialReports: "https://investor.lilly.com/financial-information/sec-filings" },
+  JPM: { officialWebsite: "https://www.jpmorganchase.com/", investorRelations: "https://www.jpmorganchase.com/ir", financialReports: "https://www.jpmorganchase.com/ir/annual-report" },
+  AMD: { officialWebsite: "https://www.amd.com/", investorRelations: "https://ir.amd.com/", financialReports: "https://ir.amd.com/financial-information/sec-filings" },
+  AVGO: { officialWebsite: "https://www.broadcom.com/", investorRelations: "https://investors.broadcom.com/", financialReports: "https://investors.broadcom.com/financial-information/sec-filings" },
+  TSM: { officialWebsite: "https://www.tsmc.com/", investorRelations: "https://investor.tsmc.com/", financialReports: "https://investor.tsmc.com/english/financial-reports" },
+  META: { officialWebsite: "https://about.meta.com/", investorRelations: "https://investor.atmeta.com/", financialReports: "https://investor.atmeta.com/financials" },
+  ORCL: { officialWebsite: "https://www.oracle.com/", investorRelations: "https://investor.oracle.com/", financialReports: "https://investor.oracle.com/financials" },
+  CRM: { officialWebsite: "https://www.salesforce.com/", investorRelations: "https://investor.salesforce.com/", financialReports: "https://investor.salesforce.com/financials" },
+  PLTR: { officialWebsite: "https://www.palantir.com/", investorRelations: "https://investors.palantir.com/", financialReports: "https://investors.palantir.com/financials" },
+  ARM: { officialWebsite: "https://www.arm.com/", investorRelations: "https://investors.arm.com/", financialReports: "https://investors.arm.com/financials" },
+  ASML: { officialWebsite: "https://www.asml.com/", investorRelations: "https://www.asml.com/en/investors", financialReports: "https://www.asml.com/en/investors/financial-results" },
+  SMCI: { officialWebsite: "https://www.supermicro.com/", investorRelations: "https://ir.supermicro.com/", financialReports: "https://ir.supermicro.com/financial-information/sec-filings" },
+  MU: { officialWebsite: "https://www.micron.com/", investorRelations: "https://investors.micron.com/", financialReports: "https://investors.micron.com/financial-information/sec-filings" },
+  ANET: { officialWebsite: "https://www.arista.com/", investorRelations: "https://investors.arista.com/", financialReports: "https://investors.arista.com/financials/sec-filings" },
+  VRT: { officialWebsite: "https://www.vertiv.com/", investorRelations: "https://investors.vertiv.com/", financialReports: "https://investors.vertiv.com/financials/sec-filings" },
+  DELL: { officialWebsite: "https://www.delltechnologies.com/", investorRelations: "https://investors.delltechnologies.com/", financialReports: "https://investors.delltechnologies.com/financial-information/sec-filings" },
+  "CNQ.TO": { officialWebsite: "https://www.cnrl.com/", investorRelations: "https://www.cnrl.com/investor-relations", financialReports: "https://www.cnrl.com/investor-relations/financial-information" },
+  "TRP.TO": { officialWebsite: "https://www.tcenergy.com/", investorRelations: "https://www.tcenergy.com/investors", financialReports: "https://www.tcenergy.com/investors/financial-reports" },
+  "PPL.TO": { officialWebsite: "https://www.pembina.com/", investorRelations: "https://www.pembina.com/investors", financialReports: "https://www.pembina.com/investors/financial-reports" },
+  CEG: { officialWebsite: "https://www.constellationenergy.com/", investorRelations: "https://investors.constellationenergy.com/", financialReports: "https://investors.constellationenergy.com/financials/sec-filings" },
+  NEE: { officialWebsite: "https://www.nexteraenergy.com/", investorRelations: "https://www.nexteraenergy.com/investors", financialReports: "https://www.nexteraenergy.com/investors/financial-information/sec-filings" },
+  "CCJ.TO": { officialWebsite: "https://www.cameco.com/", investorRelations: "https://www.cameco.com/investors", financialReports: "https://www.cameco.com/investors/financial-information" },
+  "TECK.B.TO": { officialWebsite: "https://www.teck.com/", investorRelations: "https://www.teck.com/investors", financialReports: "https://www.teck.com/investors/financial-reports" },
+  FCX: { officialWebsite: "https://www.fcx.com/", investorRelations: "https://investors.fcx.com/", financialReports: "https://investors.fcx.com/financial-information/sec-filings" },
+  NEM: { officialWebsite: "https://www.newmont.com/", investorRelations: "https://investors.newmont.com/", financialReports: "https://investors.newmont.com/financials/sec-filings" },
+  "BNS.TO": { officialWebsite: "https://www.scotiabank.com/", investorRelations: "https://www.scotiabank.com/ca/en/about/investors-shareholders.html", financialReports: "https://www.scotiabank.com/ca/en/about/investors-shareholders/financial-results.html" },
+  "BMO.TO": { officialWebsite: "https://www.bmo.com/", investorRelations: "https://www.bmo.com/main/about-bmo/investor-relations", financialReports: "https://www.bmo.com/main/about-bmo/investor-relations/financial-information" },
+  "CM.TO": { officialWebsite: "https://www.cibc.com/", investorRelations: "https://www.cibc.com/en/about-cibc/investor-relations.html", financialReports: "https://www.cibc.com/en/about-cibc/investor-relations/quarterly-results.html" },
+  JNJ: { officialWebsite: "https://www.jnj.com/", investorRelations: "https://investor.jnj.com/", financialReports: "https://investor.jnj.com/financials/sec-filings" },
+  UNH: { officialWebsite: "https://www.unitedhealthgroup.com/", investorRelations: "https://www.unitedhealthgroup.com/investors", financialReports: "https://www.unitedhealthgroup.com/investors/financial-reports" },
+  MRK: { officialWebsite: "https://www.merck.com/", investorRelations: "https://www.merck.com/investor-relations", financialReports: "https://www.merck.com/investor-relations/financial-information" },
+  "VFV.TO": { officialWebsite: "https://www.vanguard.ca/en/investor/products/products-group/etfs/VFV", investorRelations: "https://www.vanguard.ca/en/investor/products/products-group/etfs/VFV", financialReports: "https://www.vanguard.ca/en/investor/products/products-group/etfs/VFV" },
+  "XQQ.TO": { officialWebsite: "https://www.blackrock.com/ca/investors/en/products/239853/ishares-nasdaq-100-index-etf-cad-hedged-fund", investorRelations: "https://www.blackrock.com/ca/investors/en/products/239853/ishares-nasdaq-100-index-etf-cad-hedged-fund", financialReports: "https://www.blackrock.com/ca/investors/en/products/239853/ishares-nasdaq-100-index-etf-cad-hedged-fund" },
+  SMH: { officialWebsite: "https://www.vaneck.com/us/en/investments/semiconductor-etf-smh/", investorRelations: "https://www.vaneck.com/us/en/investments/semiconductor-etf-smh/", financialReports: "https://www.vaneck.com/us/en/investments/semiconductor-etf-smh/" },
+  QQQ: { officialWebsite: "https://www.invesco.com/qqq-etf/en/home.html", investorRelations: "https://www.invesco.com/qqq-etf/en/home.html", financialReports: "https://www.invesco.com/qqq-etf/en/home.html" },
+  SPCX: { officialWebsite: "https://www.subversiveetfs.com/spcx", investorRelations: "https://www.subversiveetfs.com/spcx", financialReports: "https://www.subversiveetfs.com/spcx" },
+  OPENAI: { officialWebsite: "https://openai.com/", investorRelations: "https://openai.com/about/" },
+  ANTHROPIC: { officialWebsite: "https://www.anthropic.com/", investorRelations: "https://www.anthropic.com/company" },
+  CURSOR: { officialWebsite: "https://www.cursor.com/", investorRelations: "https://www.cursor.com/" },
+};
 
 function numberToneClass(value) {
   const n = Number(String(value || "").replace("%", ""));
@@ -2065,32 +2203,30 @@ document.addEventListener("click", async (event) => {
   }
 
   try {
-    const url =
-      window.location.origin +
-      window.location.pathname +
-      "?action=update_stock_fundamentals&max=5";
-
-    const response = await fetch(url, {
-      method: "GET",
+    const response = await fetch("/.netlify/functions/updateStockAnalysis", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${sessionStorage.getItem("fir_admin_token_v1") || ""}`,
+        "Content-Type": "application/json",
+      },
       cache: "no-store",
+      body: JSON.stringify({ action: "update_stock_fundamentals", max: 5 }),
     });
 
-    const text = await response.text();
-
-    if (!response.ok) {
-      throw new Error(text || `HTTP ${response.status}`);
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error(lang === "zh" ? "后端没有返回 JSON。" : "Backend did not return JSON.");
     }
 
-    let message = text;
-    try {
-      const data = JSON.parse(text);
-      message = data.message || data.summary || JSON.stringify(data);
-    } catch {
-      // Backend may return plain text. Keep it as-is.
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || `HTTP ${response.status}`);
     }
 
     if (status) {
-      status.textContent = (lang === "zh" ? "更新完成：" : "Updated: ") + message;
+      status.textContent = (lang === "zh" ? "更新完成：" : "Updated: ") +
+        `${data.updatedRows || 0} · ${data.updatedAt || ""}`;
     }
   } catch (error) {
     console.error(error);

@@ -11,6 +11,7 @@ const DASHBOARD_TABS = {
   decisionLog: '09 Decision Log',
   morningBrief: '10 Morning Brief',
   researchPack: '12 Research Pack',
+  aiMarketTrend: '13 AI Market Trend',
   settings: '99 Settings',
   marketRadar: '05 Market Radar',
   stockAnalysis: '11 Stock Analysis',
@@ -39,6 +40,29 @@ const RESEARCH_PACK_HEADERS = [
   '关联决策ID / Related Decision ID',
   '创建时间 / Created At',
   '备注 / Notes',
+];
+
+const AI_MARKET_TREND_HEADERS = [
+  'record_id',
+  'report_date',
+  'updated_at',
+  'generated_by',
+  'status',
+  'language',
+  'market_overview',
+  'us_market',
+  'canada_market',
+  'macro_policy',
+  'sector_rotation',
+  'key_movers',
+  'risk_signals',
+  'conservative_notes',
+  'watch_next',
+  'sources_count',
+  'sources',
+  'raw_json',
+  'public_visible',
+  'notes',
 ];
 
 const NOTEBOOKLM_PROMPT = [
@@ -193,6 +217,14 @@ function doGet(e) {
       });
     }
 
+    if (action === 'latestAiMarketTrend') {
+      return jsonResponse_({
+        ok: true,
+        data: getLatestAiMarketTrend_(),
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
     if (action === 'refreshNews') {
       const result = dailyNewsFetchJob_();
       return jsonResponse_({
@@ -306,6 +338,7 @@ function doGet(e) {
   return jsonResponse_({
     ok: true,
     data: result.data || result,
+    updatedRows: result.updatedRows || result.count || 0,
     updatedAt: new Date().toISOString(),
   });
 }
@@ -315,6 +348,7 @@ if (action === 'update_stock_fundamentals') {
   return jsonResponse_({
     ok: true,
     data: result,
+    updatedRows: result.updated || result.updatedRows || 0,
     updatedAt: new Date().toISOString(),
   });
 }
@@ -322,6 +356,32 @@ if (action === 'update_stock_fundamentals') {
 throw new Error('Unsupported action: ' + action);
 
     throw new Error('Unsupported action: ' + action);
+  } catch (error) {
+    return jsonResponse_({
+      ok: false,
+      error: error && error.message ? error.message : String(error),
+    });
+  }
+}
+
+function doPost(e) {
+  try {
+    var body = {};
+    if (e && e.postData && e.postData.contents) {
+      body = JSON.parse(e.postData.contents || '{}');
+    }
+
+    var action = String(body.action || '').trim();
+    if (action === 'appendAiMarketTrend') {
+      var result = appendAiMarketTrend_(body.record || {});
+      return jsonResponse_({
+        ok: true,
+        data: result,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
+    throw new Error('Unsupported POST action: ' + action);
   } catch (error) {
     return jsonResponse_({
       ok: false,
@@ -369,6 +429,85 @@ function isAllowedTab_(tabName) {
   return Object.keys(DASHBOARD_TABS).some(function(key) {
     return DASHBOARD_TABS[key] === tabName;
   });
+}
+
+function appendAiMarketTrend_(record) {
+  var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = spreadsheet.getSheetByName(DASHBOARD_TABS.aiMarketTrend);
+  if (!sheet) throw new Error('Sheet tab not found: ' + DASHBOARD_TABS.aiMarketTrend);
+
+  ensureAiMarketTrendHeaders_(sheet);
+
+  var now = new Date();
+  var updatedAt = String(record.updated_at || record.updatedAt || now.toISOString()).trim();
+  var reportDate = String(record.report_date || '').trim() || Utilities.formatDate(now, getScriptTimeZone_(), 'yyyy-MM-dd');
+  var recordId = String(record.record_id || '').trim() || ('AIT-' + Utilities.formatDate(now, getScriptTimeZone_(), 'yyyyMMdd-HHmmss'));
+
+  var row = [
+    recordId,
+    reportDate,
+    updatedAt,
+    String(record.generated_by || 'manual').trim(),
+    String(record.status || 'PUBLISHED').trim(),
+    String(record.language || 'zh').trim(),
+    String(record.market_overview || '').trim(),
+    String(record.us_market || '').trim(),
+    String(record.canada_market || '').trim(),
+    String(record.macro_policy || '').trim(),
+    String(record.sector_rotation || '').trim(),
+    String(record.key_movers || '').trim(),
+    String(record.risk_signals || '').trim(),
+    String(record.conservative_notes || '').trim(),
+    String(record.watch_next || '').trim(),
+    String(record.sources_count || '').trim(),
+    String(record.sources || '').trim(),
+    String(record.raw_json || '').trim(),
+    String(record.public_visible || 'TRUE').trim(),
+    String(record.notes || '').trim(),
+  ];
+
+  sheet.appendRow(row);
+  SpreadsheetApp.flush();
+  return { recordId: recordId };
+}
+
+function getLatestAiMarketTrend_() {
+  var rows = readTab_(DASHBOARD_TABS.aiMarketTrend);
+  var latest = null;
+
+  rows.forEach(function(row) {
+    if (String(row.status || '').trim().toUpperCase() !== 'PUBLISHED') return;
+    if (String(row.public_visible || '').trim().toUpperCase() !== 'TRUE') return;
+
+    var updatedAt = String(row.updated_at || '').trim();
+    var time = Date.parse(updatedAt);
+    if (isNaN(time)) time = 0;
+    if (!latest || time > latest.time) {
+      latest = { time: time, row: row };
+    }
+  });
+
+  return latest ? latest.row : null;
+}
+
+function ensureAiMarketTrendHeaders_(sheet) {
+  var lastCol = sheet.getLastColumn();
+  if (lastCol < AI_MARKET_TREND_HEADERS.length) {
+    sheet.getRange(1, 1, 1, AI_MARKET_TREND_HEADERS.length).setValues([AI_MARKET_TREND_HEADERS]);
+    return;
+  }
+
+  var headers = sheet.getRange(1, 1, 1, AI_MARKET_TREND_HEADERS.length).getValues()[0].map(function(header) {
+    return String(header || '').trim();
+  });
+
+  var needsHeader = AI_MARKET_TREND_HEADERS.some(function(header, index) {
+    return headers[index] !== header;
+  });
+
+  if (needsHeader) {
+    sheet.getRange(1, 1, 1, AI_MARKET_TREND_HEADERS.length).setValues([AI_MARKET_TREND_HEADERS]);
+  }
 }
 
 function getLatestMorningBrief_() {
@@ -2838,12 +2977,13 @@ function analyzeStocks_(params) {
   });
   
   // 保存到 11 Stock Analysis
-  saveStockAnalysisToSheet_(spreadsheet, results);
+  const updatedRows = saveStockAnalysisToSheet_(spreadsheet, results);
   
   return {
     ok: true,
     data: results,
     count: results.length,
+    updatedRows,
     industry: industry || 'all',
     updatedAt: new Date().toISOString()
   };
@@ -3201,6 +3341,7 @@ function saveStockAnalysisToSheet_(spreadsheet, results) {
     .setHorizontalAlignment('center');
 
   SpreadsheetApp.flush();
+  return rows.length;
 }
 
 function updateStockFundamentalsForStockAnalysis_(params) {

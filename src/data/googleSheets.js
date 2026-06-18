@@ -123,9 +123,17 @@ export async function loadStockAnalysisPageSource() {
   return await loadSheetTab(SHEET_CONFIG.tabs.stockAnalysis);
 }
 
-export async function refreshStockAnalysis() {
-  const url = buildApiUrl("analyze_stocks", { industry: "all" });
-  return await fetchJson(url);
+export async function refreshStockAnalysis(adminToken = "") {
+  const response = await fetch("/.netlify/functions/updateStockAnalysis", {
+    method: "POST",
+    headers: {
+      "Authorization": adminToken ? `Bearer ${adminToken}` : "",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ action: "analyze_stocks" }),
+  });
+
+  return await parseBackendJson(response);
 }
 
 function buildApiUrl(action, params = {}, apiUrl = FAMILY_INVESTMENT_API_URL) {
@@ -160,5 +168,20 @@ async function fetchJson(url) {
   if (!payload.ok) {
     throw new Error(payload.error || "Apps Script API returned ok:false");
   }
+  return payload;
+}
+
+async function parseBackendJson(response) {
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error("Update failed: backend did not return JSON.");
+  }
+
+  if (!response.ok || !payload.ok) {
+    throw new Error(payload.error || "Update failed.");
+  }
+
   return payload;
 }

@@ -39,11 +39,16 @@ import { t, getLang, setLang } from "./i18n.js";
 
 const app = document.querySelector("#app");
 const AUTH_KEY = "fir_auth_v2";
+const ADMIN_TOKEN_KEY = "fir_admin_token_v1";
 
 // ── Password Gate ─────────────────────────────────────────────────────────────
 
 function checkAuth() {
   return sessionStorage.getItem(AUTH_KEY) === "ok";
+}
+
+function getAdminToken() {
+  return sessionStorage.getItem(ADMIN_TOKEN_KEY) || "";
 }
 
 function showPasswordGate() {
@@ -97,8 +102,9 @@ function showPasswordGate() {
     if (errEl) errEl.hidden = true;
 
     const verified = await verifyAdminPassword(inputEl.value);
-    if (verified) {
+    if (verified.success) {
       sessionStorage.setItem(AUTH_KEY, "ok");
+      sessionStorage.setItem(ADMIN_TOKEN_KEY, verified.token || "");
       wrapper?.remove();
       renderCurrentPage().catch((error) => {
         app.innerHTML = ErrorState(error, checkAuth());
@@ -122,9 +128,12 @@ async function verifyAdminPassword(password) {
       body: JSON.stringify({ password }),
     });
     const payload = await response.json();
-    return response.ok && payload.success === true;
+    return {
+      success: response.ok && payload.success === true,
+      token: payload.token || "",
+    };
   } catch {
-    return false;
+    return { success: false, token: "" };
   }
 }
 
@@ -141,6 +150,7 @@ function bindGlobalActions() {
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       sessionStorage.removeItem(AUTH_KEY);
+      sessionStorage.removeItem(ADMIN_TOKEN_KEY);
       window.location.hash = "#/dashboard";
       renderCurrentPage().catch((error) => {
         app.innerHTML = ErrorState(error, checkAuth());
@@ -274,6 +284,7 @@ async function renderCurrentPage() {
 
   const source = await loadDashboardSource();
   const dashboard = buildDashboardModel(source);
+  await loadSavedMarketTrendSummary();
   renderDashboard(dashboard);
 }
 
@@ -287,7 +298,7 @@ function renderDashboard(dashboard) {
     ${StockRadarHomeEntry()}
     <section class="dashboard-grid">
       ${LiveUpdatesPanel(dashboard.news)}
-      ${AiMarketRadarPanel(state.aiMarketTrendSummary, state.aiMarketTrendSources)}
+      ${AiMarketRadarPanel(state.aiMarketTrendSummary, state.aiMarketTrendSources, checkAuth())}
     </section>
     <footer class="footer">
       ${t("footer_disclaimer")}
@@ -296,7 +307,28 @@ function renderDashboard(dashboard) {
   bindRefreshNewsButton();
   bindRefreshMarketButton();
   bindAiMarketTrendButton();
+  hydrateAiMarketTrendResult();
   bindGlobalActions();
+}
+
+async function loadSavedMarketTrendSummary() {
+  try {
+    const response = await fetch("/.netlify/functions/getMarketTrendSummary");
+    const payload = await response.json();
+    if (!response.ok || !payload.ok) return;
+
+    state.aiMarketTrendSummary = payload.summary || null;
+    state.aiMarketTrendSources = Array.isArray(payload.sources) ? payload.sources : [];
+  } catch {
+    state.aiMarketTrendSummary = null;
+    state.aiMarketTrendSources = [];
+  }
+}
+
+function hydrateAiMarketTrendResult() {
+  const resultEl = document.getElementById("ai-market-trend-result");
+  if (!resultEl || !state.aiMarketTrendSummary) return;
+  resultEl.innerHTML = renderAiMarketTrendResult(state.aiMarketTrendSummary, state.aiMarketTrendSources);
 }
 
 function bindAiMarketTrendButton() {
@@ -313,7 +345,10 @@ function bindAiMarketTrendButton() {
     try {
       const response = await fetch("/.netlify/functions/generateMarketTrendSummary", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Authorization": `Bearer ${getAdminToken()}`,
+          "Content-Type": "application/json",
+        },
         body: "{}",
       });
       const payload = await response.json();
@@ -324,36 +359,95 @@ function bindAiMarketTrendButton() {
 
       state.aiMarketTrendSummary = payload.summary || null;
       state.aiMarketTrendSources = Array.isArray(payload.sources) ? payload.sources : [];
-      statusEl.textContent = t("status_ai_trend_complete");
-      statusEl.className = "news-refresh-status success";
+      statusEl.textContent = payload.saved === false
+        ? t("status_ai_trend_save_failed")
+        : t("status_ai_trend_saved");
+      statusEl.className = payload.saved === false
+        ? "news-refresh-status error"
+        : "news-refresh-status success";
       resultEl.innerHTML = renderAiMarketTrendResult(state.aiMarketTrendSummary, state.aiMarketTrendSources);
     } catch (error) {
       statusEl.textContent = t("status_ai_trend_failed");
       statusEl.className = "news-refresh-status error";
-      resultEl.innerHTML = `<div class="firecrawl-error">${escapeHtmlLocal(error.message || t("status_unknown_error"))}</div>`;
+      resultEl.innerHTML = `<div class="firecrawl-error">${escapeHtmlLocal(friendlyAiTrendError(error.message || ""))}</div>`;
     } finally {
       btn.disabled = false;
     }
   });
 }
 
+function friendlyAiTrendError(message) {
+  if (message.includes("format could not be parsed") || message.includes("summary format was incomplete") || message.includes("invalid JSON")) {
+    return t("status_ai_trend_format_incomplete");
+  }
+  return message || t("status_unknown_error");
+}
+
 function renderAiMarketTrendResult(summary, sources = []) {
   if (!summary) return "";
 
-  const usRisks = summary.usMarket?.riskSignals || [];
-  const canadaRisks = summary.canadaMarket?.riskSignals || [];
-  const risks = [...usRisks, ...canadaRisks];
+  const isDetailedSummary = Boolean(summary.marketOverview || summary.watchNext || summary.conservativeInvestorNotes);
 
   return `
     <div class="ai-market-radar-list">
-      ${marketTrendItem(t("ai_radar_us_title"), summary.usMarket)}
-      ${marketTrendItem(t("ai_radar_ca_title"), summary.canadaMarket)}
-      ${arrayTrendItem(t("ai_radar_risk_title"), risks)}
-      ${arrayTrendItem(t("ai_radar_watch_title"), summary.watchItems || [])}
+      ${
+        isDetailedSummary
+          ? [
+              detailedTrendItem(t("ai_radar_overview_title"), summary.marketOverview),
+              detailedTrendItem(t("ai_radar_us_title"), summary.usMarket),
+              detailedTrendItem(t("ai_radar_ca_title"), summary.canadaMarket),
+              detailedTrendItem(t("ai_radar_risk_title"), summary.riskSignals),
+              detailedTrendItem(t("ai_radar_watch_title"), summary.watchNext),
+              detailedTrendItem(t("ai_radar_conservative_title"), summary.conservativeInvestorNotes),
+            ].join("")
+          : renderLegacyAiMarketTrendResult(summary)
+      }
     </div>
     <div class="ai-market-source-status">
       <span>${escapeHtmlLocal(t("ai_trend_updated_at"))}: ${escapeHtmlLocal(formatAiTrendDate(summary.updatedAt))}</span>
       <span>${escapeHtmlLocal(t("ai_trend_sources"))}: ${sources.filter((source) => source.ok).length}/${sources.length}</span>
+    </div>
+  `;
+}
+
+function renderLegacyAiMarketTrendResult(summary) {
+  const usRisks = summary.usMarket?.riskSignals || [];
+  const canadaRisks = summary.canadaMarket?.riskSignals || [];
+  const risks = [...usRisks, ...canadaRisks];
+
+  return [
+    marketTrendItem(t("ai_radar_us_title"), summary.usMarket),
+    marketTrendItem(t("ai_radar_ca_title"), summary.canadaMarket),
+    arrayTrendItem(t("ai_radar_risk_title"), risks),
+    arrayTrendItem(t("ai_radar_watch_title"), summary.watchItems || []),
+  ].join("");
+}
+
+function detailedTrendItem(title, block = {}) {
+  const groups = [
+    [t("ai_trend_facts"), block.facts || []],
+    [t("ai_trend_judgment"), block.trendJudgment || []],
+    [t("ai_trend_risks"), block.riskNotes || []],
+  ];
+
+  return `
+    <article class="ai-market-radar-item">
+      <strong>${escapeHtmlLocal(title)}</strong>
+      ${block.summary ? `<p>${escapeHtmlLocal(block.summary)}</p>` : ""}
+      ${groups.map(([label, items]) => trendGroup(label, items)).join("")}
+    </article>
+  `;
+}
+
+function trendGroup(label, items = []) {
+  return `
+    <div class="ai-market-radar-group">
+      <span>${escapeHtmlLocal(label)}</span>
+      ${
+        items.length
+          ? `<ul>${items.slice(0, 5).map((item) => `<li>${escapeHtmlLocal(item)}</li>`).join("")}</ul>`
+          : `<p>${escapeHtmlLocal(t("ai_trend_no_data"))}</p>`
+      }
     </div>
   `;
 }
@@ -770,12 +864,14 @@ function openWatchlistPopup(id) {
 // ── Stock Analysis ────────────────────────────────────────────────────────────
 
 function renderStockAnalysis() {
-  app.innerHTML = AppShell(StockAnalysisPage(state.stockAnalysisSource ?? []), "stock-analysis", checkAuth());
+  app.innerHTML = AppShell(StockAnalysisPage(state.stockAnalysisSource ?? [], checkAuth()), "stock-analysis", checkAuth());
   bindStockAnalysisInteractions();
   bindGlobalActions();
 }
 
 function bindStockAnalysisInteractions() {
+  bindStockDetailSelection();
+
   const btn = document.getElementById("btn-refresh-stock-analysis");
   const statusEl = document.getElementById("stock-refresh-status");
   if (!btn || !statusEl) return;
@@ -786,14 +882,37 @@ function bindStockAnalysisInteractions() {
     statusEl.className = "news-refresh-status loading";
 
     try {
-      await refreshStockAnalysis();
+      const result = await refreshStockAnalysis(getAdminToken());
       state.stockAnalysisSource = await loadStockAnalysisPageSource();
       renderStockAnalysis();
+      const nextStatusEl = document.getElementById("stock-refresh-status");
+      if (nextStatusEl) {
+        nextStatusEl.textContent = `${t("status_stock_refreshed")} ${result.updatedRows || 0} · ${formatAiTrendDate(result.updatedAt)}`;
+        nextStatusEl.className = "news-refresh-status success";
+      }
     } catch (err) {
       statusEl.textContent = t("status_refresh_failed") + (err.message || t("status_unknown_error"));
       statusEl.className = "news-refresh-status error";
       btn.disabled = false;
     }
+  });
+}
+
+function bindStockDetailSelection() {
+  const listItems = Array.from(document.querySelectorAll("[data-stock-detail-target]"));
+  const panels = Array.from(document.querySelectorAll("[data-stock-detail-panel]"));
+  if (!listItems.length || !panels.length) return;
+
+  listItems.forEach((item) => {
+    item.addEventListener("click", () => {
+      const target = item.getAttribute("data-stock-detail-target");
+      listItems.forEach((button) => button.classList.toggle("active", button === item));
+      panels.forEach((panel) => {
+        const active = panel.getAttribute("data-stock-detail-panel") === target;
+        panel.classList.toggle("active", active);
+        panel.hidden = !active;
+      });
+    });
   });
 }
 

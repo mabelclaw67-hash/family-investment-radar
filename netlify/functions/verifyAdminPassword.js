@@ -1,3 +1,5 @@
+import { createAdminToken } from "./adminAuth.js";
+
 export async function handler(event) {
   if (event.httpMethod !== "POST") {
     return jsonResponse(405, { success: false });
@@ -16,8 +18,11 @@ export async function handler(event) {
   }
 
   const password = String(body.password || "");
+  const success = Boolean(password) && password === adminPassword;
+
   return jsonResponse(200, {
-    success: Boolean(password) && password === adminPassword,
+    success,
+    token: success ? createAdminToken() : "",
   });
 }
 
