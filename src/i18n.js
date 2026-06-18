@@ -297,6 +297,7 @@ const STRINGS = {
     pw_submit:                 "Enter",
     pw_change_button:          "Change Admin Password",
     pw_change_help:            "The admin password is stored in Netlify Environment Variables. Go to Netlify → Environment variables, update ADMIN_PASSWORD, save it, then redeploy the site for the change to take effect.",
+    pw_cancel:                 "Cancel",
 
     // ── Status messages ───────────────────────────────────────────────────────
     status_refreshing_news:    "Syncing news...",
@@ -620,6 +621,7 @@ const STRINGS = {
     pw_submit:                 "进入",
     pw_change_button:          "修改管理员密码",
     pw_change_help:            "管理员密码保存在 Netlify Environment Variables。请到 Netlify → Environment variables 修改 ADMIN_PASSWORD，保存后重新部署网站生效。",
+    pw_cancel:                 "取消",
 
     // ── Status messages ───────────────────────────────────────────────────────
     status_refreshing_news:    "正在同步新闻...",

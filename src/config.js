@@ -34,12 +34,12 @@ export const NAV_ITEMS = [
   ["nav_dashboard", "home",      "dashboard"],
   ["nav_stock_analysis", "radar", "stock-analysis"],
   ["nav_market",    "radar",     "market"],
+  ["nav_alerts",    "bell",      "alerts"],
   ["nav_news",      "news",      "news"],
   ["nav_share",     "news",      "share"],
   ["nav_morning_brief", "news",  "morning-brief", "admin"],
   ["nav_holdings",  "briefcase", "holdings", "admin"],
   ["nav_watchlist", "bookmark",  "watchlist", "admin"],
-  ["nav_alerts",    "bell",      "alerts", "admin"],
   ["nav_decisions", "document",  "decisions", "admin"],
   ["nav_settings",  "settings",  "settings", "admin"],
 ];

@@ -47,11 +47,12 @@ function checkAuth() {
 }
 
 function showPasswordGate() {
-  app.innerHTML = `
-    <div class="pw-gate-wrapper">
-      <div class="pw-gate-box">
+  document.getElementById("admin-login-overlay")?.remove();
+  document.body.insertAdjacentHTML("beforeend", `
+    <div id="admin-login-overlay" class="pw-gate-wrapper">
+      <div class="pw-gate-box" role="dialog" aria-modal="true" aria-labelledby="admin-login-title">
         <div class="pw-brand">◎</div>
-        <h2 class="pw-title">${t("pw_title")}</h2>
+        <h2 id="admin-login-title" class="pw-title">${t("pw_title")}</h2>
         <p class="pw-subtitle">${t("pw_subtitle")}</p>
         <form id="pw-form" class="pw-form" autocomplete="on">
           <p class="pw-hint">${t("pw_hint")}</p>
@@ -72,9 +73,15 @@ function showPasswordGate() {
         <div id="pw-change-help" class="pw-change-help" hidden>
           ${t("pw_change_help")}
         </div>
+        <button id="pw-cancel-btn" class="pw-cancel-btn" type="button">${t("pw_cancel")}</button>
       </div>
     </div>
-  `;
+  `);
+
+  const wrapper = document.getElementById("admin-login-overlay");
+  document.getElementById("pw-cancel-btn")?.addEventListener("click", () => {
+    wrapper?.remove();
+  });
 
   document.getElementById("pw-change-help-btn")?.addEventListener("click", () => {
     const helpEl = document.getElementById("pw-change-help");
@@ -92,6 +99,7 @@ function showPasswordGate() {
     const verified = await verifyAdminPassword(inputEl.value);
     if (verified) {
       sessionStorage.setItem(AUTH_KEY, "ok");
+      wrapper?.remove();
       renderCurrentPage().catch((error) => {
         app.innerHTML = ErrorState(error, checkAuth());
         console.error(error);
@@ -123,7 +131,8 @@ async function verifyAdminPassword(password) {
 function bindGlobalActions() {
   const loginBtn = document.querySelector("[data-action='adminLogin']");
   if (loginBtn) {
-    loginBtn.addEventListener("click", () => {
+    loginBtn.addEventListener("click", (event) => {
+      event.preventDefault();
       showPasswordGate();
     });
   }
@@ -196,6 +205,7 @@ async function renderCurrentPage() {
   const isAdmin = checkAuth();
 
   if (isAdminRoute(state.page) && !isAdmin) {
+    window.location.hash = "#/dashboard";
     showPasswordGate();
     return;
   }
@@ -890,6 +900,7 @@ function bindDecisionLogInteractions() {
 // ── URL Routing ───────────────────────────────────────────────────────────────
 
 function getPageFromUrl() {
+  if (window.location.hash === "#/" || window.location.hash === "#") return "dashboard";
   if (window.location.pathname.includes("/holdings"))  return "holdings";
   if (window.location.pathname.includes("/watchlist")) return "watchlist";
   if (window.location.pathname.includes("/decisions")) return "decisions";
@@ -908,7 +919,7 @@ function getPageFromUrl() {
 }
 
 function isAdminRoute(page) {
-  return ["morning-brief", "holdings", "watchlist", "alerts", "decisions", "settings"].includes(page);
+  return ["morning-brief", "holdings", "watchlist", "decisions", "settings"].includes(page);
 }
 
 function escapeHtmlLocal(value) {
@@ -924,6 +935,7 @@ window.addEventListener("hashchange", () => {
   if (!checkAuth()) {
     const targetPage = getPageFromUrl();
     if (isAdminRoute(targetPage)) {
+      window.location.hash = "#/dashboard";
       showPasswordGate();
       return;
     }
