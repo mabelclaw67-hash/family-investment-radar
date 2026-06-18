@@ -67,7 +67,5 @@ async function readJsonResponse(response, label) {
 }
 
 function getAppsScriptUrl() {
-  return process.env.FAMILY_INVESTMENT_API_URL
-    || process.env.VITE_FAMILY_INVESTMENT_API_URL
-    || DEFAULT_APPS_SCRIPT_URL;
+  return DEFAULT_APPS_SCRIPT_URL;
 }
