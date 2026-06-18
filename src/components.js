@@ -250,11 +250,19 @@ export function StockRadarHomeEntry() {
   `;
 }
 
-export function AiMarketRadarPanel(summary = null, sources = []) {
+export function AiMarketRadarPanel(summary = null, sources = [], isAdmin = false) {
   return `
     <section class="panel ai-market-radar-panel">
       <div class="panel-title">
         <h2>${t("ai_radar_title")}</h2>
+        ${
+          isAdmin
+            ? `<div class="news-refresh-row">
+                <button id="btn-update-ai-market-trend" class="refresh-news-btn" type="button">${escapeHtml(t("btn_update_ai_trend"))}</button>
+                <span id="ai-market-trend-status" class="news-refresh-status"></span>
+              </div>`
+            : ""
+        }
       </div>
       <div id="ai-market-trend-result">
         ${
