@@ -127,7 +127,7 @@ async function verifyAdminPassword(password) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password }),
     });
-    const payload = await response.json();
+    const payload = await readJsonResponse(response, "Admin password API");
     return {
       success: response.ok && payload.success === true,
       token: payload.token || "",
@@ -298,7 +298,7 @@ function renderDashboard(dashboard) {
     ${StockRadarHomeEntry()}
     <section class="dashboard-grid">
       ${LiveUpdatesPanel(dashboard.news)}
-      ${AiMarketRadarPanel(state.aiMarketTrendSummary, state.aiMarketTrendSources, checkAuth())}
+      ${AiMarketRadarPanel(state.aiMarketTrendSummary, state.aiMarketTrendSources)}
     </section>
     <footer class="footer">
       ${t("footer_disclaimer")}
@@ -306,7 +306,6 @@ function renderDashboard(dashboard) {
   `, "dashboard", checkAuth());
   bindRefreshNewsButton();
   bindRefreshMarketButton();
-  bindAiMarketTrendButton();
   hydrateAiMarketTrendResult();
   bindGlobalActions();
 }
@@ -314,7 +313,12 @@ function renderDashboard(dashboard) {
 async function loadSavedMarketTrendSummary() {
   try {
     const response = await fetch("/.netlify/functions/getMarketTrendSummary");
-    const payload = await response.json();
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      throw new Error("Market trend read API did not return JSON.");
+    }
+
+    const payload = await readJsonResponse(response, "Market trend read API");
     if (!response.ok || !payload.ok) return;
 
     state.aiMarketTrendSummary = payload.summary || null;
@@ -331,56 +335,19 @@ function hydrateAiMarketTrendResult() {
   resultEl.innerHTML = renderAiMarketTrendResult(state.aiMarketTrendSummary, state.aiMarketTrendSources);
 }
 
-function bindAiMarketTrendButton() {
-  const btn = document.getElementById("btn-update-ai-market-trend");
-  const statusEl = document.getElementById("ai-market-trend-status");
-  const resultEl = document.getElementById("ai-market-trend-result");
-  if (!btn || !statusEl || !resultEl) return;
-
-  btn.addEventListener("click", async () => {
-    btn.disabled = true;
-    statusEl.textContent = t("status_ai_trend_loading");
-    statusEl.className = "news-refresh-status loading";
-
-    try {
-      const response = await fetch("/.netlify/functions/generateMarketTrendSummary", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${getAdminToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: "{}",
-      });
-      const payload = await response.json();
-
-      if (!response.ok || !payload.ok) {
-        throw new Error(payload.error || `HTTP ${response.status}`);
-      }
-
-      state.aiMarketTrendSummary = payload.summary || null;
-      state.aiMarketTrendSources = Array.isArray(payload.sources) ? payload.sources : [];
-      statusEl.textContent = payload.saved === false
-        ? t("status_ai_trend_save_failed")
-        : t("status_ai_trend_saved");
-      statusEl.className = payload.saved === false
-        ? "news-refresh-status error"
-        : "news-refresh-status success";
-      resultEl.innerHTML = renderAiMarketTrendResult(state.aiMarketTrendSummary, state.aiMarketTrendSources);
-    } catch (error) {
-      statusEl.textContent = t("status_ai_trend_failed");
-      statusEl.className = "news-refresh-status error";
-      resultEl.innerHTML = `<div class="firecrawl-error">${escapeHtmlLocal(friendlyAiTrendError(error.message || ""))}</div>`;
-    } finally {
-      btn.disabled = false;
-    }
-  });
-}
-
 function friendlyAiTrendError(message) {
   if (message.includes("format could not be parsed") || message.includes("summary format was incomplete") || message.includes("invalid JSON")) {
     return t("status_ai_trend_format_incomplete");
   }
   return message || t("status_unknown_error");
+}
+
+async function readJsonResponse(response, label) {
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    throw new Error(`${label} did not return JSON.`);
+  }
+  return await response.json();
 }
 
 function renderAiMarketTrendResult(summary, sources = []) {
@@ -588,7 +555,7 @@ function bindFirecrawlTest() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: input.value.trim() }),
       });
-      const payload = await response.json();
+      const payload = await readJsonResponse(response, "Firecrawl test API");
 
       if (!response.ok || !payload.ok) {
         throw new Error(payload.error || `HTTP ${response.status}`);

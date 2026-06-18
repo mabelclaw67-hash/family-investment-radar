@@ -164,7 +164,7 @@ async function fetchJson(url) {
     throw new Error(`Apps Script API returned HTTP ${response.status}`);
   }
 
-  const payload = await response.json();
+  const payload = await readJsonResponse(response, "Apps Script API");
   if (!payload.ok) {
     throw new Error(payload.error || "Apps Script API returned ok:false");
   }
@@ -174,7 +174,7 @@ async function fetchJson(url) {
 async function parseBackendJson(response) {
   let payload;
   try {
-    payload = await response.json();
+    payload = await readJsonResponse(response, "Stock update API");
   } catch {
     throw new Error("Update failed: backend did not return JSON.");
   }
@@ -184,4 +184,12 @@ async function parseBackendJson(response) {
   }
 
   return payload;
+}
+
+async function readJsonResponse(response, label) {
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    throw new Error(`${label} did not return JSON.`);
+  }
+  return await response.json();
 }

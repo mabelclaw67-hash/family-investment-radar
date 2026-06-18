@@ -250,21 +250,11 @@ export function StockRadarHomeEntry() {
   `;
 }
 
-export function AiMarketRadarPanel(summary = null, sources = [], isAdmin = false) {
-  const emptyMessageKey = isAdmin ? "ai_radar_empty_prompt" : "ai_radar_no_saved_summary";
-
+export function AiMarketRadarPanel(summary = null, sources = []) {
   return `
     <section class="panel ai-market-radar-panel">
       <div class="panel-title">
         <h2>${t("ai_radar_title")}</h2>
-        ${
-          isAdmin
-            ? `<div class="news-refresh-row">
-                <button id="btn-update-ai-market-trend" class="refresh-news-btn" type="button">${t("btn_update_ai_trend")}</button>
-                <span id="ai-market-trend-status" class="news-refresh-status"></span>
-              </div>`
-            : ""
-        }
       </div>
       <div id="ai-market-trend-result">
         ${
@@ -272,7 +262,7 @@ export function AiMarketRadarPanel(summary = null, sources = [], isAdmin = false
             ? ""
             : `<div class="ai-market-radar-list">
                 <article class="ai-market-radar-item ai-market-radar-empty">
-                  <p>${escapeHtml(t(emptyMessageKey))}</p>
+                  <p>${escapeHtml(t("ai_radar_no_saved_summary"))}</p>
                 </article>
               </div>`
         }
@@ -2215,9 +2205,13 @@ document.addEventListener("click", async (event) => {
 
     let data;
     try {
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("Backend did not return JSON.");
+      }
       data = await response.json();
-    } catch {
-      throw new Error(lang === "zh" ? "后端没有返回 JSON。" : "Backend did not return JSON.");
+    } catch (error) {
+      throw new Error(lang === "zh" ? "后端没有返回 JSON。" : (error.message || "Backend did not return JSON."));
     }
 
     if (!response.ok || !data.ok) {
