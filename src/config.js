@@ -15,10 +15,6 @@ export const SHEET_CONFIG = {
   },
 };
 
-// ── Site password gate ────────────────────────────────────────────────────────
-// Fixed local password gate. Keep UI copy generic and do not expose it on screen.
-export const SITE_PASSWORD = "246810";
-
 const CURRENT_API_URL =
   "https://script.google.com/macros/s/AKfycbwxCyBuqCjc8vB4SHe6QtYPx3WgfAsaJN4dHpFqBjc22h3R9gScYzgSs9XlJNrRdSpyNQ/exec";
 
@@ -36,12 +32,14 @@ export const FAMILY_INVESTMENT_API_URL =
 // Each entry: [i18n-key, icon-class, page-id]
 export const NAV_ITEMS = [
   ["nav_dashboard", "home",      "dashboard"],
-  ["nav_holdings",  "briefcase", "holdings"],
-  ["nav_watchlist", "bookmark",  "watchlist"],
-  ["nav_alerts",    "bell",      "alerts"],
-  ["nav_news",      "news",      "news"],
-  ["nav_market",    "radar",     "market"],
   ["nav_stock_analysis", "radar", "stock-analysis"],
-  ["nav_decisions", "document",  "decisions"],
-  ["nav_settings",  "settings",  "settings"],
+  ["nav_market",    "radar",     "market"],
+  ["nav_news",      "news",      "news"],
+  ["nav_share",     "news",      "share"],
+  ["nav_morning_brief", "news",  "morning-brief", "admin"],
+  ["nav_holdings",  "briefcase", "holdings", "admin"],
+  ["nav_watchlist", "bookmark",  "watchlist", "admin"],
+  ["nav_alerts",    "bell",      "alerts", "admin"],
+  ["nav_decisions", "document",  "decisions", "admin"],
+  ["nav_settings",  "settings",  "settings", "admin"],
 ];

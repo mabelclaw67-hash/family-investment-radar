@@ -6,15 +6,17 @@ import { deriveActionLabel, displayMarketValue, displayValue, HOLDING_FILTERS } 
 // Mobile tab definitions: [i18n-key, icon, page-id]
 const MOBILE_TABS = [
   ["mtab_dashboard", "⌂", "dashboard"],
-  ["mtab_holdings",  "▣", "holdings"],
-  ["mtab_watchlist", "◇", "watchlist"],
   ["mtab_stock_analysis", "↗", "stock-analysis"],
-  ["mtab_decisions", "□", "decisions"],
+  ["mtab_market", "◎", "market"],
+  ["mtab_news", "▤", "news"],
+  ["mtab_share", "□", "share"],
 ];
 
 // ─── App Shell ────────────────────────────────────────────────────────────────
 
-export function AppShell(content, currentPage = "dashboard") {
+export function AppShell(content, currentPage = "dashboard", isAdmin = false) {
+  const navItems = NAV_ITEMS.filter((item) => item[3] !== "admin" || isAdmin);
+  const mobileTabs = MOBILE_TABS.filter((item) => item[3] !== "admin" || isAdmin);
   return `
     <aside class="sidebar">
       <div class="brand">
@@ -23,7 +25,7 @@ export function AppShell(content, currentPage = "dashboard") {
           <strong>${t("brand_name")}</strong>
         </div>
       </div>
-      <nav class="nav">${NAV_ITEMS.map((item) => navItem(item, currentPage)).join("")}</nav>
+      <nav class="nav">${navItems.map((item) => navItem(item, currentPage)).join("")}</nav>
       <div class="sidebar-card">
         <strong>${t("sidebar_tagline")}</strong>
         <small>${t("sidebar_no_advice")}</small>
@@ -32,13 +34,13 @@ export function AppShell(content, currentPage = "dashboard") {
         <strong>${t("sidebar_data_source")}</strong>
         <span>${SHEET_CONFIG.spreadsheetTitle}</span>
         <div class="sidebar-footer-actions">
-          <button class="logout-btn" data-action="logout" type="button">${t("btn_lock")}</button>
+          <button class="logout-btn" data-action="${isAdmin ? "logout" : "adminLogin"}" type="button">${t(isAdmin ? "btn_logout" : "btn_admin_login")}</button>
         </div>
       </div>
     </aside>
     <main class="main">${content}</main>
     <nav class="mobile-bottom-nav" aria-label="${t("brand_name")}">
-      ${MOBILE_TABS.map(([key, icon, page]) => `
+      ${mobileTabs.map(([key, icon, page]) => `
         <a class="mbn-tab ${currentPage === page ? "active" : ""}" href="#/${page}" aria-label="${t(key)}">
           <span class="mbn-icon">${icon}</span>
           <span>${t(key)}</span>
@@ -235,6 +237,54 @@ export function MorningBriefPanel(items) {
   `;
 }
 
+export function StockRadarHomeEntry() {
+  return `
+    <section class="stock-radar-home-entry">
+      <div>
+        <span>${t("stock_home_entry_label")}</span>
+        <h2>${escapeHtml(t("stock_home_entry_title"))}</h2>
+        <p>${escapeHtml(t("stock_home_entry_desc"))}</p>
+      </div>
+      <a class="stock-radar-home-link" href="#/stock-analysis">${escapeHtml(t("stock_home_entry_cta"))}</a>
+    </section>
+  `;
+}
+
+export function AiMarketRadarPanel(summary = null, sources = []) {
+  const sections = [
+    ["ai_radar_us_title", "ai_radar_us_text"],
+    ["ai_radar_ca_title", "ai_radar_ca_text"],
+    ["ai_radar_risk_title", "ai_radar_risk_text"],
+    ["ai_radar_watch_title", "ai_radar_watch_text"],
+  ];
+
+  return `
+    <section class="panel ai-market-radar-panel">
+      <div class="panel-title">
+        <h2>${t("ai_radar_title")}</h2>
+        <div class="news-refresh-row">
+          <button id="btn-update-ai-market-trend" class="refresh-news-btn" type="button">${t("btn_update_ai_trend")}</button>
+          <span id="ai-market-trend-status" class="news-refresh-status"></span>
+        </div>
+      </div>
+      <div id="ai-market-trend-result">
+        ${
+          summary
+            ? ""
+            : `<div class="ai-market-radar-list">
+                ${sections.map(([titleKey, textKey]) => `
+                  <article class="ai-market-radar-item">
+                    <strong>${escapeHtml(t(titleKey))}</strong>
+                    <p>${escapeHtml(t(textKey))}</p>
+                  </article>
+                `).join("")}
+              </div>`
+        }
+      </div>
+    </section>
+  `;
+}
+
 function filterMorningBriefByLanguage(items) {
   const lang = getLang();
   return items.filter((row) => {
@@ -368,7 +418,7 @@ export function SummaryCards(summaries) {
 
 // ─── Loading / Error States ───────────────────────────────────────────────────
 
-export function LoadingState() {
+export function LoadingState(isAdmin = false) {
   return AppShell(`
     ${Header()}
     <section class="state-card">
@@ -376,10 +426,10 @@ export function LoadingState() {
       <h2>${t("loading_text")}</h2>
       <p>${t("loading_subtitle")} ${SHEET_CONFIG.spreadsheetTitle}</p>
     </section>
-  `);
+  `, "dashboard", isAdmin);
 }
 
-export function ErrorState(error) {
+export function ErrorState(error, isAdmin = false) {
   return AppShell(`
     ${Header()}
     <section class="state-card error">
@@ -387,7 +437,7 @@ export function ErrorState(error) {
       <p>${escapeHtml(error.message)}</p>
       <small>${t("error_hint")}</small>
     </section>
-  `);
+  `, "dashboard", isAdmin);
 }
 
 // ─── Nav item ─────────────────────────────────────────────────────────────────
@@ -1546,10 +1596,8 @@ export function StockAnalysisPage(rows = []) {
   const items = selectedTheme === "all"
     ? allItems
     : allItems.filter((row) => matchesStockTheme(row, selectedTheme));
-  const title = lang === "zh" ? "股市雷达 / Stock Radar" : "Stock Radar / 股市雷达";
-  const subtitle = lang === "zh"
-    ? "按 AI、能源、银行、ETF、医药等主题查看股票。价格和日变动来自 GOOGLEFINANCE；简化波动参考% 不是正式历史年化波动率。"
-    : "View stocks by themes such as AI, Energy, Banks, ETFs, and Healthcare. Price and daily change come from GOOGLEFINANCE; Simple Volatility Reference % is not formal historical annualized volatility.";
+  const title = t("stock_analysis_page_title");
+  const subtitle = t("stock_analysis_page_subtitle");
   const refreshed = latestStockUpdate(allItems);
   const themeSummary = stockThemeSummary(allItems, selectedTheme, lang);
 
@@ -1561,10 +1609,10 @@ export function StockAnalysisPage(rows = []) {
       </div>
       <div class="stock-actions">
         <button id="btn-refresh-stock-analysis" class="refresh-news-btn" type="button">
-          ${lang === "zh" ? "刷新股票分析" : "Refresh Stock Analysis"}
+          ${t("btn_refresh_stock_analysis")}
         </button>
         <button id="btn-update-stock-fundamentals" class="refresh-news-btn" type="button">
-          ${lang === "zh" ? "更新基本面数据" : "Update Fundamentals"}
+          ${t("btn_update_fundamentals")}
         </button>
         <span id="stock-refresh-status" class="news-refresh-status"></span>
         <span id="stock-fundamentals-status" class="news-refresh-status"></span>
@@ -1599,6 +1647,72 @@ export function StockAnalysisPage(rows = []) {
 
     <section class="panel stock-table-panel">
       ${items.length ? stockAnalysisTable(items, lang) : EmptyState(lang === "zh" ? "这个主题下暂无股票" : "No stocks in this theme yet", lang === "zh" ? "可以切换到“全部”，或稍后在表格里增加更多股票。" : "Switch to All, or add more tickers to this theme later.")}
+    </section>
+  `;
+}
+
+// ─── Settings / Development Test Page ────────────────────────────────────────
+
+export function SettingsPage() {
+  return `
+    <header class="page-header">
+      <div>
+        <h1>${escapeHtml(t("settings_page_title"))}</h1>
+        <p>${escapeHtml(t("settings_page_subtitle"))}</p>
+      </div>
+    </header>
+
+    <section class="panel firecrawl-test-panel">
+      <div class="panel-title">
+        <h2>${escapeHtml(t("firecrawl_test_title"))}</h2>
+      </div>
+      <form id="firecrawl-test-form" class="firecrawl-test-form">
+        <label for="firecrawl-test-url">${escapeHtml(t("firecrawl_test_url_label"))}</label>
+        <div class="firecrawl-test-row">
+          <input
+            id="firecrawl-test-url"
+            type="url"
+            value="https://www.bankofcanada.ca/"
+            placeholder="https://example.com"
+            required
+          />
+          <button id="firecrawl-test-btn" class="refresh-news-btn" type="submit">${escapeHtml(t("firecrawl_test_button"))}</button>
+        </div>
+        <span id="firecrawl-test-status" class="news-refresh-status"></span>
+      </form>
+      <div id="firecrawl-test-result" class="firecrawl-test-result"></div>
+    </section>
+  `;
+}
+
+export function SharePage() {
+  const shareUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(shareUrl)}`;
+
+  return `
+    <header class="page-header">
+      <div>
+        <h1>${escapeHtml(t("share_page_title"))}</h1>
+        <p>${escapeHtml(t("share_page_subtitle"))}</p>
+      </div>
+    </header>
+    <section class="panel share-panel">
+      <div class="panel-title"><h2>${escapeHtml(t("share_card_title"))}</h2></div>
+      <div class="share-layout">
+        <div class="share-link-block">
+          <label>${escapeHtml(t("share_link_label"))}</label>
+          <div id="share-url-text" class="share-url-text">${escapeHtml(shareUrl)}</div>
+          <div class="share-actions">
+            <button id="btn-copy-share-link" class="refresh-news-btn" type="button">${escapeHtml(t("share_copy_button"))}</button>
+            <span id="share-copy-status" class="news-refresh-status"></span>
+          </div>
+          <p class="share-note">${escapeHtml(t("share_disclaimer"))}</p>
+        </div>
+        <div class="share-qr-block">
+          <img src="${escapeHtml(qrUrl)}" alt="${escapeHtml(t("share_qr_alt"))}" width="220" height="220" />
+          <span>${escapeHtml(t("share_qr_caption"))}</span>
+        </div>
+      </div>
     </section>
   `;
 }

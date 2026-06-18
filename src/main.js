@@ -27,12 +27,14 @@ import {
   LoadingState,
   MarketSection,
   MorningBriefPanel,
-  SummaryCards,
+  AiMarketRadarPanel,
+  StockRadarHomeEntry,
+  SharePage,
+  SettingsPage,
   StockAnalysisPage,
   WatchlistPage,
   WatchlistPopupHtml,
 } from "./components.js";
-import { SITE_PASSWORD } from "./config.js";
 import { t, getLang, setLang } from "./i18n.js";
 
 const app = document.querySelector("#app");
@@ -66,32 +68,76 @@ function showPasswordGate() {
           </div>
           <button type="submit" class="pw-submit">${t("pw_submit")}</button>
         </form>
+        <button id="pw-change-help-btn" class="pw-change-help-btn" type="button">${t("pw_change_button")}</button>
+        <div id="pw-change-help" class="pw-change-help" hidden>
+          ${t("pw_change_help")}
+        </div>
       </div>
     </div>
   `;
 
-  document.getElementById("pw-form").addEventListener("submit", (e) => {
+  document.getElementById("pw-change-help-btn")?.addEventListener("click", () => {
+    const helpEl = document.getElementById("pw-change-help");
+    if (helpEl) helpEl.hidden = !helpEl.hidden;
+  });
+
+  document.getElementById("pw-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const val = document.getElementById("pw-input").value;
-    if (val === SITE_PASSWORD) {
+    const inputEl = document.getElementById("pw-input");
+    const submitBtn = document.querySelector(".pw-submit");
+    const errEl = document.getElementById("pw-error");
+    if (submitBtn) submitBtn.disabled = true;
+    if (errEl) errEl.hidden = true;
+
+    const verified = await verifyAdminPassword(inputEl.value);
+    if (verified) {
       sessionStorage.setItem(AUTH_KEY, "ok");
-      bootstrap();
+      renderCurrentPage().catch((error) => {
+        app.innerHTML = ErrorState(error, checkAuth());
+        console.error(error);
+        bindGlobalActions();
+      });
     } else {
-      const errEl = document.getElementById("pw-error");
-      errEl.hidden = false;
-      document.getElementById("pw-input").value = "";
-      document.getElementById("pw-input").focus();
+      if (errEl) errEl.hidden = false;
+      inputEl.value = "";
+      inputEl.focus();
+      if (submitBtn) submitBtn.disabled = false;
     }
   });
 }
 
+async function verifyAdminPassword(password) {
+  try {
+    const response = await fetch("/.netlify/functions/verifyAdminPassword", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    const payload = await response.json();
+    return response.ok && payload.success === true;
+  } catch {
+    return false;
+  }
+}
+
 function bindGlobalActions() {
-  // Logout
+  const loginBtn = document.querySelector("[data-action='adminLogin']");
+  if (loginBtn) {
+    loginBtn.addEventListener("click", () => {
+      showPasswordGate();
+    });
+  }
+
   const logoutBtn = document.querySelector("[data-action='logout']");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       sessionStorage.removeItem(AUTH_KEY);
-      showPasswordGate();
+      window.location.hash = "#/dashboard";
+      renderCurrentPage().catch((error) => {
+        app.innerHTML = ErrorState(error, checkAuth());
+        console.error(error);
+        bindGlobalActions();
+      });
     });
   }
 
@@ -102,9 +148,9 @@ function bindGlobalActions() {
       if (getLang() === newLang) return; // already active
       setLang(newLang);
       document.documentElement.lang = newLang === "zh" ? "zh-CN" : "en";
-      app.innerHTML = LoadingState();
+      app.innerHTML = LoadingState(checkAuth());
       renderCurrentPage().catch((error) => {
-        app.innerHTML = ErrorState(error);
+        app.innerHTML = ErrorState(error, checkAuth());
         console.error(error);
         bindGlobalActions();
       });
@@ -122,26 +168,22 @@ const state = {
   watchlistSource: null,
   decisionLogSource: null,
   stockAnalysisSource: null,
+  aiMarketTrendSummary: null,
+  aiMarketTrendSources: [],
   decisionLogFilter: "all",
 };
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 
 async function bootstrap() {
-  if (!checkAuth()) {
-    showPasswordGate();
-    return;
-  }
-
-  // Apply stored language preference to document
   document.documentElement.lang = getLang() === "zh" ? "zh-CN" : "en";
 
-  app.innerHTML = LoadingState();
+  app.innerHTML = LoadingState(checkAuth());
 
   try {
     await renderCurrentPage();
   } catch (error) {
-    app.innerHTML = ErrorState(error);
+    app.innerHTML = ErrorState(error, checkAuth());
     console.error(error);
     bindGlobalActions();
   }
@@ -151,6 +193,12 @@ async function bootstrap() {
 
 async function renderCurrentPage() {
   state.page = getPageFromUrl();
+  const isAdmin = checkAuth();
+
+  if (isAdminRoute(state.page) && !isAdmin) {
+    showPasswordGate();
+    return;
+  }
 
   if (state.page === "holdings") {
     const source = await loadHoldingsPageSource();
@@ -180,6 +228,40 @@ async function renderCurrentPage() {
     return;
   }
 
+  if (state.page === "market") {
+    const source = await loadDashboardSource();
+    renderMarketPage(buildDashboardModel(source));
+    return;
+  }
+
+  if (state.page === "news") {
+    const source = await loadDashboardSource();
+    renderNewsPage(buildDashboardModel(source));
+    return;
+  }
+
+  if (state.page === "alerts") {
+    const source = await loadDashboardSource();
+    renderAlertsPage(buildDashboardModel(source));
+    return;
+  }
+
+  if (state.page === "morning-brief") {
+    const source = await loadDashboardSource();
+    renderMorningBriefPage(buildDashboardModel(source));
+    return;
+  }
+
+  if (state.page === "share") {
+    renderSharePage();
+    return;
+  }
+
+  if (state.page === "settings") {
+    renderSettings();
+    return;
+  }
+
   const source = await loadDashboardSource();
   const dashboard = buildDashboardModel(source);
   renderDashboard(dashboard);
@@ -190,21 +272,252 @@ async function renderCurrentPage() {
 function renderDashboard(dashboard) {
   app.innerHTML = AppShell(`
     ${Header()}
-    ${KpiCards(dashboard.kpis)}
+    ${checkAuth() ? KpiCards(dashboard.kpis) : ""}
     ${MarketSection(dashboard.marketData)}
+    ${StockRadarHomeEntry()}
     <section class="dashboard-grid">
       ${LiveUpdatesPanel(dashboard.news)}
-      ${MorningBriefPanel(dashboard.morningBrief)}
+      ${AiMarketRadarPanel(state.aiMarketTrendSummary, state.aiMarketTrendSources)}
     </section>
-    ${SummaryCards(dashboard.summaries)}
     <footer class="footer">
       ${t("footer_disclaimer")}
     </footer>
-  `, "dashboard");
+  `, "dashboard", checkAuth());
   bindRefreshNewsButton();
   bindRefreshMarketButton();
+  bindAiMarketTrendButton();
+  bindGlobalActions();
+}
+
+function bindAiMarketTrendButton() {
+  const btn = document.getElementById("btn-update-ai-market-trend");
+  const statusEl = document.getElementById("ai-market-trend-status");
+  const resultEl = document.getElementById("ai-market-trend-result");
+  if (!btn || !statusEl || !resultEl) return;
+
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    statusEl.textContent = t("status_ai_trend_loading");
+    statusEl.className = "news-refresh-status loading";
+
+    try {
+      const response = await fetch("/.netlify/functions/generateMarketTrendSummary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      const payload = await response.json();
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error || `HTTP ${response.status}`);
+      }
+
+      state.aiMarketTrendSummary = payload.summary || null;
+      state.aiMarketTrendSources = Array.isArray(payload.sources) ? payload.sources : [];
+      statusEl.textContent = t("status_ai_trend_complete");
+      statusEl.className = "news-refresh-status success";
+      resultEl.innerHTML = renderAiMarketTrendResult(state.aiMarketTrendSummary, state.aiMarketTrendSources);
+    } catch (error) {
+      statusEl.textContent = t("status_ai_trend_failed");
+      statusEl.className = "news-refresh-status error";
+      resultEl.innerHTML = `<div class="firecrawl-error">${escapeHtmlLocal(error.message || t("status_unknown_error"))}</div>`;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
+function renderAiMarketTrendResult(summary, sources = []) {
+  if (!summary) return "";
+
+  const usRisks = summary.usMarket?.riskSignals || [];
+  const canadaRisks = summary.canadaMarket?.riskSignals || [];
+  const risks = [...usRisks, ...canadaRisks];
+
+  return `
+    <div class="ai-market-radar-list">
+      ${marketTrendItem(t("ai_radar_us_title"), summary.usMarket)}
+      ${marketTrendItem(t("ai_radar_ca_title"), summary.canadaMarket)}
+      ${arrayTrendItem(t("ai_radar_risk_title"), risks)}
+      ${arrayTrendItem(t("ai_radar_watch_title"), summary.watchItems || [])}
+    </div>
+    <div class="ai-market-source-status">
+      <span>${escapeHtmlLocal(t("ai_trend_updated_at"))}: ${escapeHtmlLocal(formatAiTrendDate(summary.updatedAt))}</span>
+      <span>${escapeHtmlLocal(t("ai_trend_sources"))}: ${sources.filter((source) => source.ok).length}/${sources.length}</span>
+    </div>
+  `;
+}
+
+function marketTrendItem(title, block = {}) {
+  const details = [
+    block.direction ? `${t("ai_trend_direction")}: ${block.direction}` : "",
+    ...(block.drivers || []).slice(0, 3),
+    ...(block.leadingSectors || []).slice(0, 3),
+  ].filter(Boolean);
+
+  return `
+    <article class="ai-market-radar-item">
+      <strong>${escapeHtmlLocal(title)}</strong>
+      <p>${escapeHtmlLocal(block.summary || t("ai_trend_no_data"))}</p>
+      ${details.length ? `<ul>${details.map((item) => `<li>${escapeHtmlLocal(item)}</li>`).join("")}</ul>` : ""}
+    </article>
+  `;
+}
+
+function arrayTrendItem(title, items = []) {
+  return `
+    <article class="ai-market-radar-item">
+      <strong>${escapeHtmlLocal(title)}</strong>
+      ${
+        items.length
+          ? `<ul>${items.slice(0, 6).map((item) => `<li>${escapeHtmlLocal(item)}</li>`).join("")}</ul>`
+          : `<p>${escapeHtmlLocal(t("ai_trend_no_data"))}</p>`
+      }
+    </article>
+  `;
+}
+
+function formatAiTrendDate(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString(getLang() === "zh" ? "zh-CN" : "en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function renderSettings() {
+  app.innerHTML = AppShell(`
+    ${SettingsPage()}
+  `, "settings", checkAuth());
+  bindFirecrawlTest();
+  bindGlobalActions();
+}
+
+function renderMarketPage(dashboard) {
+  app.innerHTML = AppShell(`
+    ${Header()}
+    ${MarketSection(dashboard.marketData)}
+    <footer class="footer">${t("footer_disclaimer")}</footer>
+  `, "market", checkAuth());
+  bindRefreshMarketButton();
+  bindGlobalActions();
+}
+
+function renderNewsPage(dashboard) {
+  app.innerHTML = AppShell(`
+    ${Header()}
+    ${LiveUpdatesPanel(dashboard.news)}
+    <footer class="footer">${t("footer_disclaimer")}</footer>
+  `, "news", checkAuth());
+  bindRefreshNewsButton();
+  bindGlobalActions();
+}
+
+function renderAlertsPage(dashboard) {
+  app.innerHTML = AppShell(`
+    ${Header()}
+    ${AlertsPanel({ alerts: dashboard.alerts, holdingStatuses: dashboard.holdingStatuses })}
+  `, "alerts", checkAuth());
+  bindGlobalActions();
+}
+
+function renderMorningBriefPage(dashboard) {
+  app.innerHTML = AppShell(`
+    ${Header()}
+    ${MorningBriefPanel(dashboard.morningBrief)}
+  `, "morning-brief", checkAuth());
   bindSyncMorningBriefButton();
   bindGlobalActions();
+}
+
+function renderSharePage() {
+  app.innerHTML = AppShell(`
+    ${SharePage()}
+  `, "share", checkAuth());
+  bindShareActions();
+  bindGlobalActions();
+}
+
+function bindShareActions() {
+  const btn = document.getElementById("btn-copy-share-link");
+  const statusEl = document.getElementById("share-copy-status");
+  const linkEl = document.getElementById("share-url-text");
+  if (!btn || !statusEl || !linkEl) return;
+
+  btn.addEventListener("click", async () => {
+    const shareUrl = linkEl.textContent.trim();
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      statusEl.textContent = t("share_copy_success");
+      statusEl.className = "news-refresh-status success";
+    } catch {
+      statusEl.textContent = t("share_copy_failed");
+      statusEl.className = "news-refresh-status error";
+    }
+  });
+}
+
+function bindFirecrawlTest() {
+  const form = document.getElementById("firecrawl-test-form");
+  const input = document.getElementById("firecrawl-test-url");
+  const btn = document.getElementById("firecrawl-test-btn");
+  const statusEl = document.getElementById("firecrawl-test-status");
+  const resultEl = document.getElementById("firecrawl-test-result");
+  if (!form || !input || !btn || !statusEl || !resultEl) return;
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    btn.disabled = true;
+    statusEl.textContent = t("status_firecrawl_testing");
+    statusEl.className = "news-refresh-status loading";
+    resultEl.innerHTML = "";
+
+    try {
+      const response = await fetch("/.netlify/functions/firecrawlFetch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: input.value.trim() }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error || `HTTP ${response.status}`);
+      }
+
+      statusEl.textContent = t("status_firecrawl_complete");
+      statusEl.className = "news-refresh-status success";
+      resultEl.innerHTML = renderFirecrawlTestResult(payload);
+    } catch (error) {
+      statusEl.textContent = t("status_firecrawl_failed");
+      statusEl.className = "news-refresh-status error";
+      resultEl.innerHTML = `<div class="firecrawl-error">${escapeHtmlLocal(error.message || "Unknown error")}</div>`;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
+function renderFirecrawlTestResult(payload) {
+  const markdown = String(payload.markdown || "").slice(0, 2000);
+  return `
+    <div class="firecrawl-result-grid">
+      <div>
+        <span>title</span>
+        <strong>${escapeHtmlLocal(payload.title || "—")}</strong>
+      </div>
+      <div>
+        <span>sourceUrl</span>
+        <strong>${escapeHtmlLocal(payload.sourceUrl || "—")}</strong>
+      </div>
+    </div>
+    <pre class="firecrawl-markdown-preview">${escapeHtmlLocal(markdown || t("firecrawl_no_markdown"))}</pre>
+  `;
 }
 
 function bindRefreshNewsButton() {
@@ -309,7 +622,7 @@ function renderHoldings() {
   state.selectedHoldingId = holdings.selectedHolding
     ? holdings.selectedHolding["持仓ID / Holding ID"]
     : "";
-  app.innerHTML = AppShell(HoldingsPage(holdings), "holdings");
+  app.innerHTML = AppShell(HoldingsPage(holdings), "holdings", checkAuth());
   bindHoldingsInteractions();
   bindGlobalActions();
 }
@@ -335,7 +648,7 @@ function bindHoldingsInteractions() {
 
 function renderWatchlist() {
   const model = buildWatchlistModel(state.watchlistSource);
-  app.innerHTML = AppShell(WatchlistPage(model), "watchlist");
+  app.innerHTML = AppShell(WatchlistPage(model), "watchlist", checkAuth());
   bindWatchlistInteractions();
   bindGlobalActions();
 }
@@ -382,13 +695,8 @@ function bindWatchlistInteractions() {
     try {
       const result = await addWatchItem(payload);
       if (statusEl) {
-        statusEl.textContent = t("status_watchlist_writing").replace("...", "") + `: ${result.watchId || t("nav_watchlist")}`;
-        // Better: show added confirmation
         const id = result.watchId || "";
-        const lang = getLang();
-        statusEl.textContent = lang === "zh"
-          ? `已加入观察清单：${id || "新记录"}`
-          : `Added to watchlist: ${id || "new record"}`;
+        statusEl.textContent = `${t("status_watchlist_added")}: ${id || t("status_watchlist_new_record")}`;
         statusEl.className = "news-refresh-status success";
       }
       form.reset();
@@ -452,7 +760,7 @@ function openWatchlistPopup(id) {
 // ── Stock Analysis ────────────────────────────────────────────────────────────
 
 function renderStockAnalysis() {
-  app.innerHTML = AppShell(StockAnalysisPage(state.stockAnalysisSource ?? []), "stock-analysis");
+  app.innerHTML = AppShell(StockAnalysisPage(state.stockAnalysisSource ?? []), "stock-analysis", checkAuth());
   bindStockAnalysisInteractions();
   bindGlobalActions();
 }
@@ -483,7 +791,7 @@ function bindStockAnalysisInteractions() {
 
 function renderDecisionLog() {
   const model = buildDecisionLogModel(state.decisionLogSource ?? { decisions: [] }, state.decisionLogFilter);
-  app.innerHTML = AppShell(DecisionLogPage(model), "decisions");
+  app.innerHTML = AppShell(DecisionLogPage(model), "decisions", checkAuth());
   bindDecisionLogInteractions();
   bindGlobalActions();
 
@@ -590,18 +898,40 @@ function getPageFromUrl() {
   if (hashPage === "watchlist") return "watchlist";
   if (hashPage === "decisions") return "decisions";
   if (hashPage === "stock-analysis") return "stock-analysis";
+  if (hashPage === "settings") return "settings";
+  if (hashPage === "market") return "market";
+  if (hashPage === "news") return "news";
+  if (hashPage === "alerts") return "alerts";
+  if (hashPage === "morning-brief") return "morning-brief";
+  if (hashPage === "share") return "share";
   return "dashboard";
+}
+
+function isAdminRoute(page) {
+  return ["morning-brief", "holdings", "watchlist", "alerts", "decisions", "settings"].includes(page);
+}
+
+function escapeHtmlLocal(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 window.addEventListener("hashchange", () => {
   if (!checkAuth()) {
-    showPasswordGate();
-    return;
+    const targetPage = getPageFromUrl();
+    if (isAdminRoute(targetPage)) {
+      showPasswordGate();
+      return;
+    }
   }
   document.getElementById("watchlist-popup-overlay")?.remove();
-  app.innerHTML = LoadingState();
+  app.innerHTML = LoadingState(checkAuth());
   renderCurrentPage().catch((error) => {
-    app.innerHTML = ErrorState(error);
+    app.innerHTML = ErrorState(error, checkAuth());
     console.error(error);
     bindGlobalActions();
   });
