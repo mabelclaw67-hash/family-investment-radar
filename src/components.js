@@ -1803,7 +1803,7 @@ function stockAnalysisTable(items, lang) {
   return `
     <div class="stock-research-layout">
       <div class="stock-research-list" role="list" aria-label="${escapeHtml(t("stock_select_label"))}">
-        ${items.map((row, index) => stockAnalysisListItem(row, lang, stockDetailId(row, index), index === 0)).join("")}
+        ${items.map((row, index) => stockAnalysisListEntry(row, lang, stockDetailId(row, index), index === 0)).join("")}
       </div>
       <div class="stock-research-detail">
         ${items.map((row, index) => stockAnalysisRow(row, lang, stockDetailId(row, index), index === 0)).join("")}
@@ -1815,6 +1815,15 @@ function stockAnalysisTable(items, lang) {
 function stockDetailId(row, index) {
   const ticker = String(get(row, "Ticker") || `stock-${index}`).replace(/[^a-z0-9_-]+/gi, "-");
   return `${ticker}-${index}`;
+}
+
+function stockAnalysisListEntry(row, lang, detailId, active) {
+  return `
+    <div class="stock-list-entry" role="listitem">
+      ${stockAnalysisListItem(row, lang, detailId, active)}
+      ${stockAnalysisRow(row, lang, detailId, active, "stock-mobile-detail")}
+    </div>
+  `;
 }
 
 function stockAnalysisListItem(row, lang, detailId, active) {
@@ -1830,7 +1839,7 @@ function stockAnalysisListItem(row, lang, detailId, active) {
   const overallClass = scoreToneClass(overall);
 
   return `
-    <button class="stock-list-item${active ? " active" : ""}" type="button" data-stock-detail-target="${escapeHtml(detailId)}" role="listitem">
+    <button class="stock-list-item${active ? " active" : ""}" type="button" data-stock-detail-target="${escapeHtml(detailId)}">
       <span class="stock-list-top">
         <strong>${escapeHtml(ticker || "—")}</strong>
         <span class="${dailyClass}">${escapeHtml(daily || "—")}</span>
@@ -1845,7 +1854,7 @@ function stockAnalysisListItem(row, lang, detailId, active) {
   `;
 }
 
-function stockAnalysisRow(row, lang, detailId, active) {
+function stockAnalysisRow(row, lang, detailId, active, extraClass = "") {
   const ticker = get(row, "Ticker");
   const zhName = get(row, "中文名称") || get(row, "名称") || ticker || "—";
   const enName = get(row, "英文名称") || get(row, "名称") || ticker || "—";
@@ -1862,7 +1871,7 @@ function stockAnalysisRow(row, lang, detailId, active) {
   const fundamentalsHtml = stockFundamentalsBlock(row, lang);
 
   return `
-    <article class="stock-card stock-detail-panel${active ? " active" : ""}" data-stock-detail-panel="${escapeHtml(detailId)}" ${active ? "" : "hidden"}>
+    <article class="stock-card stock-detail-panel${extraClass ? ` ${extraClass}` : ""}${active ? " active" : ""}" data-stock-detail-panel="${escapeHtml(detailId)}" ${active ? "" : "hidden"}>
       <div class="stock-card-main">
         <div class="stock-identity">
           <strong class="wl-ticker stock-ticker-large">${escapeHtml(ticker || "—")}</strong>

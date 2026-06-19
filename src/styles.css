@@ -2878,6 +2878,11 @@ h2 {
   padding-right: 4px;
 }
 
+.stock-list-entry {
+  display: grid;
+  gap: 8px;
+}
+
 .stock-list-item {
   width: 100%;
   display: grid;
@@ -2928,6 +2933,10 @@ h2 {
 }
 
 .stock-detail-panel[hidden] {
+  display: none;
+}
+
+.stock-mobile-detail {
   display: none;
 }
 
@@ -3088,6 +3097,14 @@ h2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     overflow: visible;
     padding-right: 0;
+  }
+
+  .stock-research-detail {
+    display: none;
+  }
+
+  .stock-mobile-detail.active {
+    display: block;
   }
 
   .stock-card-main {
