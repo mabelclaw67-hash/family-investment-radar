@@ -36,8 +36,11 @@ const STRINGS = {
     mtab_decisions:        "Log",
     mtab_stock_analysis:   "Stocks",
     mtab_market:           "Market",
+    mtab_alerts:           "Alerts",
     mtab_news:             "News",
     mtab_share:            "Share",
+    mtab_admin_login:      "Admin",
+    mtab_admin_logout:     "Logout",
 
     // ── Header ────────────────────────────────────────────────────────────────
     header_title:          "Family Investment Radar",
@@ -375,8 +378,11 @@ const STRINGS = {
     mtab_decisions:        "记录",
     mtab_stock_analysis:   "股市",
     mtab_market:           "市场",
+    mtab_alerts:           "提醒",
     mtab_news:             "新闻",
     mtab_share:            "分享",
+    mtab_admin_login:      "管理",
+    mtab_admin_logout:     "退出",
 
     // ── Header ────────────────────────────────────────────────────────────────
     header_title:          "家庭投资趋势分析",

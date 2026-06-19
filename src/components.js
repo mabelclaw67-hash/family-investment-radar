@@ -8,6 +8,7 @@ const MOBILE_TABS = [
   ["mtab_dashboard", "⌂", "dashboard"],
   ["mtab_stock_analysis", "↗", "stock-analysis"],
   ["mtab_market", "◎", "market"],
+  ["mtab_alerts", "!", "alerts"],
   ["mtab_news", "▤", "news"],
   ["mtab_share", "□", "share"],
 ];
@@ -16,6 +17,7 @@ const MOBILE_TABS = [
 
 export function AppShell(content, currentPage = "dashboard", isAdmin = false) {
   const navItems = NAV_ITEMS.filter((item) => item[3] !== "admin" || isAdmin);
+  const adminNavItems = NAV_ITEMS.filter((item) => item[3] === "admin");
   const mobileTabs = MOBILE_TABS.filter((item) => item[3] !== "admin" || isAdmin);
   return `
     <aside class="sidebar">
@@ -39,6 +41,15 @@ export function AppShell(content, currentPage = "dashboard", isAdmin = false) {
       </div>
     </aside>
     <main class="main">${content}</main>
+    ${isAdmin ? `
+      <nav class="mobile-admin-nav" aria-label="${t("btn_admin_login")}">
+        ${adminNavItems.map(([key, , page]) => `
+          <a class="mobile-admin-link ${currentPage === page ? "active" : ""}" href="#/${page}">
+            ${t(key)}
+          </a>
+        `).join("")}
+      </nav>
+    ` : ""}
     <nav class="mobile-bottom-nav" aria-label="${t("brand_name")}">
       ${mobileTabs.map(([key, icon, page]) => `
         <a class="mbn-tab ${currentPage === page ? "active" : ""}" href="#/${page}" aria-label="${t(key)}">
@@ -46,6 +57,10 @@ export function AppShell(content, currentPage = "dashboard", isAdmin = false) {
           <span>${t(key)}</span>
         </a>
       `).join("")}
+      <button class="mbn-tab mbn-admin-tab" data-action="${isAdmin ? "logout" : "adminLogin"}" type="button" aria-label="${t(isAdmin ? "btn_logout" : "btn_admin_login")}">
+        <span class="mbn-icon">${isAdmin ? "⎋" : "⚙"}</span>
+        <span>${t(isAdmin ? "mtab_admin_logout" : "mtab_admin_login")}</span>
+      </button>
     </nav>
     <div class="lang-float" role="group" aria-label="Language / 语言">
       <button class="lang-float-btn${getLang() === "en" ? " active" : ""}" data-action="setLang" data-lang="en" type="button">EN</button>

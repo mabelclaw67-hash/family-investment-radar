@@ -2175,6 +2175,10 @@ h2 {
   display: none; /* shown only in 640px media query below */
 }
 
+.mobile-admin-nav {
+  display: none;
+}
+
 /* ══════════════════════════════════════════════════════════════════════════════
    MOBILE CARD VIEWS  (hidden on desktop, shown on mobile)
    ══════════════════════════════════════════════════════════════════════════════ */
@@ -2240,6 +2244,41 @@ h2 {
     border-top: 1px solid var(--line);
     box-shadow: 0 -2px 12px rgba(20, 33, 61, 0.07);
     z-index: 200;
+  }
+
+  .mobile-admin-nav {
+    display: flex;
+    gap: 8px;
+    position: fixed;
+    bottom: 62px;
+    left: 0;
+    right: 0;
+    padding: 8px 10px;
+    overflow-x: auto;
+    background: var(--panel);
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -2px 12px rgba(20, 33, 61, 0.06);
+    z-index: 199;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-admin-link {
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--muted);
+    background: #fff;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .mobile-admin-link.active {
+    color: #fff;
+    background: var(--blue);
+    border-color: var(--blue);
   }
 
   .mbn-tab {
