@@ -33,6 +33,7 @@ export const FAMILY_INVESTMENT_API_URL =
 // Each entry: [i18n-key, icon-class, page-id]
 export const NAV_ITEMS = [
   ["nav_dashboard", "home",      "dashboard"],
+  ["nav_stock_lookup", "radar",  "stock-lookup"],
   ["nav_stock_analysis", "radar", "stock-analysis"],
   ["nav_market",    "radar",     "market"],
   ["nav_alerts",    "bell",      "alerts"],

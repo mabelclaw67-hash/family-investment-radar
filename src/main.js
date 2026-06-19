@@ -37,6 +37,9 @@ import {
   SharePage,
   SettingsPage,
   StockAnalysisPage,
+  StockLookupPage,
+  StockCandidateList,
+  StockDetailCard,
   WatchlistPage,
   WatchlistPopupHtml,
 } from "./components.js";
@@ -312,6 +315,11 @@ async function renderCurrentPage() {
   if (state.page === "morning-brief") {
     const source = await loadDashboardSource();
     renderMorningBriefPage(buildDashboardModel(source));
+    return;
+  }
+
+  if (state.page === "stock-lookup") {
+    renderStockLookup();
     return;
   }
 
@@ -602,6 +610,97 @@ function renderSharePage() {
   `, "share", checkAuth());
   bindShareActions();
   bindGlobalActions();
+}
+
+function renderStockLookup() {
+  app.innerHTML = AppShell(`
+    ${StockLookupPage()}
+  `, "stock-lookup", checkAuth());
+  bindStockLookup();
+  bindGlobalActions();
+}
+
+function bindStockLookup() {
+  const form = document.getElementById("stock-lookup-form");
+  const input = document.getElementById("stock-lookup-input");
+  const statusEl = document.getElementById("stock-lookup-status");
+  const resultEl = document.getElementById("stock-lookup-result");
+  if (!form || !input || !resultEl) return;
+
+  const setStatus = (text, kind = "") => {
+    if (statusEl) {
+      statusEl.textContent = text || "";
+      statusEl.className = `news-refresh-status${kind ? " " + kind : ""}`;
+    }
+  };
+
+  async function call(payload) {
+    const response = await fetch("/.netlify/functions/publicStockSearch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+      body: JSON.stringify(payload),
+    });
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      throw new Error(t("stock_lookup_error"));
+    }
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || t("stock_lookup_error"));
+    }
+    return data;
+  }
+
+  async function loadDetail(symbol) {
+    setStatus(t("stock_lookup_loading"), "loading");
+    resultEl.innerHTML = "";
+    try {
+      const data = await call({ action: "quote", symbol });
+      if (data.type === "detail" && data.data) {
+        resultEl.innerHTML = StockDetailCard(data.data);
+        setStatus("");
+      } else {
+        resultEl.innerHTML = `<div class="popup-empty"><strong>${t("stock_lookup_none")}</strong></div>`;
+        setStatus("");
+      }
+    } catch (error) {
+      setStatus(error.message || t("stock_lookup_error"), "error");
+    }
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const query = input.value.trim();
+    if (!query) return;
+
+    setStatus(t("stock_lookup_loading"), "loading");
+    resultEl.innerHTML = "";
+    try {
+      const data = await call({ action: "search", query });
+      if (data.type === "private") {
+        resultEl.innerHTML = `<div class="popup-empty"><strong>${t("stock_lookup_private")}</strong></div>`;
+        setStatus("");
+      } else if (data.type === "none" || !Array.isArray(data.candidates) || !data.candidates.length) {
+        resultEl.innerHTML = `<div class="popup-empty"><strong>${t("stock_lookup_none")}</strong></div>`;
+        setStatus("");
+      } else if (data.candidates.length === 1) {
+        await loadDetail(data.candidates[0].symbol);
+      } else {
+        resultEl.innerHTML = StockCandidateList(data.candidates);
+        setStatus("");
+      }
+    } catch (error) {
+      setStatus(error.message || t("stock_lookup_error"), "error");
+    }
+  });
+
+  resultEl.addEventListener("click", (event) => {
+    const btn = event.target.closest(".stock-candidate");
+    if (!btn) return;
+    const symbol = btn.getAttribute("data-symbol");
+    if (symbol) loadDetail(symbol);
+  });
 }
 
 function bindShareActions() {
@@ -1294,6 +1393,7 @@ function getPageFromUrl() {
   if (hashPage === "watchlist") return "watchlist";
   if (hashPage === "decisions") return "decisions";
   if (hashPage === "stock-analysis") return "stock-analysis";
+  if (hashPage === "stock-lookup") return "stock-lookup";
   if (hashPage === "settings") return "settings";
   if (hashPage === "market") return "market";
   if (hashPage === "news") return "news";

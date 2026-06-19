@@ -6,6 +6,7 @@ import { deriveActionLabel, displayMarketValue, displayValue, HOLDING_FILTERS } 
 // Mobile tab definitions: [i18n-key, icon, page-id]
 const MOBILE_TABS = [
   ["mtab_dashboard", "⌂", "dashboard"],
+  ["mtab_stock_lookup", "⌕", "stock-lookup"],
   ["mtab_stock_analysis", "↗", "stock-analysis"],
   ["mtab_market", "◎", "market"],
   ["mtab_alerts", "!", "alerts"],
@@ -1753,6 +1754,127 @@ export function StockAnalysisPage(rows = [], isAdmin = false) {
       ${items.length ? stockAnalysisTable(items, lang) : EmptyState(lang === "zh" ? "这个主题下暂无股票" : "No stocks in this theme yet", lang === "zh" ? "可以切换到“全部”，或稍后在表格里增加更多股票。" : "Switch to All, or add more tickers to this theme later.")}
     </section>
   `;
+}
+
+// ─── Public Stock Lookup ─────────────────────────────────────────────────────
+
+export function StockLookupPage() {
+  return `
+    <header class="page-header">
+      <div>
+        <h1>${escapeHtml(t("stock_lookup_title"))}</h1>
+        <p>${escapeHtml(t("stock_lookup_subtitle"))}</p>
+      </div>
+    </header>
+
+    <section class="panel stock-lookup-panel">
+      <form id="stock-lookup-form" class="stock-lookup-form" autocomplete="off">
+        <input
+          id="stock-lookup-input"
+          type="text"
+          placeholder="${escapeHtml(t("stock_lookup_placeholder"))}"
+          aria-label="${escapeHtml(t("stock_lookup_title"))}"
+        />
+        <button type="submit" class="refresh-news-btn">${escapeHtml(t("stock_lookup_button"))}</button>
+      </form>
+      <span id="stock-lookup-status" class="news-refresh-status"></span>
+      <small class="stock-lookup-hint">${escapeHtml(t("stock_lookup_scope"))}</small>
+      <div id="stock-lookup-result" class="stock-lookup-result"></div>
+    </section>
+  `;
+}
+
+export function StockCandidateList(candidates) {
+  return `
+    <div class="stock-candidates">
+      <p class="stock-candidates-hint">${escapeHtml(t("stock_lookup_pick"))}</p>
+      ${candidates.map((c) => `
+        <button type="button" class="stock-candidate" data-symbol="${escapeHtml(c.symbol)}">
+          <span class="stock-candidate-symbol">${escapeHtml(c.symbol)}</span>
+          <span class="stock-candidate-name">${escapeHtml(c.name || "—")}</span>
+          <span class="stock-candidate-ex">${escapeHtml([c.exchange, c.country, c.currency].filter(Boolean).join(" · ") || "—")}</span>
+        </button>
+      `).join("")}
+    </div>
+  `;
+}
+
+export function StockDetailCard(d) {
+  const pct = Number(d.changePercent);
+  const chg = Number(d.change);
+  const tone = Number.isFinite(pct) ? (pct > 0 ? "up" : pct < 0 ? "down" : "") : "";
+  const arrow = tone === "up" ? "▲" : tone === "down" ? "▼" : "—";
+  const cur = d.currency || "";
+
+  const rows = [
+    [t("stock_f_exchange"),  d.exchange],
+    [t("stock_f_country"),   d.country],
+    [t("stock_f_currency"),  d.currency],
+    [t("stock_f_marketcap"), formatMarketCap(d.marketCap, cur)],
+    [t("stock_f_sector"),    d.sector],
+    [t("stock_f_industry"),  d.industry],
+  ].filter(([, v]) => String(v ?? "").trim());
+
+  return `
+    <article class="stock-detail-card">
+      <div class="sdc-head">
+        <div class="sdc-id">
+          <strong class="sdc-symbol">${escapeHtml(d.symbol || "—")}</strong>
+          <span class="sdc-name">${escapeHtml(d.name || "—")}</span>
+        </div>
+        <div class="sdc-price-block">
+          <strong class="sdc-price ${tone}">${formatPrice(d.price, cur)}</strong>
+          ${Number.isFinite(chg) || Number.isFinite(pct) ? `
+            <span class="sdc-change ${tone}">
+              ${arrow} ${Number.isFinite(chg) ? formatSigned(chg) : "—"}
+              ${Number.isFinite(pct) ? `(${formatSigned(pct)}%)` : ""}
+            </span>` : ""}
+        </div>
+      </div>
+
+      <div class="sdc-grid">
+        ${rows.map(([label, value]) => `
+          <div class="sdc-cell">
+            <span class="sdc-label">${escapeHtml(label)}</span>
+            <strong class="sdc-value">${escapeHtml(String(value))}</strong>
+          </div>
+        `).join("")}
+      </div>
+
+      ${String(d.description || "").trim() ? `
+        <div class="sdc-desc">
+          <span class="sdc-label">${escapeHtml(t("stock_f_description"))}</span>
+          <p>${escapeHtml(d.description)}</p>
+        </div>` : ""}
+
+      <div class="sdc-foot">
+        <small>${escapeHtml(t("stock_f_source"))}: ${escapeHtml(d.source || "—")}</small>
+        <small class="popup-disclaimer">${escapeHtml(t("stock_lookup_disclaimer"))}</small>
+      </div>
+    </article>
+  `;
+}
+
+function formatPrice(value, currency) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "—";
+  return `${currency ? currency + " " : ""}${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function formatSigned(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "—";
+  const s = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return n > 0 ? `+${s}` : s;
+}
+
+function formatMarketCap(value, currency) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  const prefix = currency ? currency + " " : "";
+  if (n >= 1e12) return `${prefix}${(n / 1e12).toFixed(2)} 万亿`;
+  if (n >= 1e8)  return `${prefix}${(n / 1e8).toFixed(2)} 亿`;
+  return `${prefix}${n.toLocaleString("en-US")}`;
 }
 
 // ─── Settings / Development Test Page ────────────────────────────────────────
