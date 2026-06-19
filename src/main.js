@@ -628,12 +628,25 @@ function renderSharePage() {
   bindGlobalActions();
 }
 
+const STOCK_LAST_KEY = "fir_stock_last_v1";
+
 function renderStockLookup() {
   app.innerHTML = AppShell(`
     ${StockLookupPage()}
   `, "stock-lookup", checkAuth());
   bindStockLookup();
   bindGlobalActions();
+  // Small UX helper: keep the last result visible across a page refresh.
+  // (The reusable cache of record is 16 Public Stock Cache; this is display-only.)
+  try {
+    const saved = JSON.parse(localStorage.getItem(STOCK_LAST_KEY) || "null");
+    if (saved && saved.symbol) {
+      const resultEl = document.getElementById("stock-lookup-result");
+      const input = document.getElementById("stock-lookup-input");
+      if (resultEl) resultEl.innerHTML = StockDetailCard(saved);
+      if (input && !input.value) input.value = saved.symbol;
+    }
+  } catch {}
 }
 
 function bindStockLookup() {
@@ -668,13 +681,14 @@ function bindStockLookup() {
     return data;
   }
 
-  async function loadDetail(symbol) {
+  async function loadDetail(symbol, refresh = false) {
     setStatus(t("stock_lookup_loading"), "loading");
-    resultEl.innerHTML = "";
+    if (!refresh) resultEl.innerHTML = "";
     try {
-      const data = await call({ action: "quote", symbol });
+      const data = await call({ action: "quote", symbol, lang: getLang(), refresh });
       if (data.type === "detail" && data.data) {
         resultEl.innerHTML = StockDetailCard(data.data);
+        try { localStorage.setItem(STOCK_LAST_KEY, JSON.stringify(data.data)); } catch {}
         setStatus("");
       } else {
         resultEl.innerHTML = `<div class="popup-empty"><strong>${t("stock_lookup_none")}</strong></div>`;
@@ -712,10 +726,17 @@ function bindStockLookup() {
   });
 
   resultEl.addEventListener("click", (event) => {
-    const btn = event.target.closest(".stock-candidate");
-    if (!btn) return;
-    const symbol = btn.getAttribute("data-symbol");
-    if (symbol) loadDetail(symbol);
+    const candidate = event.target.closest(".stock-candidate");
+    if (candidate) {
+      const symbol = candidate.getAttribute("data-symbol");
+      if (symbol) loadDetail(symbol);
+      return;
+    }
+    const refreshBtn = event.target.closest("[data-stock-refresh]");
+    if (refreshBtn) {
+      const symbol = refreshBtn.getAttribute("data-stock-refresh");
+      if (symbol) loadDetail(symbol, true);
+    }
   });
 }
 

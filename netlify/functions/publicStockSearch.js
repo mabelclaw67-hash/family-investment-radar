@@ -1,18 +1,27 @@
 // Public "查一只股票 / Look up a stock" endpoint.
 //
-// - No admin auth (public feature).
-// - Never writes to Google Sheet; purely reads from an external market-data API.
+// - No admin auth (public feature). Stores NO user identity / IP / personal data.
+// - Quote results are cached centrally in 16 Public Stock Cache (NOT 11 Stock
+//   Analysis, which stays the curated watchlist). 24h TTL; "refresh" bypasses it.
 // - Provider is configurable. Set STOCK_API_PROVIDER to "fmp" or "twelvedata",
 //   or just provide one of the keys and it auto-selects:
 //     FMP_API_KEY          -> Financial Modeling Prep (richer: sector/industry/desc)
 //     TWELVE_DATA_API_KEY  -> Twelve Data (quotes; fewer profile fields)
 //
 // Request (POST JSON):
-//   { "action": "search", "query": "apple" }   -> candidate list (or private/none)
-//   { "action": "quote",  "symbol": "AAPL" }    -> unified detail card
+//   { "action": "search", "query": "apple" }                 -> candidate list
+//   { "action": "quote",  "symbol": "AAPL", "lang": "zh",
+//     "refresh": false }                                      -> cached detail
 //
 // Unified detail fields: symbol, name, exchange, country, currency, price,
-// change, changePercent, marketCap, sector, industry, description, source.
+// change, changePercent, marketCap, sector, industry, descriptionEN,
+// descriptionZH, description (lang-resolved), source, dataUpdatedAt.
+
+import { appsScriptGet, appsScriptPost } from "./_publicForumShared.js";
+
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
+const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-5-nano";
 
 // Exchanges we prioritise: US (NASDAQ/NYSE/AMEX) + Canada (TSX/TSXV), plus ETFs.
 const PREFERRED_EXCHANGES = new Set([
@@ -56,10 +65,10 @@ export async function handler(event) {
     if (action === "quote") {
       const symbol = String(body.symbol || "").trim().toUpperCase();
       if (!symbol) return jsonResponse(400, { ok: false, error: "Missing symbol." });
-      const data = await provider.quote(symbol);
-      if (!data) {
-        return jsonResponse(200, { ok: true, type: "none" });
-      }
+      const lang = body.lang === "zh" ? "zh" : "en";
+      const refresh = body.refresh === true;
+      const data = await resolveQuote(provider, symbol, lang, refresh);
+      if (!data) return jsonResponse(200, { ok: true, type: "none" });
       return jsonResponse(200, { ok: true, type: "detail", data });
     }
 
@@ -79,6 +88,156 @@ export async function handler(event) {
   } catch (error) {
     return jsonResponse(502, { ok: false, error: error.message || "Stock lookup failed." });
   }
+}
+
+// ── Quote resolution with 16 Public Stock Cache ─────────────────────────────
+
+async function resolveQuote(provider, symbol, lang, refresh) {
+  const openaiKey = process.env.OPENAI_API_KEY || process.env.HEALTH_PASSPORT_OPENAI_API_KEY || "";
+
+  // 1. Look up the central cache.
+  let cached = null;
+  try {
+    cached = await appsScriptGet("getPublicStockCache", { symbol });
+  } catch {
+    cached = null;
+  }
+  const fresh = cached && cached.LastFetchedAt && withinTtl(cached.LastFetchedAt);
+
+  // 2. Cache hit (and not a forced refresh): serve from cache, bump counters.
+  if (cached && fresh && !refresh) {
+    await appsScriptPost({ action: "touchPublicStockCache", symbol }).catch(() => null);
+    return buildFromCache(cached, lang, symbol, openaiKey);
+  }
+
+  // 3. Miss / stale / refresh: fetch live from the provider.
+  let live = null;
+  try {
+    live = await provider.quote(symbol);
+  } catch {
+    live = null;
+  }
+
+  // Provider failed — fall back to stale cache if we have one.
+  if (!live) {
+    if (cached) {
+      await appsScriptPost({ action: "touchPublicStockCache", symbol }).catch(() => null);
+      return buildFromCache(cached, lang, symbol, openaiKey);
+    }
+    return null;
+  }
+
+  const descriptionEN = String(live.description || (cached && cached.DescriptionEN) || "").trim();
+  let descriptionZH = String((cached && cached.DescriptionZH) || "").trim();
+
+  // Generate Chinese only when needed (zh view, no cached translation yet).
+  if (lang === "zh" && !descriptionZH && descriptionEN && openaiKey) {
+    descriptionZH = await translateToZh(live.name, descriptionEN, openaiKey).catch(() => "");
+  }
+
+  // 4. Upsert into the cache (also increments SearchCount + sets timestamps).
+  let lastFetchedAt = new Date().toISOString();
+  try {
+    const res = await appsScriptPost({
+      action: "upsertPublicStockCache",
+      symbol,
+      name: live.name, exchange: live.exchange, country: live.country, currency: live.currency,
+      price: live.price, change: live.change, changePercent: live.changePercent, marketCap: live.marketCap,
+      sector: live.sector, industry: live.industry,
+      descriptionEN, descriptionZH, source: live.source,
+    });
+    if (res && res.lastFetchedAt) lastFetchedAt = res.lastFetchedAt;
+  } catch {
+    // Cache write failed — still return live data so the user sees a result.
+  }
+
+  return {
+    symbol: live.symbol, name: live.name, exchange: live.exchange, country: live.country,
+    currency: live.currency, price: live.price, change: live.change, changePercent: live.changePercent,
+    marketCap: live.marketCap, sector: live.sector, industry: live.industry,
+    descriptionEN, descriptionZH,
+    description: lang === "zh" ? (descriptionZH || descriptionEN) : (descriptionEN || descriptionZH),
+    source: live.source, dataUpdatedAt: lastFetchedAt,
+  };
+}
+
+async function buildFromCache(cached, lang, symbol, openaiKey) {
+  const descriptionEN = String(cached.DescriptionEN || "").trim();
+  let descriptionZH = String(cached.DescriptionZH || "").trim();
+
+  // Lazily generate + persist the Chinese description on first zh view.
+  if (lang === "zh" && !descriptionZH && descriptionEN && openaiKey) {
+    descriptionZH = await translateToZh(cached.Name, descriptionEN, openaiKey).catch(() => "");
+    if (descriptionZH) {
+      appsScriptPost({ action: "setPublicStockCacheZh", symbol, descriptionZH }).catch(() => {});
+    }
+  }
+
+  return {
+    symbol: cached.Symbol || symbol,
+    name: cached.Name || "",
+    exchange: cached.Exchange || "",
+    country: cached.Country || "",
+    currency: cached.Currency || "",
+    price: numOrNull(cached.Price),
+    change: numOrNull(cached.Change),
+    changePercent: numOrNull(cached.ChangePercent),
+    marketCap: numOrNull(cached.MarketCap),
+    sector: cached.Sector || "",
+    industry: cached.Industry || "",
+    descriptionEN, descriptionZH,
+    description: lang === "zh" ? (descriptionZH || descriptionEN) : (descriptionEN || descriptionZH),
+    source: cached.Source || "",
+    dataUpdatedAt: cached.LastFetchedAt || "",
+  };
+}
+
+function withinTtl(iso) {
+  const t = Date.parse(iso);
+  return Number.isFinite(t) && (Date.now() - t) < CACHE_TTL_MS;
+}
+
+async function translateToZh(name, textEN, apiKey) {
+  const input = String(textEN || "").slice(0, 1500);
+  if (!input) return "";
+  const response = await fetch(OPENAI_RESPONSES_URL, {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      max_output_tokens: 600,
+      reasoning: { effort: "minimal" },
+      input: [
+        {
+          role: "system",
+          content: [{ type: "input_text", text: "你是金融信息翻译助手。把公司英文简介改写成简洁、客观的中文简介，不超过120个汉字，不加入评价或买卖建议，只输出中文正文。" }],
+        },
+        {
+          role: "user",
+          content: [{ type: "input_text", text: `公司：${name || ""}\n英文简介：${input}` }],
+        },
+      ],
+    }),
+  });
+  const payload = await response.json();
+  if (!response.ok) return "";
+  return extractOpenAIText(payload);
+}
+
+function extractOpenAIText(responseJson) {
+  if (!responseJson || typeof responseJson !== "object") return "";
+  if (typeof responseJson.output_text === "string" && responseJson.output_text.trim()) {
+    return responseJson.output_text.trim();
+  }
+  const output = Array.isArray(responseJson.output) ? responseJson.output : [];
+  for (const item of output) {
+    if (!item || item.type !== "message") continue;
+    const content = Array.isArray(item.content) ? item.content : [];
+    for (const part of content) {
+      if (part && typeof part.text === "string" && part.text.trim()) return part.text.trim();
+    }
+  }
+  return "";
 }
 
 // ── Provider selection ──────────────────────────────────────────────────────

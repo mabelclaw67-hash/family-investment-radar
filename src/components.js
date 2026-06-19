@@ -1816,6 +1816,12 @@ export function StockDetailCard(d) {
     [t("stock_f_industry"),  d.industry],
   ].filter(([, v]) => String(v ?? "").trim());
 
+  // Pick the description for the current UI language (fall back to the other).
+  const description = getLang() === "zh"
+    ? (d.descriptionZH || d.descriptionEN || d.description || "")
+    : (d.descriptionEN || d.descriptionZH || d.description || "");
+  const updatedAt = formatStockTime(d.dataUpdatedAt);
+
   return `
     <article class="stock-detail-card">
       <div class="sdc-head">
@@ -1842,11 +1848,16 @@ export function StockDetailCard(d) {
         `).join("")}
       </div>
 
-      ${String(d.description || "").trim() ? `
+      ${String(description).trim() ? `
         <div class="sdc-desc">
           <span class="sdc-label">${escapeHtml(t("stock_f_description"))}</span>
-          <p>${escapeHtml(d.description)}</p>
+          <p>${escapeHtml(description)}</p>
         </div>` : ""}
+
+      <div class="sdc-meta-row">
+        ${updatedAt ? `<small class="sdc-updated">${escapeHtml(t("stock_data_updated"))} ${escapeHtml(updatedAt)}</small>` : "<span></span>"}
+        <button type="button" class="sdc-refresh-btn" data-stock-refresh="${escapeHtml(d.symbol || "")}">${escapeHtml(t("stock_lookup_refresh"))}</button>
+      </div>
 
       <div class="sdc-foot">
         <small>${escapeHtml(t("stock_f_source"))}: ${escapeHtml(d.source || "—")}</small>
@@ -1854,6 +1865,14 @@ export function StockDetailCard(d) {
       </div>
     </article>
   `;
+}
+
+function formatStockTime(iso) {
+  if (!iso) return "";
+  const dt = new Date(iso);
+  if (Number.isNaN(dt.getTime())) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())} ${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
 }
 
 function formatPrice(value, currency) {

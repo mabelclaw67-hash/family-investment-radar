@@ -17,6 +17,7 @@ const DASHBOARD_TABS = {
   stockAnalysis: '11 Stock Analysis',
   publicTopics: '14 Public Topics',
   publicReplies: '15 Public Replies',
+  publicStockCache: '16 Public Stock Cache',
 };
 
 const RESEARCH_PACK_HEADERS = [
@@ -411,6 +412,10 @@ if (action === 'listAllPublicReplies') {
   return jsonResponse_({ ok: true, data: listPublicReplies_(params.topicId, true), updatedAt: new Date().toISOString() });
 }
 
+if (action === 'getPublicStockCache') {
+  return jsonResponse_({ ok: true, data: getPublicStockCacheRow_(params.symbol), updatedAt: new Date().toISOString() });
+}
+
 throw new Error('Unsupported action: ' + action);
 
     throw new Error('Unsupported action: ' + action);
@@ -463,6 +468,18 @@ function doPost(e) {
 
     if (action === 'updatePublicReplyStatus') {
       return jsonResponse_({ ok: true, data: updatePublicStatus_(DASHBOARD_TABS.publicReplies, body.id, body.status), updatedAt: new Date().toISOString() });
+    }
+
+    if (action === 'upsertPublicStockCache') {
+      return jsonResponse_({ ok: true, data: upsertPublicStockCache_(body), updatedAt: new Date().toISOString() });
+    }
+
+    if (action === 'touchPublicStockCache') {
+      return jsonResponse_({ ok: true, data: touchPublicStockCache_(body.symbol), updatedAt: new Date().toISOString() });
+    }
+
+    if (action === 'setPublicStockCacheZh') {
+      return jsonResponse_({ ok: true, data: setPublicStockCacheZh_(body.symbol, body.descriptionZH), updatedAt: new Date().toISOString() });
     }
 
     throw new Error('Unsupported POST action: ' + action);
@@ -531,6 +548,119 @@ function updateWatchlistEnrichment_(body) {
 
   SpreadsheetApp.flush();
   return { updatedRows: updatedRows, updatedIds: updatedIds };
+}
+
+// ── Public Stock Cache (16 Public Stock Cache) ───────────────────────────────
+// Central cache for the public "查一只股票" lookup. Keyed by Symbol.
+// Never touches 11 Stock Analysis (curated watchlist stays separate).
+
+function publicStockCacheSheet_() {
+  var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(DASHBOARD_TABS.publicStockCache);
+  if (!sheet) throw new Error('Sheet tab not found: ' + DASHBOARD_TABS.publicStockCache);
+  return sheet;
+}
+
+function findCacheRowIndex_(sheet, headers, symbol) {
+  var col = findHeaderIndex_(headers, ['Symbol']) + 1;
+  if (col < 1) return -1;
+  var last = sheet.getLastRow();
+  if (last < 2) return -1;
+  var vals = sheet.getRange(2, col, last - 1, 1).getDisplayValues();
+  for (var i = 0; i < vals.length; i++) {
+    if (String(vals[i][0] || '').trim().toUpperCase() === symbol) return i + 2;
+  }
+  return -1;
+}
+
+function cacheRowObject_(sheet, headers, rowIndex) {
+  var vals = sheet.getRange(rowIndex, 1, 1, headers.length).getDisplayValues()[0];
+  var o = {};
+  headers.forEach(function(h, i) { o[h] = vals[i]; });
+  return o;
+}
+
+function getPublicStockCacheRow_(symbol) {
+  var sym = String(symbol || '').trim().toUpperCase();
+  if (!sym) return null;
+  var sheet = publicStockCacheSheet_();
+  var headers = readHeaders_(sheet);
+  var idx = findCacheRowIndex_(sheet, headers, sym);
+  if (idx < 1) return null;
+  return cacheRowObject_(sheet, headers, idx);
+}
+
+function upsertPublicStockCache_(d) {
+  var sym = String(d.symbol || '').trim().toUpperCase();
+  if (!sym) throw new Error('Symbol is required.');
+  var sheet = publicStockCacheSheet_();
+  var headers = readHeaders_(sheet);
+  var idx = findCacheRowIndex_(sheet, headers, sym);
+  var existing = idx > 0 ? cacheRowObject_(sheet, headers, idx) : null;
+  var now = new Date().toISOString();
+  var prevCount = existing ? (parseInt(existing['SearchCount'], 10) || 0) : 0;
+
+  var values = {
+    'Symbol': sym,
+    'Name': d.name || (existing ? existing['Name'] : '') || '',
+    'Exchange': d.exchange || (existing ? existing['Exchange'] : '') || '',
+    'Country': d.country || (existing ? existing['Country'] : '') || '',
+    'Currency': d.currency || (existing ? existing['Currency'] : '') || '',
+    'Price': d.price != null && d.price !== '' ? d.price : '',
+    'Change': d.change != null && d.change !== '' ? d.change : '',
+    'ChangePercent': d.changePercent != null && d.changePercent !== '' ? d.changePercent : '',
+    'MarketCap': d.marketCap != null && d.marketCap !== '' ? d.marketCap : '',
+    'Sector': d.sector || (existing ? existing['Sector'] : '') || '',
+    'Industry': d.industry || (existing ? existing['Industry'] : '') || '',
+    'DescriptionEN': d.descriptionEN || (existing ? existing['DescriptionEN'] : '') || '',
+    // Never overwrite a saved Chinese translation with an empty value.
+    'DescriptionZH': d.descriptionZH || (existing ? existing['DescriptionZH'] : '') || '',
+    'Source': d.source || (existing ? existing['Source'] : '') || '',
+    'LastFetchedAt': now,
+    'LastSearchedAt': now,
+    'SearchCount': prevCount + 1,
+    'Status': 'Active',
+  };
+
+  if (idx > 0) {
+    headers.forEach(function(h, i) {
+      if (Object.prototype.hasOwnProperty.call(values, h)) sheet.getRange(idx, i + 1).setValue(values[h]);
+    });
+  } else {
+    sheet.appendRow(headers.map(function(h) {
+      return Object.prototype.hasOwnProperty.call(values, h) ? values[h] : '';
+    }));
+  }
+  SpreadsheetApp.flush();
+  return { symbol: sym, lastFetchedAt: now, searchCount: values['SearchCount'], descriptionZH: values['DescriptionZH'] };
+}
+
+function touchPublicStockCache_(symbol) {
+  var sym = String(symbol || '').trim().toUpperCase();
+  if (!sym) throw new Error('Symbol is required.');
+  var sheet = publicStockCacheSheet_();
+  var headers = readHeaders_(sheet);
+  var idx = findCacheRowIndex_(sheet, headers, sym);
+  if (idx < 1) return { symbol: sym, found: false };
+  var existing = cacheRowObject_(sheet, headers, idx);
+  var now = new Date().toISOString();
+  var count = (parseInt(existing['SearchCount'], 10) || 0) + 1;
+  setCellByHeader_(sheet, headers, idx, ['SearchCount'], count);
+  setCellByHeader_(sheet, headers, idx, ['LastSearchedAt'], now);
+  SpreadsheetApp.flush();
+  return { symbol: sym, found: true, searchCount: count };
+}
+
+function setPublicStockCacheZh_(symbol, descriptionZH) {
+  var sym = String(symbol || '').trim().toUpperCase();
+  var zh = String(descriptionZH || '').trim();
+  if (!sym || !zh) return { symbol: sym, updated: false };
+  var sheet = publicStockCacheSheet_();
+  var headers = readHeaders_(sheet);
+  var idx = findCacheRowIndex_(sheet, headers, sym);
+  if (idx < 1) return { symbol: sym, updated: false };
+  setCellByHeader_(sheet, headers, idx, ['DescriptionZH'], zh);
+  SpreadsheetApp.flush();
+  return { symbol: sym, updated: true };
 }
 
 // ── Public Forum ("大家在关注") ──────────────────────────────────────────────
