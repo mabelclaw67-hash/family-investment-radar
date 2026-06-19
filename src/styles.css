@@ -1829,6 +1829,22 @@ h2 {
   margin-bottom: 12px;
 }
 
+.enrich-force-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 12px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.enrich-force-label input {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
 .popup-ai-list {
   display: grid;
   gap: 12px;

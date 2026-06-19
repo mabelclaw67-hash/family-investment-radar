@@ -1792,6 +1792,10 @@ export function SettingsPage() {
         <h2>${escapeHtml(t("enrich_watchlist_title"))}</h2>
       </div>
       <p class="news-refresh-status">${escapeHtml(t("enrich_watchlist_desc"))}</p>
+      <label class="enrich-force-label">
+        <input type="checkbox" id="enrich-force-checkbox" />
+        <span>${escapeHtml(t("enrich_watchlist_force"))}</span>
+      </label>
       <div class="firecrawl-test-row">
         <button id="btn-enrich-watchlist" class="refresh-news-btn" type="button">${escapeHtml(t("enrich_watchlist_button"))}</button>
         <span id="enrich-watchlist-status" class="news-refresh-status"></span>
@@ -2442,6 +2446,7 @@ document.addEventListener("click", async (event) => {
   if (!btn) return;
 
   const status = document.getElementById("enrich-watchlist-status");
+  const force = !!document.getElementById("enrich-force-checkbox")?.checked;
   const lang = getLang();
 
   btn.disabled = true;
@@ -2455,7 +2460,8 @@ document.addEventListener("click", async (event) => {
         "Content-Type": "application/json",
       },
       cache: "no-store",
-      body: JSON.stringify({ max: 3 }),
+      // Force re-analyzes existing rows (larger batch); normal run only fills pending rows.
+      body: JSON.stringify(force ? { max: 10, force: true } : { max: 3 }),
     });
 
     let data;
