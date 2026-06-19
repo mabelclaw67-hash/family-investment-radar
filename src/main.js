@@ -41,6 +41,7 @@ import { t, getLang, setLang } from "./i18n.js";
 const app = document.querySelector("#app");
 const AUTH_KEY = "fir_auth_v2";
 const ADMIN_TOKEN_KEY = "fir_admin_token_v1";
+let globalActionsBound = false;
 
 // ── Password Gate ─────────────────────────────────────────────────────────────
 
@@ -139,17 +140,19 @@ async function verifyAdminPassword(password) {
 }
 
 function bindGlobalActions() {
-  const loginBtn = document.querySelector("[data-action='adminLogin']");
-  if (loginBtn) {
-    loginBtn.addEventListener("click", (event) => {
-      event.preventDefault();
-      showPasswordGate();
-    });
-  }
+  if (!globalActionsBound) {
+    document.addEventListener("click", (event) => {
+      const actionEl = event.target instanceof Element ? event.target.closest("[data-action]") : null;
+      if (!actionEl || (!app.contains(actionEl) && !actionEl.closest("#admin-login-overlay"))) return;
 
-  const logoutBtn = document.querySelector("[data-action='logout']");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
+      if (actionEl.dataset.action === "adminLogin") {
+        event.preventDefault();
+        showPasswordGate();
+        return;
+      }
+
+      if (actionEl.dataset.action !== "logout") return;
+      event.preventDefault();
       sessionStorage.removeItem(AUTH_KEY);
       sessionStorage.removeItem(ADMIN_TOKEN_KEY);
       window.location.hash = "#/dashboard";
@@ -159,7 +162,33 @@ function bindGlobalActions() {
         bindGlobalActions();
       });
     });
+    globalActionsBound = true;
   }
+
+  document.querySelectorAll("[data-action='adminLogin']").forEach((btn) => {
+    if (btn.dataset.boundAdminLogin) return;
+    btn.addEventListener("click", (event) => {
+      event.preventDefault();
+      showPasswordGate();
+    });
+    btn.dataset.boundAdminLogin = "true";
+  });
+
+  document.querySelectorAll("[data-action='logout']").forEach((btn) => {
+    if (btn.dataset.boundLogout) return;
+    btn.addEventListener("click", (event) => {
+      event.preventDefault();
+      sessionStorage.removeItem(AUTH_KEY);
+      sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+      window.location.hash = "#/dashboard";
+      renderCurrentPage().catch((error) => {
+        app.innerHTML = ErrorState(error, checkAuth());
+        console.error(error);
+        bindGlobalActions();
+      });
+    });
+    btn.dataset.boundLogout = "true";
+  });
 
   // Language switcher (floating widget — EN and 中文 buttons)
   document.querySelectorAll("[data-action='setLang']").forEach((btn) => {
