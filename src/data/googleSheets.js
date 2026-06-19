@@ -68,16 +68,20 @@ export async function loadHoldingsPageSource() {
 
 export async function loadWatchlistPageSource() {
   const dashboardSource = await loadDashboardSource();
-  const researchResult = await Promise.allSettled([
+  const [watchlistResult, researchResult] = await Promise.allSettled([
+    loadSheetTab(SHEET_CONFIG.tabs.watchlist),
     loadSheetTab(SHEET_CONFIG.tabs.holdingResearch),
   ]);
 
   return {
-    watchlist: dashboardSource.watchlist,
+    watchlist:
+      watchlistResult.status === "fulfilled"
+        ? watchlistResult.value
+        : dashboardSource.watchlist,
     dailyNews: dashboardSource.dailyNews,
     marketRadar: dashboardSource.marketRadar,
     holdingResearch:
-      researchResult[0].status === "fulfilled" ? researchResult[0].value : [],
+      researchResult.status === "fulfilled" ? researchResult.value : [],
   };
 }
 
@@ -109,8 +113,14 @@ export async function addWatchItem(payload) {
 export async function loadDecisionLogPageSource() {
   const url = buildApiUrl("decisionLog");
   const payload = await fetchJson(url);
+  const rows = Array.isArray(payload.data)
+    ? payload.data
+    : Array.isArray(payload.rows)
+      ? payload.rows
+      : [];
+
   return {
-    decisions: Array.isArray(payload.data) ? payload.data : [],
+    decisions: rows,
   };
 }
 

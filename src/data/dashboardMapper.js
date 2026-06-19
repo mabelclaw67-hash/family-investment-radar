@@ -96,7 +96,36 @@ export function buildDashboardModel(source) {
 }
 
 export function get(row, key) {
-  return row?.[key] ?? "";
+  if (!row) return "";
+  if (row[key] !== undefined) return row[key];
+
+  const aliases = fieldAliases(key);
+  for (const alias of aliases) {
+    if (row[alias] !== undefined) return row[alias];
+  }
+
+  const wanted = normalizeHeader(key);
+  const foundKey = Object.keys(row).find((candidate) => normalizeHeader(candidate) === wanted);
+  return foundKey ? row[foundKey] : "";
+}
+
+function fieldAliases(key) {
+  const parts = String(key)
+    .split("/")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return parts.flatMap((part) => {
+    const withoutSpaces = part.replace(/\s+/g, "");
+    return withoutSpaces === part ? [part] : [part, withoutSpaces];
+  });
+}
+
+function normalizeHeader(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[（）()]/g, "")
+    .replace(/[^a-z0-9\u4e00-\u9fff%]+/g, "");
 }
 
 function buildMorningBrief(rows) {
