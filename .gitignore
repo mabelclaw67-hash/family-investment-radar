@@ -14,3 +14,11 @@ Thumbs.db
 
 # Local Netlify folder
 .netlify
+
+# Build output (Netlify builds from source)
+dist/
+
+# Local backups and editor copies
+backup_*/
+*.backup-*
+*.rtf

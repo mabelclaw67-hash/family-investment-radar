@@ -110,6 +110,16 @@ export async function addWatchItem(payload) {
   return await fetchJson(url);
 }
 
+export async function updateWatchItem(payload) {
+  const url = buildApiUrl("updateWatchItem", payload);
+  return await fetchJson(url);
+}
+
+export async function archiveWatchItem(watchId) {
+  const url = buildApiUrl("archiveWatchItem", { watchId });
+  return await fetchJson(url);
+}
+
 export async function loadDecisionLogPageSource() {
   const url = buildApiUrl("decisionLog");
   const payload = await fetchJson(url);
@@ -126,6 +136,16 @@ export async function loadDecisionLogPageSource() {
 
 export async function addDecisionLog(payload) {
   const url = buildApiUrl("addDecisionLog", payload);
+  return await fetchJson(url);
+}
+
+export async function updateDecisionLog(payload) {
+  const url = buildApiUrl("updateDecisionLog", payload);
+  return await fetchJson(url);
+}
+
+export async function archiveDecisionLog(decisionId) {
+  const url = buildApiUrl("archiveDecisionLog", { decisionId });
   return await fetchJson(url);
 }
 

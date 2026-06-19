@@ -914,7 +914,6 @@ export function WatchlistPage(model) {
   return `
     ${WatchlistPageHeader()}
     ${WatchlistSummaryCards(model.summary)}
-    ${WatchlistAddForm()}
     ${
       model.watchlist.length
         ? `<section class="panel watchlist-table-panel">
@@ -926,6 +925,7 @@ export function WatchlistPage(model) {
            </section>`
         : `<section class="panel">${EmptyState(t("watchlist_empty"), "")}</section>`
     }
+    ${WatchlistAddForm()}
   `;
 }
 
@@ -981,9 +981,9 @@ function WatchlistAddForm() {
             <span>${t("col_owner")}</span>
             <select name="owner">
               <option value="">${sp}</option>
-              <option value="Mabel">Portfolio A</option>
-              <option value="Victor">Portfolio B</option>
-              <option value="Both">Both</option>
+              <option value="Mabel">${localizedValue("Mabel")}</option>
+              <option value="Victor">${localizedValue("Victor")}</option>
+              <option value="Both">${localizedValue("Both")}</option>
             </select>
           </label>
         </div>
@@ -992,10 +992,10 @@ function WatchlistAddForm() {
             <span>${t("col_type")}</span>
             <select name="type">
               <option value="">${sp}</option>
-              <option value="Stock">Stock</option>
-              <option value="ETF">ETF</option>
-              <option value="Mutual Fund">Mutual Fund</option>
-              <option value="Keyword Watch">Keyword Watch</option>
+              <option value="Stock">${localizedValue("Stock")}</option>
+              <option value="ETF">${localizedValue("ETF")}</option>
+              <option value="Mutual Fund">${localizedValue("Mutual Fund")}</option>
+              <option value="Keyword Watch">${localizedValue("Keyword Watch")}</option>
             </select>
           </label>
           <label class="wf-field">
@@ -1005,9 +1005,9 @@ function WatchlistAddForm() {
           <label class="wf-field">
             <span>${t("form_watch_priority")}</span>
             <select name="priority">
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-              <option value="Low">Low</option>
+              <option value="Medium">${localizedValue("Medium")}</option>
+              <option value="High">${localizedValue("High")}</option>
+              <option value="Low">${localizedValue("Low")}</option>
             </select>
           </label>
         </div>
@@ -1019,6 +1019,7 @@ function WatchlistAddForm() {
         </div>
         <div class="wf-actions">
           <button type="submit" class="refresh-news-btn">${t("btn_add_watchlist")}</button>
+          <button type="button" class="secondary-action-btn" id="watchlist-edit-cancel" hidden>${t("btn_cancel_edit")}</button>
           <span id="watchlist-add-status" class="news-refresh-status"></span>
         </div>
       </form>
@@ -1038,6 +1039,7 @@ function WatchlistTable(rows) {
         <span>${t("col_priority")}</span>
         <span>${t("col_action")}</span>
         <span>${t("col_status")}</span>
+        <span>${t("col_manage")}</span>
       </div>
       ${rows.map(watchlistRow).join("")}
     </div>
@@ -1051,22 +1053,22 @@ function watchlistCardMobile(row) {
   const id       = get(row, "观察ID / Watch ID") || get(row, "代码 / Ticker");
   const ticker   = displayValue(get(row, "代码 / Ticker"));
   const name     = displayValue(get(row, "名称 / Name"));
-  const owner    = displayValue(get(row, "所属人 / Owner"));
-  const type     = displayValue(get(row, "类型 / Type"));
-  const sector   = displayValue(get(row, "板块 / Sector"));
+  const owner    = localizedValue(get(row, "所属人 / Owner"));
+  const type     = localizedValue(get(row, "类型 / Type"));
+  const sector   = localizedValue(get(row, "板块 / Sector"));
   const priority = get(row, "关注级别 / Watch Priority") || "";
   const action   = get(row, "需要行动 / Action Needed") || "Review";
-  const status   = displayValue(get(row, "状态 / Status"));
+  const status   = localizedValue(get(row, "状态 / Status"));
 
   const pClass = priority.includes("High") ? "priority-high"
                : priority.includes("Low")  ? "priority-low"
                : "priority-medium";
 
   return `
-    <button class="wl-card-m" type="button" data-watch-id="${escapeHtml(id)}">
+    <article class="wl-card-m" role="button" tabindex="0" data-watch-id="${escapeHtml(id)}">
       <div class="wlcm-top">
         <strong class="wlcm-ticker">${escapeHtml(ticker)}</strong>
-        <span class="priority-badge ${pClass}">${escapeHtml(priority || "Medium")}</span>
+        <span class="priority-badge ${pClass}">${escapeHtml(localizedValue(priority || "Medium"))}</span>
       </div>
       <div class="wlcm-name-row">${escapeHtml(name)}</div>
       <div class="wlcm-meta">
@@ -1076,10 +1078,14 @@ function watchlistCardMobile(row) {
         ${sector ? `<span>·</span><span>${escapeHtml(sector)}</span>` : ""}
       </div>
       <div class="wlcm-bottom">
-        <span class="status-pill action-${actionLabelClass(action)}">${escapeHtml(action)}</span>
+        <span class="status-pill action-${actionLabelClass(action)}">${escapeHtml(localizedValue(action))}</span>
         <span class="wlcm-status">${escapeHtml(status)}</span>
       </div>
-    </button>
+      <div class="row-actions">
+        <button type="button" class="mini-action-btn" data-watch-edit="${escapeHtml(id)}">${t("btn_edit")}</button>
+        <button type="button" class="mini-action-btn danger" data-watch-delete="${escapeHtml(id)}">${t("btn_delete")}</button>
+      </div>
+    </article>
   `;
 }
 
@@ -1092,16 +1098,20 @@ function watchlistRow(row) {
                  : "priority-medium";
 
   return `
-    <button class="watchlist-row" type="button" data-watch-id="${escapeHtml(id)}">
-      <span>${escapeHtml(displayValue(get(row, "所属人 / Owner")))}</span>
+    <div class="watchlist-row" role="button" tabindex="0" data-watch-id="${escapeHtml(id)}">
+      <span>${escapeHtml(localizedValue(get(row, "所属人 / Owner")))}</span>
       <strong class="wl-ticker">${escapeHtml(displayValue(get(row, "代码 / Ticker")))}</strong>
       <span>${escapeHtml(displayValue(get(row, "名称 / Name")))}</span>
-      <span>${escapeHtml(displayValue(get(row, "类型 / Type")))}</span>
-      <span>${escapeHtml(displayValue(get(row, "板块 / Sector")))}</span>
-      <span class="priority-badge ${pClass}">${escapeHtml(displayValue(priority, "Medium"))}</span>
-      <span class="status-pill action-${actionLabelClass(action)}">${escapeHtml(action)}</span>
-      <span>${escapeHtml(displayValue(get(row, "状态 / Status")))}</span>
-    </button>
+      <span>${escapeHtml(localizedValue(get(row, "类型 / Type")))}</span>
+      <span>${escapeHtml(localizedValue(get(row, "板块 / Sector")))}</span>
+      <span class="priority-badge ${pClass}">${escapeHtml(localizedValue(priority || "Medium"))}</span>
+      <span class="status-pill action-${actionLabelClass(action)}">${escapeHtml(localizedValue(action))}</span>
+      <span>${escapeHtml(localizedValue(get(row, "状态 / Status")))}</span>
+      <span class="row-actions">
+        <button type="button" class="mini-action-btn" data-watch-edit="${escapeHtml(id)}">${t("btn_edit")}</button>
+        <button type="button" class="mini-action-btn danger" data-watch-delete="${escapeHtml(id)}">${t("btn_delete")}</button>
+      </span>
+    </div>
   `;
 }
 
@@ -1128,14 +1138,14 @@ export function WatchlistPopupHtml(popupData) {
           <span class="popup-kicker">${t("popup_quick_research")}</span>
           <div class="popup-title-row">
             <h2>${escapeHtml(ticker || "—")} <span>/ ${escapeHtml(name || "—")}</span></h2>
-            <span class="status-pill action-${actionLabelClass(action)}">${escapeHtml(action)}</span>
+            <span class="status-pill action-${actionLabelClass(action)}">${escapeHtml(localizedValue(action))}</span>
           </div>
           <div class="popup-meta-row">
-            ${owner    ? `<span class="popup-meta-chip">${escapeHtml(owner)}</span>` : ""}
-            ${type     ? `<span class="popup-meta-chip">${escapeHtml(type)}</span>` : ""}
-            ${sector   ? `<span class="popup-meta-chip">${escapeHtml(sector)}</span>` : ""}
-            ${status   ? `<span class="popup-meta-chip">${escapeHtml(status)}</span>` : ""}
-            ${priority ? `<span class="popup-meta-chip priority-chip-${pClass}">${escapeHtml(priority)} ${t("popup_priority_suffix")}</span>` : ""}
+            ${owner    ? `<span class="popup-meta-chip">${escapeHtml(localizedValue(owner))}</span>` : ""}
+            ${type     ? `<span class="popup-meta-chip">${escapeHtml(localizedValue(type))}</span>` : ""}
+            ${sector   ? `<span class="popup-meta-chip">${escapeHtml(localizedValue(sector))}</span>` : ""}
+            ${status   ? `<span class="popup-meta-chip">${escapeHtml(localizedValue(status))}</span>` : ""}
+            ${priority ? `<span class="popup-meta-chip priority-chip-${pClass}">${escapeHtml(localizedValue(priority))} ${t("popup_priority_suffix")}</span>` : ""}
           </div>
         </div>
 
@@ -1157,7 +1167,7 @@ export function WatchlistPopupHtml(popupData) {
         <div class="popup-section">
           <h3>${t("popup_current_status")}</h3>
           <div class="popup-action-display">
-            <span class="status-pill action-${actionLabelClass(action)}">${escapeHtml(action)}</span>
+            <span class="status-pill action-${actionLabelClass(action)}">${escapeHtml(localizedValue(action))}</span>
             <small class="popup-disclaimer">${t("popup_disclaimer")}</small>
           </div>
         </div>
@@ -1268,9 +1278,9 @@ function popupNewsItem(row) {
         ${origHtml}
       </div>
       <div class="popup-news-meta">
-        ${category ? `<span class="tag">${escapeHtml(category)}</span>` : ""}
-        ${risk     ? `<span class="tag">${escapeHtml(risk)}</span>` : ""}
-        <span class="status-pill action-${actionLabelClass(action)}">${escapeHtml(action)}</span>
+        ${category ? `<span class="tag">${escapeHtml(localizedValue(category))}</span>` : ""}
+        ${risk     ? `<span class="tag">${escapeHtml(localizedValue(risk))}</span>` : ""}
+        <span class="status-pill action-${actionLabelClass(action)}">${escapeHtml(localizedValue(action))}</span>
       </div>
     </article>
   `;
@@ -1348,7 +1358,6 @@ export function DecisionLogPage(model) {
       <span class="live-pill"><i></i>${t("live_pill_real")}</span>
     </header>
     ${DecisionLogSummaryCards(model.summary)}
-    ${DecisionLogAddForm()}
     <section class="panel dl-table-panel">
       <div class="panel-title compact">
         <h2>${t("decisions_list_title")}</h2>
@@ -1364,6 +1373,7 @@ export function DecisionLogPage(model) {
           : `<div class="empty-state"><strong>${t("decisions_empty_main")}</strong><span>${t("decisions_empty_hint")}</span></div>`
       }
     </section>
+    ${DecisionLogAddForm()}
   `;
 }
 
@@ -1405,9 +1415,9 @@ function DecisionLogAddForm() {
             <span>${t("dl_form_owner")} <em>${req}</em></span>
             <select name="owner" required>
               <option value="">${sp}</option>
-              <option value="Mabel">Portfolio A</option>
-              <option value="Victor">Portfolio B</option>
-              <option value="Both">Both</option>
+              <option value="Mabel">${localizedValue("Mabel")}</option>
+              <option value="Victor">${localizedValue("Victor")}</option>
+              <option value="Both">${localizedValue("Both")}</option>
             </select>
           </label>
           <label class="wf-field">
@@ -1416,8 +1426,8 @@ function DecisionLogAddForm() {
               <option value="">${sp}</option>
               <option value="TFSA">TFSA</option>
               <option value="RRSP">RRSP</option>
-              <option value="Non-registered">Non-registered</option>
-              <option value="Other">Other</option>
+              <option value="Non-registered">${localizedValue("Non-registered")}</option>
+              <option value="Other">${localizedValue("Other")}</option>
             </select>
           </label>
         </div>
@@ -1434,12 +1444,12 @@ function DecisionLogAddForm() {
             <span>${t("dl_form_asset_type")}</span>
             <select name="assetType">
               <option value="">${sp}</option>
-              <option value="Stock">Stock</option>
+              <option value="Stock">${localizedValue("Stock")}</option>
               <option value="ETF">ETF</option>
-              <option value="Fund">Fund</option>
+              <option value="Fund">${localizedValue("Fund")}</option>
               <option value="GIC">GIC</option>
-              <option value="Cash">Cash</option>
-              <option value="Other">Other</option>
+              <option value="Cash">${localizedValue("Cash")}</option>
+              <option value="Other">${localizedValue("Other")}</option>
             </select>
           </label>
         </div>
@@ -1448,32 +1458,32 @@ function DecisionLogAddForm() {
             <span>${t("dl_form_action_type")} <em>${req}</em></span>
             <select name="actionType" required>
               <option value="">${sp}</option>
-              <option value="Buy">Buy</option>
-              <option value="Sell">Sell</option>
-              <option value="Hold">Hold</option>
-              <option value="Watch">Watch</option>
-              <option value="Review">Review</option>
-              <option value="Dividend">Dividend</option>
-              <option value="Contribution">Contribution</option>
-              <option value="Withdrawal">Withdrawal</option>
+              <option value="Buy">${localizedValue("Buy")}</option>
+              <option value="Sell">${localizedValue("Sell")}</option>
+              <option value="Hold">${localizedValue("Hold")}</option>
+              <option value="Watch">${localizedValue("Watch")}</option>
+              <option value="Review">${localizedValue("Review")}</option>
+              <option value="Dividend">${localizedValue("Dividend")}</option>
+              <option value="Contribution">${localizedValue("Contribution")}</option>
+              <option value="Withdrawal">${localizedValue("Withdrawal")}</option>
             </select>
           </label>
           <label class="wf-field">
             <span>${t("dl_form_decision_status")}</span>
             <select name="decisionStatus">
-              <option value="Completed">Completed</option>
-              <option value="Planned">Planned</option>
-              <option value="Cancelled">Cancelled</option>
-              <option value="Review Later">Review Later</option>
+              <option value="Completed">${localizedValue("Completed")}</option>
+              <option value="Planned">${localizedValue("Planned")}</option>
+              <option value="Cancelled">${localizedValue("Cancelled")}</option>
+              <option value="Review Later">${localizedValue("Review Later")}</option>
             </select>
           </label>
           <label class="wf-field">
             <span>${t("dl_form_risk_level")}</span>
             <select name="riskLevel">
               <option value="">${sp}</option>
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
+              <option value="Low">${localizedValue("Low")}</option>
+              <option value="Medium">${localizedValue("Medium")}</option>
+              <option value="High">${localizedValue("High")}</option>
             </select>
           </label>
         </div>
@@ -1525,6 +1535,7 @@ function DecisionLogAddForm() {
         </div>
         <div class="wf-actions">
           <button type="submit" class="refresh-news-btn">${t("btn_add_decision_log")}</button>
+          <button type="button" class="secondary-action-btn" id="dl-edit-cancel" hidden>${t("btn_cancel_edit")}</button>
           <span id="dl-add-status" class="news-refresh-status"></span>
         </div>
       </form>
@@ -1548,6 +1559,7 @@ function DecisionLogTable(rows) {
         <span>${t("dl_form_cost")}</span>
         <span>${t("dl_col_reason")}</span>
         <span>${t("col_status")}</span>
+        <span>${t("col_manage")}</span>
       </div>
       ${rows.map(decisionLogRow).join("")}
     </div>
@@ -1577,20 +1589,24 @@ function decisionLogCardMobile(row) {
     <div class="dl-card-m">
       <div class="dlcm-top">
         <strong class="wl-ticker">${escapeHtml(ticker || name || "—")}</strong>
-        <span class="status-pill action-${actionLabelClass(actionType)}">${escapeHtml(actionType)}</span>
+        <span class="status-pill action-${actionLabelClass(actionType)}">${escapeHtml(localizedValue(actionType))}</span>
       </div>
       <div class="dlcm-meta">
         <span class="dl-id">${escapeHtml(decisionId)}</span>
         <span>·</span>
         <span>${escapeHtml(date)}</span>
         <span>·</span>
-        <span>${escapeHtml(owner)}</span>
+        <span>${escapeHtml(localizedValue(owner))}</span>
         ${amount ? `<span>·</span><span>$${escapeHtml(amount)}</span>` : ""}
       </div>
       ${name && ticker ? `<div class="dlcm-name">${escapeHtml(name)}</div>` : ""}
       ${decisionReason ? `<div class="dlcm-reason">${escapeHtml(decisionReason)}</div>` : ""}
       <div class="dlcm-footer">
-        <span class="status-pill action-${statusClass}">${escapeHtml(decisionStatus)}</span>
+        <span class="status-pill action-${statusClass}">${escapeHtml(localizedValue(decisionStatus))}</span>
+      </div>
+      <div class="row-actions">
+        <button type="button" class="mini-action-btn" data-dl-edit="${escapeHtml(decisionId)}">${t("btn_edit")}</button>
+        <button type="button" class="mini-action-btn danger" data-dl-delete="${escapeHtml(decisionId)}">${t("btn_delete")}</button>
       </div>
     </div>
   `;
@@ -1608,16 +1624,20 @@ function decisionLogRow(row) {
     <div class="dl-row">
       <span class="dl-id">${escapeHtml(get(row, "决策ID / Decision ID"))}</span>
       <span>${escapeHtml(get(row, "日期 / Date"))}</span>
-      <span>${escapeHtml(get(row, "所属人 / Owner"))}</span>
+      <span>${escapeHtml(localizedValue(get(row, "所属人 / Owner")))}</span>
       <strong class="wl-ticker">${escapeHtml(get(row, "代码 / Ticker"))}</strong>
       <span>${escapeHtml(get(row, "名称 / Name"))}</span>
-      <span class="status-pill action-${actionLabelClass(actionType)}">${escapeHtml(actionType)}</span>
+      <span class="status-pill action-${actionLabelClass(actionType)}">${escapeHtml(localizedValue(actionType))}</span>
       <span>${escapeHtml(get(row, "金额 / Amount"))}</span>
       <span>${escapeHtml(get(row, "数量 / Quantity"))}</span>
       <span>${escapeHtml(get(row, "单价 / Price"))}</span>
       <span>${escapeHtml(get(row, "成本 / Cost"))}</span>
       <span class="dl-reason">${escapeHtml(get(row, "决策原因 / Decision Reason"))}</span>
-      <span class="status-pill action-${statusClass}">${escapeHtml(decisionStatus || "Active")}</span>
+      <span class="status-pill action-${statusClass}">${escapeHtml(localizedValue(decisionStatus || "Active"))}</span>
+      <span class="row-actions">
+        <button type="button" class="mini-action-btn" data-dl-edit="${escapeHtml(get(row, "决策ID / Decision ID"))}">${t("btn_edit")}</button>
+        <button type="button" class="mini-action-btn danger" data-dl-delete="${escapeHtml(get(row, "决策ID / Decision ID"))}">${t("btn_delete")}</button>
+      </span>
     </div>
   `;
 }
@@ -1720,6 +1740,17 @@ export function SettingsPage() {
         <span id="firecrawl-test-status" class="news-refresh-status"></span>
       </form>
       <div id="firecrawl-test-result" class="firecrawl-test-result"></div>
+    </section>
+
+    <section class="panel firecrawl-test-panel">
+      <div class="panel-title">
+        <h2>${escapeHtml(t("enrich_watchlist_title"))}</h2>
+      </div>
+      <p class="news-refresh-status">${escapeHtml(t("enrich_watchlist_desc"))}</p>
+      <div class="firecrawl-test-row">
+        <button id="btn-enrich-watchlist" class="refresh-news-btn" type="button">${escapeHtml(t("enrich_watchlist_button"))}</button>
+        <span id="enrich-watchlist-status" class="news-refresh-status"></span>
+      </div>
     </section>
   `;
 }
@@ -2180,6 +2211,68 @@ function actionLabelClass(action) {
   return "none";
 }
 
+function localizedValue(value, fallback = "—") {
+  const raw = String(value ?? "").trim();
+  if (!raw) return fallback;
+  if (getLang() !== "zh") return raw;
+
+  const exact = {
+    Mabel: "稳健组合",
+    Victor: "主动组合",
+    Both: "共同",
+    Stock: "股票",
+    ETF: "ETF",
+    Fund: "基金",
+    "Mutual Fund": "共同基金",
+    "Keyword Watch": "关键词观察",
+    Cash: "现金",
+    Other: "其他",
+    Low: "低",
+    Medium: "中",
+    High: "高",
+    "High Attention": "重点关注",
+    Review: "复核",
+    Watch: "观察",
+    "No Action": "无需行动",
+    Active: "有效",
+    "Active Watch": "观察中",
+    Archived: "已归档",
+    Planned: "计划中",
+    Completed: "已完成",
+    Cancelled: "已取消",
+    "Review Later": "稍后复核",
+    Buy: "买入",
+    Sell: "卖出",
+    Hold: "持有",
+    Dividend: "分红",
+    Contribution: "存入",
+    Withdrawal: "取出",
+    "Non-registered": "非注册账户",
+    Energy: "能源",
+    "ETF / Fixed Income": "ETF / 固定收益",
+    "AI / Semiconductor": "AI / 半导体",
+    "AI / Search / Cloud": "AI / 搜索 / 云服务",
+    "Energy / Oil & Gas": "能源 / 油气",
+    Cybersecurity: "网络安全",
+    "Consumer Tech": "消费科技",
+  };
+  if (exact[raw]) return exact[raw];
+
+  return raw
+    .replace(/\bHigh Attention\b/g, "重点关注")
+    .replace(/\bReview Later\b/g, "稍后复核")
+    .replace(/\bActive Watch\b/g, "观察中")
+    .replace(/\bReview\b/g, "复核")
+    .replace(/\bStock\b/g, "股票")
+    .replace(/\bKeyword Watch\b/g, "关键词观察")
+    .replace(/\bSemiconductor\b/g, "半导体")
+    .replace(/\bCloud\b/g, "云服务")
+    .replace(/\bEnergy\b/g, "能源")
+    .replace(/\bConsumer\b/g, "消费")
+    .replace(/\bEnterprise\b/g, "企业")
+    .replace(/\bSoftware\b/g, "软件");
+}
+
 function EmptyState(main, sub) {
   return `<div class="empty-state"><strong>${main}</strong>${sub ? `<span>${sub}</span>` : ""}</div>`;
 }
@@ -2290,6 +2383,64 @@ document.addEventListener("click", async (event) => {
         lang === "zh"
           ? "更新失败，请稍后再试"
           : "Update failed. Please try again later.";
+    }
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ─── Watchlist Enrichment Trigger (columns L / M) ────────────────────────────
+// Calls the enrichWatchlist Netlify function, which fetches news + earnings via
+// Firecrawl/OpenAI and writes Chinese summaries back to the Watchlist sheet.
+document.addEventListener("click", async (event) => {
+  const btn = event.target.closest("#btn-enrich-watchlist");
+  if (!btn) return;
+
+  const status = document.getElementById("enrich-watchlist-status");
+  const lang = getLang();
+
+  btn.disabled = true;
+  if (status) status.textContent = t("status_enrich_running");
+
+  try {
+    const response = await fetch("/.netlify/functions/enrichWatchlist", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${sessionStorage.getItem("fir_admin_token_v1") || ""}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+      body: JSON.stringify({ max: 3 }),
+    });
+
+    let data;
+    try {
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("Backend did not return JSON.");
+      }
+      data = await response.json();
+    } catch (error) {
+      throw new Error(lang === "zh" ? "后端没有返回 JSON。" : (error.message || "Backend did not return JSON."));
+    }
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+
+    if (status) {
+      const updated = data.updatedRows || 0;
+      const processed = data.processed || 0;
+      status.textContent = (lang === "zh"
+        ? `更新完成：写入 ${updated} 行（处理 ${processed} 行） · ${data.updatedAt || ""}`
+        : `Updated ${updated} row(s) of ${processed} processed · ${data.updatedAt || ""}`);
+    }
+  } catch (error) {
+    console.error(error);
+    if (status) {
+      status.textContent = lang === "zh"
+        ? t("status_enrich_failed")
+        : (error.message || t("status_enrich_failed"));
     }
   } finally {
     btn.disabled = false;

@@ -293,10 +293,50 @@ function doGet(e) {
       });
     }
 
+    if (action === 'updateWatchItem') {
+      const result = updateWatchItem_(params);
+      return jsonResponse_({
+        ok: true,
+        updated: 1,
+        watchId: result.watchId,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
+    if (action === 'archiveWatchItem') {
+      const result = archiveWatchItem_(params);
+      return jsonResponse_({
+        ok: true,
+        archived: 1,
+        watchId: result.watchId,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
     if (action === 'decisionLog') {
       return jsonResponse_({
         ok: true,
         data: readTab_(DASHBOARD_TABS.decisionLog),
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
+    if (action === 'updateDecisionLog') {
+      const result = updateDecisionLog_(params);
+      return jsonResponse_({
+        ok: true,
+        updated: 1,
+        decisionId: result.decisionId,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
+    if (action === 'archiveDecisionLog') {
+      const result = archiveDecisionLog_(params);
+      return jsonResponse_({
+        ok: true,
+        archived: 1,
+        decisionId: result.decisionId,
         updatedAt: new Date().toISOString(),
       });
     }
@@ -381,6 +421,16 @@ function doPost(e) {
       });
     }
 
+    if (action === 'updateWatchlistEnrichment') {
+      var enrichResult = updateWatchlistEnrichment_(body);
+      return jsonResponse_({
+        ok: true,
+        data: enrichResult,
+        updatedRows: enrichResult.updatedRows,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
     throw new Error('Unsupported POST action: ' + action);
   } catch (error) {
     return jsonResponse_({
@@ -388,6 +438,65 @@ function doPost(e) {
       error: error && error.message ? error.message : String(error),
     });
   }
+}
+
+// Writes enrichment results (Latest Chinese News Summary -> column L,
+// Earnings/Filing Summary -> column M) back to 07 Watchlist Intelligence.
+// Accepts either a single { watchId, newsSummary, earningsSummary } payload
+// or { rows: [ {watchId, newsSummary, earningsSummary}, ... ] } for batch writes.
+function updateWatchlistEnrichment_(body) {
+  var rows = Array.isArray(body.rows) ? body.rows : [body];
+
+  var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = spreadsheet.getSheetByName(DASHBOARD_TABS.watchlist);
+  if (!sheet) throw new Error('Sheet tab not found: ' + DASHBOARD_TABS.watchlist);
+
+  var headers = readHeaders_(sheet);
+  var today = Utilities.formatDate(new Date(), 'America/Vancouver', 'yyyy-MM-dd');
+  var updatedRows = 0;
+  var updatedIds = [];
+
+  rows.forEach(function(item) {
+    var watchId = String((item && item.watchId) || '').trim();
+    if (!watchId) return;
+
+    var rowIndex;
+    try {
+      rowIndex = findRowById_(sheet, headers, ['Watch ID', '观察ID'], watchId);
+    } catch (err) {
+      return; // skip unknown ids instead of failing the whole batch
+    }
+
+    var newsSummary = String((item && item.newsSummary) || '').trim();
+    var earningsSummary = String((item && item.earningsSummary) || '').trim();
+    var mainRisks = String((item && item.mainRisks) || '').trim();
+    var aiComment = String((item && item.aiComment) || '').trim();
+
+    if (newsSummary) {
+      setCellByHeader_(sheet, headers, rowIndex,
+        ['最新中文新闻摘要', 'Latest Chinese News Summary'], newsSummary);
+    }
+    if (earningsSummary) {
+      setCellByHeader_(sheet, headers, rowIndex,
+        ['财报/公告摘要', 'Earnings or Filing Summary', 'Earnings / Filing Summary'], earningsSummary);
+    }
+    if (mainRisks) {
+      setCellByHeader_(sheet, headers, rowIndex,
+        ['主要风险', 'Main Risks'], mainRisks);
+    }
+    if (aiComment) {
+      setCellByHeader_(sheet, headers, rowIndex,
+        ['AI中文点评', 'AI Chinese Comment'], aiComment);
+    }
+    if (newsSummary || earningsSummary || mainRisks || aiComment) {
+      setCellByHeader_(sheet, headers, rowIndex, ['最后更新', 'Last Updated'], today);
+      updatedRows += 1;
+      updatedIds.push(watchId);
+    }
+  });
+
+  SpreadsheetApp.flush();
+  return { updatedRows: updatedRows, updatedIds: updatedIds };
 }
 
 function readTab_(tabName) {
@@ -814,6 +923,60 @@ function nextWatchId_(sheet, headers) {
     });
   }
   return 'WAT-' + String(maxId + 1).padStart(3, '0');
+}
+
+function updateWatchItem_(params) {
+  var watchId = String(params.watchId || '').trim();
+  if (!watchId) throw new Error('Watch ID is required.');
+
+  var owner = String(params.owner || '').trim();
+  var ticker = String(params.ticker || '').trim().toUpperCase();
+  var name = String(params.name || '').trim();
+  var type = String(params.type || '').trim();
+  var sector = String(params.sector || '').trim();
+  var priority = String(params.priority || 'Medium').trim();
+  var reason = String(params.reason || '').trim();
+
+  if (!owner) throw new Error('Owner is required.');
+  if (!type) throw new Error('Type is required.');
+  if (!ticker && !name) throw new Error('Ticker or Name is required.');
+  if (['Mabel', 'Victor', 'Both'].indexOf(owner) === -1) throw new Error('Unsupported owner: ' + owner);
+  if (['Low', 'Medium', 'High'].indexOf(priority) === -1) priority = 'Medium';
+
+  var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = spreadsheet.getSheetByName(DASHBOARD_TABS.watchlist);
+  if (!sheet) throw new Error('Sheet tab not found: ' + DASHBOARD_TABS.watchlist);
+
+  var headers = readHeaders_(sheet);
+  var rowIndex = findRowById_(sheet, headers, ['Watch ID', '观察ID'], watchId);
+  var today = Utilities.formatDate(new Date(), 'America/Vancouver', 'yyyy-MM-dd');
+
+  setCellByHeader_(sheet, headers, rowIndex, ['Owner', '所属人'], owner);
+  setCellByHeader_(sheet, headers, rowIndex, ['Ticker', '代码'], ticker);
+  setCellByHeader_(sheet, headers, rowIndex, ['Name', '名称'], name || ticker);
+  setCellByHeader_(sheet, headers, rowIndex, ['Type', '类型'], type);
+  setCellByHeader_(sheet, headers, rowIndex, ['Sector', '板块'], sector);
+  setCellByHeader_(sheet, headers, rowIndex, ['Watch Reason', '观察原因'], reason);
+  setCellByHeader_(sheet, headers, rowIndex, ['Watch Priority', '关注级别'], priority);
+  setCellByHeader_(sheet, headers, rowIndex, ['Last Updated', '最后更新'], today);
+  SpreadsheetApp.flush();
+  return { watchId: watchId };
+}
+
+function archiveWatchItem_(params) {
+  var watchId = String(params.watchId || '').trim();
+  if (!watchId) throw new Error('Watch ID is required.');
+
+  var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = spreadsheet.getSheetByName(DASHBOARD_TABS.watchlist);
+  if (!sheet) throw new Error('Sheet tab not found: ' + DASHBOARD_TABS.watchlist);
+
+  var headers = readHeaders_(sheet);
+  var rowIndex = findRowById_(sheet, headers, ['Watch ID', '观察ID'], watchId);
+  setCellByHeader_(sheet, headers, rowIndex, ['Status', '状态'], 'Archived');
+  setCellByHeader_(sheet, headers, rowIndex, ['Last Updated', '最后更新'], Utilities.formatDate(new Date(), 'America/Vancouver', 'yyyy-MM-dd'));
+  SpreadsheetApp.flush();
+  return { watchId: watchId };
 }
 
 // ─── Daily News Fetch ─────────────────────────────────────────────────────────
@@ -2400,6 +2563,79 @@ function nextDecisionId_(sheet, headers) {
   return 'DEC-' + String(maxId + 1).padStart(3, '0');
 }
 
+function updateDecisionLog_(params) {
+  var decisionId = String(params.decisionId || '').trim();
+  if (!decisionId) throw new Error('Decision ID is required.');
+
+  var date       = String(params.date        || '').trim();
+  var owner      = String(params.owner       || '').trim();
+  var actionType = String(params.actionType  || '').trim();
+  var ticker     = String(params.ticker      || '').trim().toUpperCase();
+  var name       = String(params.name        || '').trim();
+
+  if (!date)       throw new Error('Date is required.');
+  if (!owner)      throw new Error('Owner is required.');
+  if (['Mabel','Victor','Both'].indexOf(owner) === -1) throw new Error('Owner must be Mabel, Victor, or Both.');
+  if (!actionType) throw new Error('Action Type is required.');
+  if (!ticker && !name) throw new Error('Ticker or Name is required.');
+
+  var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = spreadsheet.getSheetByName(DASHBOARD_TABS.decisionLog);
+  if (!sheet) throw new Error('Sheet tab not found: ' + DASHBOARD_TABS.decisionLog);
+
+  var headers = readHeaders_(sheet);
+  var rowIndex = findRowById_(sheet, headers, ['Decision ID', '决策ID'], decisionId);
+  var amount   = String(params.amount   || '').trim();
+  var quantity = String(params.quantity || '').trim();
+  var price    = String(params.price    || '').trim();
+  var cost     = String(params.cost     || '').trim();
+
+  if (!cost && quantity && price) {
+    var q = parseFloat(quantity);
+    var p = parseFloat(price);
+    if (!isNaN(q) && !isNaN(p)) cost = String((q * p).toFixed(2));
+  }
+  if (!cost && amount) cost = amount;
+
+  setCellByHeader_(sheet, headers, rowIndex, ['Date', '日期'], date);
+  setCellByHeader_(sheet, headers, rowIndex, ['Owner', '所属人'], owner);
+  setCellByHeader_(sheet, headers, rowIndex, ['Account Type', '账户类型'], String(params.accountType || '').trim());
+  setCellByHeader_(sheet, headers, rowIndex, ['Ticker', '代码'], ticker);
+  setCellByHeader_(sheet, headers, rowIndex, ['Name', '名称'], name || ticker);
+  setCellByHeader_(sheet, headers, rowIndex, ['Asset Type', '资产类型'], String(params.assetType || '').trim());
+  setCellByHeader_(sheet, headers, rowIndex, ['Action Type', '操作类型'], actionType);
+  setCellByHeader_(sheet, headers, rowIndex, ['Decision Status', '决策状态'], String(params.decisionStatus || 'Completed').trim() || 'Completed');
+  setCellByHeader_(sheet, headers, rowIndex, ['Amount', '金额'], amount);
+  setCellByHeader_(sheet, headers, rowIndex, ['Quantity', '数量'], quantity);
+  setCellByHeader_(sheet, headers, rowIndex, ['Price', '单价'], price);
+  setCellByHeader_(sheet, headers, rowIndex, ['Cost', '成本'], cost);
+  setCellByHeader_(sheet, headers, rowIndex, ['Decision Reason', '决策原因'], String(params.decisionReason || '').trim());
+  setCellByHeader_(sheet, headers, rowIndex, ['Reference Info', '参考信息'], String(params.referenceInfo || '').trim());
+  setCellByHeader_(sheet, headers, rowIndex, ['Risk Level', '风险等级'], String(params.riskLevel || '').trim());
+  setCellByHeader_(sheet, headers, rowIndex, ['Related Watch ID', '关联观察'], String(params.relatedWatchId || '').trim());
+  setCellByHeader_(sheet, headers, rowIndex, ['Related Holding ID', '关联持仓'], String(params.relatedHoldingId || '').trim());
+  setCellByHeader_(sheet, headers, rowIndex, ['Review Notes', '复盘备注'], String(params.reviewNotes || '').trim());
+  setCellByHeader_(sheet, headers, rowIndex, ['Updated At', '更新时间'], new Date().toISOString());
+  SpreadsheetApp.flush();
+  return { decisionId: decisionId };
+}
+
+function archiveDecisionLog_(params) {
+  var decisionId = String(params.decisionId || '').trim();
+  if (!decisionId) throw new Error('Decision ID is required.');
+
+  var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = spreadsheet.getSheetByName(DASHBOARD_TABS.decisionLog);
+  if (!sheet) throw new Error('Sheet tab not found: ' + DASHBOARD_TABS.decisionLog);
+
+  var headers = readHeaders_(sheet);
+  var rowIndex = findRowById_(sheet, headers, ['Decision ID', '决策ID'], decisionId);
+  setCellByHeader_(sheet, headers, rowIndex, ['Status', '状态'], 'Archived');
+  setCellByHeader_(sheet, headers, rowIndex, ['Updated At', '更新时间'], new Date().toISOString());
+  SpreadsheetApp.flush();
+  return { decisionId: decisionId };
+}
+
 // ─── Research Pack / NotebookLM-ready workflow ───────────────────────────────
 
 function generateResearchPack_(params) {
@@ -2739,6 +2975,22 @@ function findResearchPackRow_(sheet, headers, packId) {
 function setCellByHeader_(sheet, headers, rowIndex, needles, value) {
   var colIndex = findHeaderIndex_(headers, needles) + 1;
   if (colIndex > 0) sheet.getRange(rowIndex, colIndex).setValue(value);
+}
+
+function findRowById_(sheet, headers, idNeedles, idValue) {
+  var idCol = findHeaderIndex_(headers, idNeedles) + 1;
+  if (idCol < 1) throw new Error('ID column not found: ' + idNeedles.join(' / '));
+
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) throw new Error('No data rows found.');
+
+  var values = sheet.getRange(2, idCol, lastRow - 1, 1).getDisplayValues();
+  for (var i = 0; i < values.length; i++) {
+    if (String(values[i][0] || '').trim() === idValue) {
+      return i + 2;
+    }
+  }
+  throw new Error('Record not found: ' + idValue);
 }
 
 function findHeaderIndex_(headers, needles) {

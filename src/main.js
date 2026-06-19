@@ -1,6 +1,8 @@
 import {
   addDecisionLog,
   addWatchItem,
+  archiveDecisionLog,
+  archiveWatchItem,
   loadDashboardSource,
   loadDecisionLogPageSource,
   loadHoldingsPageSource,
@@ -10,8 +12,10 @@ import {
   syncNewsFromSheet,
   syncMorningBrief,
   refreshStockAnalysis,
+  updateDecisionLog,
+  updateWatchItem,
 } from "./data/googleSheets.js";
-import { buildDashboardModel } from "./data/dashboardMapper.js";
+import { buildDashboardModel, get } from "./data/dashboardMapper.js";
 import { buildHoldingsModel } from "./data/holdingsMapper.js";
 import { buildWatchlistModel } from "./data/watchlistMapper.js";
 import { buildDecisionLogModel } from "./data/decisionLogMapper.js";
@@ -100,7 +104,10 @@ function showPasswordGate() {
     const inputEl = document.getElementById("pw-input");
     const submitBtn = document.querySelector(".pw-submit");
     const errEl = document.getElementById("pw-error");
-    if (submitBtn) submitBtn.disabled = true;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = t("pw_verifying");
+    }
     if (errEl) errEl.hidden = true;
 
     const verified = await verifyAdminPassword(inputEl.value);
@@ -117,17 +124,21 @@ function showPasswordGate() {
       if (errEl) errEl.hidden = false;
       inputEl.value = "";
       inputEl.focus();
-      if (submitBtn) submitBtn.disabled = false;
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = t("pw_submit");
+      }
     }
   });
 }
 
 async function verifyAdminPassword(password) {
   try {
+    const cleanPassword = String(password || "").trim();
     const response = await fetch("/.netlify/functions/verifyAdminPassword", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ password: cleanPassword }),
     });
     const payload = await readJsonResponse(response, "Admin password API");
     return {
@@ -220,6 +231,8 @@ const state = {
   aiMarketTrendSummary: null,
   aiMarketTrendSources: [],
   decisionLogFilter: "all",
+  editingWatchId: "",
+  editingDecisionId: "",
 };
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
@@ -802,14 +815,40 @@ function renderWatchlist() {
 }
 
 function bindWatchlistInteractions() {
+  app.querySelectorAll("[data-watch-edit]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      startWatchlistEdit(button.dataset.watchEdit || "");
+    });
+  });
+
+  app.querySelectorAll("[data-watch-delete]").forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      await archiveWatchlistRecord(button.dataset.watchDelete || "");
+    });
+  });
+
   app.querySelectorAll("[data-watch-id]").forEach((row) => {
-    row.addEventListener("click", () => {
+    row.addEventListener("click", (event) => {
+      if (event.target instanceof Element && event.target.closest("[data-watch-edit], [data-watch-delete]")) return;
+      openWatchlistPopup(row.dataset.watchId);
+    });
+    row.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
       openWatchlistPopup(row.dataset.watchId);
     });
   });
 
   const form = document.getElementById("watchlist-add-form");
   if (!form) return;
+
+  document.getElementById("watchlist-edit-cancel")?.addEventListener("click", () => {
+    state.editingWatchId = "";
+    form.reset();
+    resetWatchlistSubmitState();
+  });
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -836,17 +875,22 @@ function bindWatchlistInteractions() {
 
     if (submitBtn) submitBtn.disabled = true;
     if (statusEl) {
-      statusEl.textContent = t("status_watchlist_writing");
+      statusEl.textContent = state.editingWatchId ? t("status_watchlist_updating") : t("status_watchlist_writing");
       statusEl.className = "news-refresh-status loading";
     }
 
     try {
-      const result = await addWatchItem(payload);
+      const result = state.editingWatchId
+        ? await updateWatchItem({ ...payload, watchId: state.editingWatchId })
+        : await addWatchItem(payload);
       if (statusEl) {
         const id = result.watchId || "";
-        statusEl.textContent = `${t("status_watchlist_added")}: ${id || t("status_watchlist_new_record")}`;
+        statusEl.textContent = state.editingWatchId
+          ? `${t("status_watchlist_updated")}: ${id}`
+          : `${t("status_watchlist_added")}: ${id || t("status_watchlist_new_record")}`;
         statusEl.className = "news-refresh-status success";
       }
+      state.editingWatchId = "";
       form.reset();
       const source = await loadWatchlistPageSource();
       state.watchlistSource = source;
@@ -860,6 +904,71 @@ function bindWatchlistInteractions() {
       if (submitBtn) submitBtn.disabled = false;
     }
   });
+}
+
+function startWatchlistEdit(watchId) {
+  if (!watchId || !state.watchlistSource) return;
+  const row = (state.watchlistSource.watchlist ?? []).find((item) =>
+    (get(item, "观察ID / Watch ID") || get(item, "代码 / Ticker")) === watchId
+  );
+  const form = document.getElementById("watchlist-add-form");
+  if (!row || !form) return;
+
+  state.editingWatchId = watchId;
+  setFormValue(form, "owner", get(row, "所属人 / Owner"));
+  setFormValue(form, "ticker", get(row, "代码 / Ticker"));
+  setFormValue(form, "name", get(row, "名称 / Name"));
+  setFormValue(form, "type", get(row, "类型 / Type"));
+  setFormValue(form, "sector", get(row, "板块 / Sector"));
+  setFormValue(form, "priority", get(row, "关注级别 / Watch Priority") || "Medium");
+  setFormValue(form, "reason", get(row, "观察原因 / Watch Reason"));
+  const submitBtn = form.querySelector("button[type='submit']");
+  if (submitBtn) submitBtn.textContent = t("btn_edit");
+  const cancelBtn = document.getElementById("watchlist-edit-cancel");
+  if (cancelBtn) cancelBtn.hidden = false;
+  const statusEl = document.getElementById("watchlist-add-status");
+  if (statusEl) {
+    statusEl.textContent = watchId;
+    statusEl.className = "news-refresh-status";
+  }
+  form.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function archiveWatchlistRecord(watchId) {
+  if (!watchId) return;
+  const message = getLang() === "zh"
+    ? `确定删除观察项目 ${watchId} 吗？记录会归档，不会从 Google Sheet 物理删除。`
+    : `Delete watchlist item ${watchId}? The row will be archived, not physically removed from Google Sheet.`;
+  if (!window.confirm(message)) return;
+
+  const statusEl = document.getElementById("watchlist-add-status");
+  if (statusEl) {
+    statusEl.textContent = t("status_watchlist_archiving");
+    statusEl.className = "news-refresh-status loading";
+  }
+  try {
+    await archiveWatchItem(watchId);
+    state.editingWatchId = "";
+    state.watchlistSource = await loadWatchlistPageSource();
+    renderWatchlist();
+  } catch (err) {
+    if (statusEl) {
+      statusEl.textContent = t("status_decision_failed") + (err.message || t("status_unknown_error"));
+      statusEl.className = "news-refresh-status error";
+    }
+  }
+}
+
+function resetWatchlistSubmitState() {
+  const submitBtn = document.querySelector("#watchlist-add-form button[type='submit']");
+  if (submitBtn) submitBtn.textContent = t("btn_add_watchlist");
+  const cancelBtn = document.getElementById("watchlist-edit-cancel");
+  if (cancelBtn) cancelBtn.hidden = true;
+  const statusEl = document.getElementById("watchlist-add-status");
+  if (statusEl) {
+    statusEl.textContent = "";
+    statusEl.className = "news-refresh-status";
+  }
 }
 
 function openWatchlistPopup(id) {
@@ -993,6 +1102,18 @@ function renderDecisionLog() {
 }
 
 function bindDecisionLogInteractions() {
+  app.querySelectorAll("[data-dl-edit]").forEach((button) => {
+    button.addEventListener("click", () => {
+      startDecisionEdit(button.dataset.dlEdit || "");
+    });
+  });
+
+  app.querySelectorAll("[data-dl-delete]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await archiveDecisionRecord(button.dataset.dlDelete || "");
+    });
+  });
+
   app.querySelectorAll("[data-dl-filter]").forEach((btn) => {
     btn.addEventListener("click", () => {
       state.decisionLogFilter = btn.dataset.dlFilter;
@@ -1002,6 +1123,12 @@ function bindDecisionLogInteractions() {
 
   const form = document.getElementById("dl-add-form");
   if (!form) return;
+
+  document.getElementById("dl-edit-cancel")?.addEventListener("click", () => {
+    state.editingDecisionId = "";
+    form.reset();
+    resetDecisionSubmitState();
+  });
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -1040,19 +1167,24 @@ function bindDecisionLogInteractions() {
 
     if (submitBtn) submitBtn.disabled = true;
     if (statusEl) {
-      statusEl.textContent = t("status_decision_writing");
+      statusEl.textContent = state.editingDecisionId ? t("status_decision_updating") : t("status_decision_writing");
       statusEl.className = "news-refresh-status loading";
     }
 
     try {
-      const result = await addDecisionLog(payload);
+      const result = state.editingDecisionId
+        ? await updateDecisionLog({ ...payload, decisionId: state.editingDecisionId })
+        : await addDecisionLog(payload);
       if (statusEl) {
         const lang = getLang();
-        statusEl.textContent = lang === "zh"
-          ? `已新增决策记录 ${result.decisionId || ""}`
-          : `Decision record added ${result.decisionId || ""}`;
+        statusEl.textContent = state.editingDecisionId
+          ? `${t("status_decision_updated")} ${result.decisionId || ""}`
+          : lang === "zh"
+            ? `已新增决策记录 ${result.decisionId || ""}`
+            : `Decision record added ${result.decisionId || ""}`;
         statusEl.className = "news-refresh-status success";
       }
+      state.editingDecisionId = "";
       form.reset();
       state.decisionLogFilter = "all";
       const source = await loadDecisionLogPageSource();
@@ -1066,6 +1198,88 @@ function bindDecisionLogInteractions() {
       if (submitBtn) submitBtn.disabled = false;
     }
   });
+}
+
+function startDecisionEdit(decisionId) {
+  if (!decisionId || !state.decisionLogSource) return;
+  const row = (state.decisionLogSource.decisions ?? []).find((item) =>
+    get(item, "决策ID / Decision ID") === decisionId
+  );
+  const form = document.getElementById("dl-add-form");
+  if (!row || !form) return;
+
+  state.editingDecisionId = decisionId;
+  setFormValue(form, "date", get(row, "日期 / Date"));
+  setFormValue(form, "owner", get(row, "所属人 / Owner"));
+  setFormValue(form, "accountType", get(row, "账户类型 / Account Type"));
+  setFormValue(form, "ticker", get(row, "代码 / Ticker"));
+  setFormValue(form, "name", get(row, "名称 / Name"));
+  setFormValue(form, "assetType", get(row, "资产类型 / Asset Type"));
+  setFormValue(form, "actionType", get(row, "操作类型 / Action Type"));
+  setFormValue(form, "decisionStatus", get(row, "决策状态 / Decision Status"));
+  setFormValue(form, "amount", get(row, "金额 / Amount"));
+  setFormValue(form, "quantity", get(row, "数量 / Quantity"));
+  setFormValue(form, "price", get(row, "单价 / Price"));
+  setFormValue(form, "cost", get(row, "成本 / Cost"));
+  setFormValue(form, "decisionReason", get(row, "决策原因 / Decision Reason"));
+  setFormValue(form, "referenceInfo", get(row, "参考信息 / Reference Info"));
+  setFormValue(form, "riskLevel", get(row, "风险等级 / Risk Level"));
+  setFormValue(form, "relatedWatchId", get(row, "关联观察ID / Related Watch ID"));
+  setFormValue(form, "relatedHoldingId", get(row, "关联持仓ID / Related Holding ID"));
+  setFormValue(form, "reviewNotes", get(row, "复盘备注 / Review Notes"));
+  const submitBtn = form.querySelector("button[type='submit']");
+  if (submitBtn) submitBtn.textContent = t("btn_edit");
+  const cancelBtn = document.getElementById("dl-edit-cancel");
+  if (cancelBtn) cancelBtn.hidden = false;
+  const statusEl = document.getElementById("dl-add-status");
+  if (statusEl) {
+    statusEl.textContent = decisionId;
+    statusEl.className = "news-refresh-status";
+  }
+  form.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function archiveDecisionRecord(decisionId) {
+  if (!decisionId) return;
+  const message = getLang() === "zh"
+    ? `确定删除决策记录 ${decisionId} 吗？记录会归档，不会从 Google Sheet 物理删除。`
+    : `Delete decision record ${decisionId}? The row will be archived, not physically removed from Google Sheet.`;
+  if (!window.confirm(message)) return;
+
+  const statusEl = document.getElementById("dl-add-status");
+  if (statusEl) {
+    statusEl.textContent = t("status_decision_archiving");
+    statusEl.className = "news-refresh-status loading";
+  }
+  try {
+    await archiveDecisionLog(decisionId);
+    state.editingDecisionId = "";
+    state.decisionLogSource = await loadDecisionLogPageSource();
+    renderDecisionLog();
+  } catch (err) {
+    if (statusEl) {
+      statusEl.textContent = t("status_decision_failed") + (err.message || t("status_unknown_error"));
+      statusEl.className = "news-refresh-status error";
+    }
+  }
+}
+
+function resetDecisionSubmitState() {
+  const submitBtn = document.querySelector("#dl-add-form button[type='submit']");
+  if (submitBtn) submitBtn.textContent = t("btn_add_decision_log");
+  const cancelBtn = document.getElementById("dl-edit-cancel");
+  if (cancelBtn) cancelBtn.hidden = true;
+  const statusEl = document.getElementById("dl-add-status");
+  if (statusEl) {
+    statusEl.textContent = "";
+    statusEl.className = "news-refresh-status";
+  }
+}
+
+function setFormValue(form, name, value) {
+  const field = form.querySelector(`[name="${name}"]`);
+  if (!field) return;
+  field.value = value ?? "";
 }
 
 // ── URL Routing ───────────────────────────────────────────────────────────────

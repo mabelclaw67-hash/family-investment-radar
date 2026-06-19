@@ -3,6 +3,8 @@ import { get } from "./dashboardMapper.js";
 export function buildWatchlistModel(source, selectedId = "") {
   const watchlist = (source.watchlist ?? []).filter(
     (row) => get(row, "观察ID / Watch ID") || get(row, "代码 / Ticker")
+  ).filter(
+    (row) => (get(row, "状态 / Status") || "").toLowerCase() !== "archived"
   );
   const dailyNews = source.dailyNews ?? [];
   const marketRadar = source.marketRadar ?? [];
