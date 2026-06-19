@@ -11,10 +11,17 @@ import { verifyAdminToken } from "./adminAuth.js";
 // Runs a small batch per invocation (default 3 rows) to stay within the
 // Netlify function timeout and avoid Firecrawl / OpenAI rate limits.
 
-const APPS_SCRIPT_URL =
+const CURRENT_APPS_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbwxCyBuqCjc8vB4SHe6QtYPx3WgfAsaJN4dHpFqBjc22h3R9gScYzgSs9XlJNrRdSpyNQ/exec";
+const OLD_APPS_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbzdSdpB1ZZp8XZPIESgl6jQNc83GrvY5LM-kWYPLxWRjsGkLaJEIrxI-CBlsOIp_HWDXg/exec";
+const configuredAppsScriptUrl =
   process.env.FAMILY_INVESTMENT_API_URL ||
   process.env.VITE_FAMILY_INVESTMENT_API_URL ||
-  "https://script.google.com/macros/s/AKfycbwxCyBuqCjc8vB4SHe6QtYPx3WgfAsaJN4dHpFqBjc22h3R9gScYzgSs9XlJNrRdSpyNQ/exec";
+  CURRENT_APPS_SCRIPT_URL;
+// Never call the old deployment, even if a stale env var points to it (mirrors src/config.js).
+const APPS_SCRIPT_URL =
+  configuredAppsScriptUrl === OLD_APPS_SCRIPT_URL ? CURRENT_APPS_SCRIPT_URL : configuredAppsScriptUrl;
 
 const FIRECRAWL_SEARCH_URL = "https://api.firecrawl.dev/v2/search";
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";

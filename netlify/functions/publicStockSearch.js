@@ -98,26 +98,41 @@ function pickProvider() {
 // ── Financial Modeling Prep ─────────────────────────────────────────────────
 
 function fmpProvider(apiKey) {
-  const base = "https://financialmodelingprep.com/api/v3";
+  // FMP free tier uses the "stable" API; legacy /api/v3 endpoints return 403.
+  const base = "https://financialmodelingprep.com/stable";
+
+  const mapCandidate = (r) => ({
+    symbol: String(r.symbol || "").toUpperCase(),
+    name: r.name || r.companyName || "",
+    exchange: r.exchange || r.exchangeShortName || r.stockExchange || "",
+    country: r.country || "",
+    currency: r.currency || "",
+  });
 
   return {
     async search(query) {
-      const url = `${base}/search?query=${encodeURIComponent(query)}&limit=15&apikey=${apiKey}`;
-      const rows = await getJson(url);
-      const list = Array.isArray(rows) ? rows : [];
-      return sortCandidates(list.map((r) => ({
-        symbol: String(r.symbol || "").toUpperCase(),
-        name: r.name || "",
-        exchange: r.exchangeShortName || r.stockExchange || "",
-        country: "",
-        currency: r.currency || "",
-      })).filter((c) => c.symbol)).slice(0, 10);
+      // Search by ticker and by company name, then merge + de-dupe by symbol.
+      const [bySymbol, byName] = await Promise.all([
+        getJson(`${base}/search-symbol?query=${encodeURIComponent(query)}&limit=15&apikey=${apiKey}`).catch(() => []),
+        getJson(`${base}/search-name?query=${encodeURIComponent(query)}&limit=15&apikey=${apiKey}`).catch(() => []),
+      ]);
+      const seen = new Set();
+      const merged = [];
+      [...(Array.isArray(bySymbol) ? bySymbol : []), ...(Array.isArray(byName) ? byName : [])]
+        .map(mapCandidate)
+        .filter((c) => c.symbol)
+        .forEach((c) => {
+          if (seen.has(c.symbol)) return;
+          seen.add(c.symbol);
+          merged.push(c);
+        });
+      return sortCandidates(merged).slice(0, 10);
     },
 
     async quote(symbol) {
       const [quoteArr, profileArr] = await Promise.all([
-        getJson(`${base}/quote/${encodeURIComponent(symbol)}?apikey=${apiKey}`).catch(() => []),
-        getJson(`${base}/profile/${encodeURIComponent(symbol)}?apikey=${apiKey}`).catch(() => []),
+        getJson(`${base}/quote?symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`).catch(() => []),
+        getJson(`${base}/profile?symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`).catch(() => []),
       ]);
       const q = Array.isArray(quoteArr) && quoteArr[0] ? quoteArr[0] : null;
       const p = Array.isArray(profileArr) && profileArr[0] ? profileArr[0] : null;
@@ -126,13 +141,14 @@ function fmpProvider(apiKey) {
       return {
         symbol: String((q && q.symbol) || (p && p.symbol) || symbol).toUpperCase(),
         name: (p && p.companyName) || (q && q.name) || "",
-        exchange: (p && (p.exchangeShortName || p.exchange)) || (q && q.exchange) || "",
+        exchange: (p && (p.exchange || p.exchangeShortName)) || (q && q.exchange) || "",
         country: (p && p.country) || "",
         currency: (p && p.currency) || "",
         price: numOrNull(q ? q.price : p ? p.price : null),
-        change: numOrNull(q ? q.change : p ? p.changes : null),
-        changePercent: numOrNull(q ? q.changesPercentage : null),
-        marketCap: numOrNull(q ? q.marketCap : p ? p.mktCap : null),
+        // stable uses change/changePercentage; legacy used changes/changesPercentage.
+        change: numOrNull(q ? (q.change ?? q.changes) : (p ? (p.change ?? p.changes) : null)),
+        changePercent: numOrNull(q ? (q.changePercentage ?? q.changesPercentage) : null),
+        marketCap: numOrNull(q ? (q.marketCap ?? q.mktCap) : (p ? (p.marketCap ?? p.mktCap) : null)),
         sector: (p && p.sector) || "",
         industry: (p && p.industry) || "",
         description: (p && p.description) || "",
@@ -203,8 +219,15 @@ function isPrivateCompany(query) {
 
 async function getJson(url) {
   const response = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!response.ok) throw new Error(`Provider returned HTTP ${response.status}`);
-  return response.json();
+  const text = await response.text();
+  if (!response.ok) {
+    throw new Error(`Provider returned HTTP ${response.status}: ${text.slice(0, 160)}`);
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error("Provider returned non-JSON response.");
+  }
 }
 
 function numOrNull(value) {

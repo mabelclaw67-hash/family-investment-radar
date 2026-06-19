@@ -1,10 +1,21 @@
 // Shared helpers for the public forum ("大家在关注") Netlify functions.
 import { createHash } from "node:crypto";
 
-export const APPS_SCRIPT_URL =
+// Current Apps Script Web App deployment (Version 44+, has the forum actions).
+const CURRENT_APPS_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbwxCyBuqCjc8vB4SHe6QtYPx3WgfAsaJN4dHpFqBjc22h3R9gScYzgSs9XlJNrRdSpyNQ/exec";
+// A superseded deployment that may still be referenced by stale env vars.
+const OLD_APPS_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbzdSdpB1ZZp8XZPIESgl6jQNc83GrvY5LM-kWYPLxWRjsGkLaJEIrxI-CBlsOIp_HWDXg/exec";
+
+const configuredAppsScriptUrl =
   process.env.FAMILY_INVESTMENT_API_URL ||
   process.env.VITE_FAMILY_INVESTMENT_API_URL ||
-  "https://script.google.com/macros/s/AKfycbwxCyBuqCjc8vB4SHe6QtYPx3WgfAsaJN4dHpFqBjc22h3R9gScYzgSs9XlJNrRdSpyNQ/exec";
+  CURRENT_APPS_SCRIPT_URL;
+
+// Mirror src/config.js: never call the old deployment, even if an env var points to it.
+export const APPS_SCRIPT_URL =
+  configuredAppsScriptUrl === OLD_APPS_SCRIPT_URL ? CURRENT_APPS_SCRIPT_URL : configuredAppsScriptUrl;
 
 // Fixed anti-bot math answer for v1 ("2 + 3 = ?"). Can be randomized later.
 export const ANTI_BOT_ANSWER = "5";
