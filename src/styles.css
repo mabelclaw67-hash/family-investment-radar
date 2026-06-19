@@ -493,6 +493,9 @@ h2 {
   margin-bottom: 14px;
   background: #fff;
   box-shadow: var(--shadow);
+  color: inherit;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 .stock-radar-home-entry span {
@@ -744,6 +747,17 @@ h2 {
   border: 0;
   border-top: 1px solid var(--line);
   margin: 6px 0;
+}
+
+@media (max-width: 640px) {
+  .morning-brief-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .morning-brief-content {
+    padding-right: 0;
+  }
 }
 
 /* ── Holdings Status Mini (inside AlertsPanel) ─────────────────────────────── */

@@ -273,14 +273,14 @@ export function MorningBriefPanel(items) {
 
 export function StockRadarHomeEntry() {
   return `
-    <section class="stock-radar-home-entry">
+    <a class="stock-radar-home-entry" href="#/stock-analysis">
       <div>
         <span>${t("stock_home_entry_label")}</span>
         <h2>${escapeHtml(t("stock_home_entry_title"))}</h2>
         <p>${escapeHtml(t("stock_home_entry_desc"))}</p>
       </div>
-      <a class="stock-radar-home-link" href="#/stock-analysis">${escapeHtml(t("stock_home_entry_cta"))}</a>
-    </section>
+      <span class="stock-radar-home-link">${escapeHtml(t("stock_home_entry_cta"))}</span>
+    </a>
   `;
 }
 
@@ -1822,10 +1822,10 @@ function stockAnalysisTable(items, lang) {
   return `
     <div class="stock-research-layout">
       <div class="stock-research-list" role="list" aria-label="${escapeHtml(t("stock_select_label"))}">
-        ${items.map((row, index) => stockAnalysisListEntry(row, lang, stockDetailId(row, index), index === 0)).join("")}
+        ${items.map((row, index) => stockAnalysisListEntry(row, lang, stockDetailId(row, index), false)).join("")}
       </div>
       <div class="stock-research-detail">
-        ${items.map((row, index) => stockAnalysisRow(row, lang, stockDetailId(row, index), index === 0)).join("")}
+        ${items.map((row, index) => stockAnalysisRow(row, lang, stockDetailId(row, index), false)).join("")}
       </div>
     </div>
   `;
