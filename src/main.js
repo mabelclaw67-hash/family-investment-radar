@@ -40,6 +40,12 @@ import {
   StockLookupPage,
   StockCandidateList,
   StockDetailCard,
+  ForumPage,
+  ForumTopicList,
+  ForumTopicDetail,
+  ForumAdminPage,
+  ForumAdminTopicRows,
+  ForumAdminReplyRows,
   WatchlistPage,
   WatchlistPopupHtml,
 } from "./components.js";
@@ -320,6 +326,16 @@ async function renderCurrentPage() {
 
   if (state.page === "stock-lookup") {
     renderStockLookup();
+    return;
+  }
+
+  if (state.page === "forum") {
+    renderForum();
+    return;
+  }
+
+  if (state.page === "forum-admin") {
+    renderForumAdmin();
     return;
   }
 
@@ -700,6 +716,200 @@ function bindStockLookup() {
     if (!btn) return;
     const symbol = btn.getAttribute("data-symbol");
     if (symbol) loadDetail(symbol);
+  });
+}
+
+// ── Public Forum ("大家在关注") ──────────────────────────────────────────────
+
+let forumTopicsCache = [];
+
+async function forumApi(path, options = {}) {
+  const response = await fetch(`/.netlify/functions/${path}`, {
+    cache: "no-store",
+    ...options,
+  });
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) throw new Error(t("forum_error"));
+  const data = await response.json();
+  if (!response.ok || !data.ok) throw new Error(data.error || t("forum_error"));
+  return data;
+}
+
+function readAntiBot(form) {
+  return {
+    antiBotAnswer: (form.querySelector(".forum-antibot")?.value || "").trim(),
+    honeypot: (form.querySelector(".forum-honeypot")?.value || "").trim(),
+  };
+}
+
+function renderForum() {
+  app.innerHTML = AppShell(`${ForumPage()}`, "forum", checkAuth());
+  bindForum();
+  bindGlobalActions();
+  loadForumTopics();
+}
+
+async function loadForumTopics() {
+  const root = document.getElementById("forum-root");
+  if (!root) return;
+  try {
+    const data = await forumApi("listPublicTopics");
+    forumTopicsCache = data.topics || [];
+    root.innerHTML = ForumTopicList(forumTopicsCache);
+  } catch (error) {
+    root.innerHTML = `<div class="popup-empty"><strong>${error.message || t("forum_error")}</strong></div>`;
+  }
+}
+
+async function openForumTopic(topicId) {
+  const root = document.getElementById("forum-root");
+  if (!root) return;
+  const topic = forumTopicsCache.find((tp) => tp.id === topicId);
+  if (!topic) return loadForumTopics();
+  root.innerHTML = `<div class="forum-loading">${t("forum_loading")}</div>`;
+  try {
+    const data = await forumApi(`listPublicReplies?topicId=${encodeURIComponent(topicId)}`);
+    root.innerHTML = ForumTopicDetail(topic, data.replies || []);
+  } catch (error) {
+    root.innerHTML = `<div class="popup-empty"><strong>${error.message || t("forum_error")}</strong></div>`;
+  }
+}
+
+function bindForum() {
+  const topicForm = document.getElementById("forum-topic-form");
+  const root = document.getElementById("forum-root");
+
+  if (topicForm) {
+    topicForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const statusEl = document.getElementById("forum-topic-status");
+      const fd = new FormData(topicForm);
+      const payload = {
+        nickname: String(fd.get("nickname") || "").trim(),
+        ticker: String(fd.get("ticker") || "").trim(),
+        title: String(fd.get("title") || "").trim(),
+        content: String(fd.get("content") || "").trim(),
+        ...readAntiBot(topicForm),
+      };
+      const btn = topicForm.querySelector("button[type=submit]");
+      if (btn) btn.disabled = true;
+      if (statusEl) { statusEl.textContent = t("forum_submitting"); statusEl.className = "news-refresh-status loading"; }
+      try {
+        await forumApi("submitPublicTopic", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        topicForm.reset();
+        if (statusEl) { statusEl.textContent = t("forum_post_success"); statusEl.className = "news-refresh-status success"; }
+        await loadForumTopics();
+      } catch (error) {
+        if (statusEl) { statusEl.textContent = error.message || t("forum_error"); statusEl.className = "news-refresh-status error"; }
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    });
+  }
+
+  if (root) {
+    root.addEventListener("click", async (event) => {
+      const card = event.target.closest(".forum-topic-card");
+      if (card) { openForumTopic(card.getAttribute("data-topic-id")); return; }
+      if (event.target.closest("#forum-back")) { loadForumTopics(); return; }
+    });
+
+    root.addEventListener("submit", async (event) => {
+      const form = event.target.closest("#forum-reply-form");
+      if (!form) return;
+      event.preventDefault();
+      const statusEl = document.getElementById("forum-reply-status");
+      const fd = new FormData(form);
+      const payload = {
+        topicId: form.getAttribute("data-topic-id"),
+        nickname: String(fd.get("nickname") || "").trim(),
+        content: String(fd.get("content") || "").trim(),
+        ...readAntiBot(form),
+      };
+      const btn = form.querySelector("button[type=submit]");
+      if (btn) btn.disabled = true;
+      if (statusEl) { statusEl.textContent = t("forum_submitting"); statusEl.className = "news-refresh-status loading"; }
+      try {
+        await forumApi("submitPublicReply", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (statusEl) { statusEl.textContent = t("forum_post_success"); statusEl.className = "news-refresh-status success"; }
+        await openForumTopic(payload.topicId);
+      } catch (error) {
+        if (statusEl) { statusEl.textContent = error.message || t("forum_error"); statusEl.className = "news-refresh-status error"; }
+        if (btn) btn.disabled = false;
+      }
+    });
+  }
+}
+
+// ── Forum Admin ──────────────────────────────────────────────────────────────
+
+function renderForumAdmin() {
+  app.innerHTML = AppShell(`${ForumAdminPage()}`, "forum-admin", checkAuth());
+  bindForumAdmin();
+  bindGlobalActions();
+  loadForumAdmin();
+}
+
+async function adminForumApi(action, extra = {}) {
+  const response = await fetch("/.netlify/functions/adminPublicForum", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${sessionStorage.getItem("fir_admin_token_v1") || ""}`,
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+    body: JSON.stringify({ action, ...extra }),
+  });
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) throw new Error(t("forum_error"));
+  const data = await response.json();
+  if (!response.ok || !data.ok) throw new Error(data.error || t("forum_error"));
+  return data;
+}
+
+async function loadForumAdmin() {
+  const topicsEl = document.getElementById("forum-admin-topics");
+  const repliesEl = document.getElementById("forum-admin-replies");
+  try {
+    const topics = await adminForumApi("listTopics");
+    if (topicsEl) topicsEl.innerHTML = ForumAdminTopicRows(topics.topics || []);
+  } catch (error) {
+    if (topicsEl) topicsEl.innerHTML = `<div class="popup-empty"><strong>${error.message}</strong></div>`;
+  }
+  try {
+    const replies = await adminForumApi("listReplies");
+    if (repliesEl) repliesEl.innerHTML = ForumAdminReplyRows(replies.replies || []);
+  } catch (error) {
+    if (repliesEl) repliesEl.innerHTML = `<div class="popup-empty"><strong>${error.message}</strong></div>`;
+  }
+}
+
+function bindForumAdmin() {
+  const STATUS_MAP = { hide: "Hidden", publish: "Published", delete: "Deleted" };
+  document.querySelector(".main")?.addEventListener("click", async (event) => {
+    const btn = event.target.closest("[data-forum-action]");
+    if (!btn) return;
+    const action = btn.getAttribute("data-forum-action");
+    const kind = btn.getAttribute("data-kind");
+    const id = btn.getAttribute("data-id");
+    const status = STATUS_MAP[action];
+    if (!status || !id) return;
+    btn.disabled = true;
+    try {
+      await adminForumApi(kind === "topic" ? "updateTopicStatus" : "updateReplyStatus", { id, status });
+      await loadForumAdmin();
+    } catch (error) {
+      btn.disabled = false;
+      alert(error.message || t("forum_error"));
+    }
   });
 }
 
@@ -1394,6 +1604,8 @@ function getPageFromUrl() {
   if (hashPage === "decisions") return "decisions";
   if (hashPage === "stock-analysis") return "stock-analysis";
   if (hashPage === "stock-lookup") return "stock-lookup";
+  if (hashPage === "forum") return "forum";
+  if (hashPage === "forum-admin") return "forum-admin";
   if (hashPage === "settings") return "settings";
   if (hashPage === "market") return "market";
   if (hashPage === "news") return "news";
@@ -1404,7 +1616,7 @@ function getPageFromUrl() {
 }
 
 function isAdminRoute(page) {
-  return ["morning-brief", "holdings", "watchlist", "decisions", "settings"].includes(page);
+  return ["morning-brief", "holdings", "watchlist", "decisions", "settings", "forum-admin"].includes(page);
 }
 
 function escapeHtmlLocal(value) {

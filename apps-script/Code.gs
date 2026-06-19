@@ -15,6 +15,8 @@ const DASHBOARD_TABS = {
   settings: '99 Settings',
   marketRadar: '05 Market Radar',
   stockAnalysis: '11 Stock Analysis',
+  publicTopics: '14 Public Topics',
+  publicReplies: '15 Public Replies',
 };
 
 const RESEARCH_PACK_HEADERS = [
@@ -393,6 +395,22 @@ if (action === 'update_stock_fundamentals') {
   });
 }
 
+if (action === 'listPublicTopics') {
+  return jsonResponse_({ ok: true, data: listPublicTopics_(false), updatedAt: new Date().toISOString() });
+}
+
+if (action === 'listAllPublicTopics') {
+  return jsonResponse_({ ok: true, data: listPublicTopics_(true), updatedAt: new Date().toISOString() });
+}
+
+if (action === 'listPublicReplies') {
+  return jsonResponse_({ ok: true, data: listPublicReplies_(params.topicId, false), updatedAt: new Date().toISOString() });
+}
+
+if (action === 'listAllPublicReplies') {
+  return jsonResponse_({ ok: true, data: listPublicReplies_(params.topicId, true), updatedAt: new Date().toISOString() });
+}
+
 throw new Error('Unsupported action: ' + action);
 
     throw new Error('Unsupported action: ' + action);
@@ -429,6 +447,22 @@ function doPost(e) {
         updatedRows: enrichResult.updatedRows,
         updatedAt: new Date().toISOString(),
       });
+    }
+
+    if (action === 'addPublicTopic') {
+      return jsonResponse_({ ok: true, data: addPublicTopic_(body), updatedAt: new Date().toISOString() });
+    }
+
+    if (action === 'addPublicReply') {
+      return jsonResponse_({ ok: true, data: addPublicReply_(body), updatedAt: new Date().toISOString() });
+    }
+
+    if (action === 'updatePublicTopicStatus') {
+      return jsonResponse_({ ok: true, data: updatePublicStatus_(DASHBOARD_TABS.publicTopics, body.id, body.status), updatedAt: new Date().toISOString() });
+    }
+
+    if (action === 'updatePublicReplyStatus') {
+      return jsonResponse_({ ok: true, data: updatePublicStatus_(DASHBOARD_TABS.publicReplies, body.id, body.status), updatedAt: new Date().toISOString() });
     }
 
     throw new Error('Unsupported POST action: ' + action);
@@ -497,6 +531,103 @@ function updateWatchlistEnrichment_(body) {
 
   SpreadsheetApp.flush();
   return { updatedRows: updatedRows, updatedIds: updatedIds };
+}
+
+// ── Public Forum ("大家在关注") ──────────────────────────────────────────────
+// Lightweight topics + replies stored in 14 Public Topics / 15 Public Replies.
+// Public reads return only Status = Published; admin reads return everything.
+// Records are never physically deleted — only their Status changes.
+
+var PUBLIC_VISIBLE_STATUS = 'Published';
+
+function listPublicTopics_(includeAll) {
+  var rows = readTab_(DASHBOARD_TABS.publicTopics);
+  var filtered = rows.filter(function(r) {
+    return includeAll || String(r['Status'] || '').trim() === PUBLIC_VISIBLE_STATUS;
+  });
+  // Newest first by CreatedAt.
+  filtered.sort(function(a, b) {
+    return String(b['CreatedAt'] || '').localeCompare(String(a['CreatedAt'] || ''));
+  });
+  return filtered;
+}
+
+function listPublicReplies_(topicId, includeAll) {
+  var wanted = String(topicId || '').trim();
+  var rows = readTab_(DASHBOARD_TABS.publicReplies);
+  var filtered = rows.filter(function(r) {
+    if (wanted && String(r['TopicID'] || '').trim() !== wanted) return false;
+    return includeAll || String(r['Status'] || '').trim() === PUBLIC_VISIBLE_STATUS;
+  });
+  // Oldest to newest by CreatedAt.
+  filtered.sort(function(a, b) {
+    return String(a['CreatedAt'] || '').localeCompare(String(b['CreatedAt'] || ''));
+  });
+  return filtered;
+}
+
+function addPublicTopic_(body) {
+  var id = String(body.id || '').trim() || ('topic_' + Date.now() + '_' + Math.floor(Math.random() * 1e6));
+  var values = {
+    'ID': id,
+    'CreatedAt': String(body.createdAt || '').trim() || new Date().toISOString(),
+    'Nickname': String(body.nickname || '').trim(),
+    'Ticker': String(body.ticker || '').trim(),
+    'Title': String(body.title || '').trim(),
+    'Content': String(body.content || '').trim(),
+    'Status': String(body.status || '').trim() || PUBLIC_VISIBLE_STATUS,
+    'IPHash': String(body.ipHash || '').trim(),
+    'UserAgent': String(body.userAgent || '').trim(),
+    'AdminNote': String(body.adminNote || '').trim(),
+  };
+  appendPublicRow_(DASHBOARD_TABS.publicTopics, values);
+  return { id: id };
+}
+
+function addPublicReply_(body) {
+  var id = String(body.id || '').trim() || ('reply_' + Date.now() + '_' + Math.floor(Math.random() * 1e6));
+  var topicId = String(body.topicId || '').trim();
+  if (!topicId) throw new Error('TopicID is required.');
+  var values = {
+    'ID': id,
+    'TopicID': topicId,
+    'CreatedAt': String(body.createdAt || '').trim() || new Date().toISOString(),
+    'Nickname': String(body.nickname || '').trim(),
+    'Content': String(body.content || '').trim(),
+    'Status': String(body.status || '').trim() || PUBLIC_VISIBLE_STATUS,
+    'IPHash': String(body.ipHash || '').trim(),
+    'UserAgent': String(body.userAgent || '').trim(),
+    'AdminNote': String(body.adminNote || '').trim(),
+  };
+  appendPublicRow_(DASHBOARD_TABS.publicReplies, values);
+  return { id: id };
+}
+
+function appendPublicRow_(tabName, valueMap) {
+  var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(tabName);
+  if (!sheet) throw new Error('Sheet tab not found: ' + tabName);
+  var headers = readHeaders_(sheet);
+  var row = headers.map(function(h) {
+    return Object.prototype.hasOwnProperty.call(valueMap, h) ? valueMap[h] : '';
+  });
+  sheet.appendRow(row);
+  SpreadsheetApp.flush();
+}
+
+function updatePublicStatus_(tabName, id, status) {
+  var wantedId = String(id || '').trim();
+  if (!wantedId) throw new Error('Record ID is required.');
+  var allowed = ['Published', 'Hidden', 'Deleted'];
+  var nextStatus = String(status || '').trim();
+  if (allowed.indexOf(nextStatus) === -1) throw new Error('Unsupported status: ' + nextStatus);
+
+  var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(tabName);
+  if (!sheet) throw new Error('Sheet tab not found: ' + tabName);
+  var headers = readHeaders_(sheet);
+  var rowIndex = findRowById_(sheet, headers, ['ID'], wantedId);
+  setCellByHeader_(sheet, headers, rowIndex, ['Status'], nextStatus);
+  SpreadsheetApp.flush();
+  return { id: wantedId, status: nextStatus };
 }
 
 function readTab_(tabName) {

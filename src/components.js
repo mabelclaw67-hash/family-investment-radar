@@ -11,6 +11,7 @@ const MOBILE_TABS = [
   ["mtab_market", "◎", "market"],
   ["mtab_alerts", "!", "alerts"],
   ["mtab_news", "▤", "news"],
+  ["mtab_forum", "❝", "forum"],
   ["mtab_share", "□", "share"],
 ];
 
@@ -1875,6 +1876,219 @@ function formatMarketCap(value, currency) {
   if (n >= 1e12) return `${prefix}${(n / 1e12).toFixed(2)} 万亿`;
   if (n >= 1e8)  return `${prefix}${(n / 1e8).toFixed(2)} 亿`;
   return `${prefix}${n.toLocaleString("en-US")}`;
+}
+
+// ─── Public Forum ("大家在关注") ──────────────────────────────────────────────
+
+function ForumAntiBotFields() {
+  return `
+    <div class="forum-field">
+      <label>${escapeHtml(t("forum_antibot_label"))}</label>
+      <input type="text" class="forum-antibot" inputmode="numeric" autocomplete="off" required />
+    </div>
+    <input type="text" class="forum-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true" />
+  `;
+}
+
+export function ForumPage() {
+  return `
+    <header class="page-header">
+      <div>
+        <h1>${escapeHtml(t("forum_title"))}</h1>
+        <p>${escapeHtml(t("forum_subtitle"))}</p>
+      </div>
+    </header>
+
+    <section class="panel forum-disclaimer-card">
+      <strong>${escapeHtml(t("forum_disclaimer"))}</strong>
+    </section>
+
+    <section class="panel forum-new-panel">
+      <div class="panel-title"><h2>${escapeHtml(t("forum_new_topic"))}</h2></div>
+      <p class="forum-warn">${escapeHtml(t("forum_post_warning"))}</p>
+      <form id="forum-topic-form" class="forum-form" autocomplete="off">
+        <div class="forum-row-2">
+          <div class="forum-field">
+            <label>${escapeHtml(t("forum_f_nickname"))}</label>
+            <input type="text" name="nickname" maxlength="20" required />
+          </div>
+          <div class="forum-field">
+            <label>${escapeHtml(t("forum_f_ticker"))}</label>
+            <input type="text" name="ticker" maxlength="20" placeholder="${escapeHtml(t("forum_f_ticker_ph"))}" />
+          </div>
+        </div>
+        <div class="forum-field">
+          <label>${escapeHtml(t("forum_f_title"))}</label>
+          <input type="text" name="title" maxlength="80" required />
+        </div>
+        <div class="forum-field">
+          <label>${escapeHtml(t("forum_f_content"))}</label>
+          <textarea name="content" rows="4" maxlength="1000" required></textarea>
+        </div>
+        ${ForumAntiBotFields()}
+        <div class="forum-actions">
+          <button type="submit" class="refresh-news-btn">${escapeHtml(t("forum_btn_post"))}</button>
+          <span id="forum-topic-status" class="news-refresh-status"></span>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel forum-list-panel">
+      <div class="panel-title"><h2>${escapeHtml(t("forum_recent"))}</h2></div>
+      <div id="forum-root"><div class="forum-loading">${escapeHtml(t("forum_loading"))}</div></div>
+    </section>
+  `;
+}
+
+export function ForumTopicList(topics) {
+  if (!topics.length) {
+    return `<div class="popup-empty"><strong>${escapeHtml(t("forum_empty"))}</strong></div>`;
+  }
+  return `
+    <div class="forum-topic-list">
+      ${topics.map((tp) => `
+        <button type="button" class="forum-topic-card" data-topic-id="${escapeHtml(tp.id)}">
+          <div class="ftc-head">
+            <strong class="ftc-title">${escapeHtml(tp.title)}</strong>
+            ${tp.ticker ? `<span class="ftc-ticker">${escapeHtml(tp.ticker)}</span>` : ""}
+          </div>
+          <p class="ftc-snippet">${escapeHtml(truncate(tp.content, 90))}</p>
+          <div class="ftc-meta">
+            <span>${escapeHtml(tp.nickname || "—")}</span>
+            <span>·</span>
+            <span>${escapeHtml(formatForumTime(tp.createdAt))}</span>
+          </div>
+        </button>
+      `).join("")}
+    </div>
+  `;
+}
+
+export function ForumTopicDetail(topic, replies) {
+  return `
+    <div class="forum-detail">
+      <button type="button" id="forum-back" class="forum-back-btn">← ${escapeHtml(t("forum_back"))}</button>
+      <article class="forum-detail-card">
+        <div class="fdc-head">
+          <h3>${escapeHtml(topic.title)}</h3>
+          ${topic.ticker ? `<span class="ftc-ticker">${escapeHtml(topic.ticker)}</span>` : ""}
+        </div>
+        <div class="ftc-meta">
+          <span>${escapeHtml(topic.nickname || "—")}</span>
+          <span>·</span>
+          <span>${escapeHtml(formatForumTime(topic.createdAt))}</span>
+        </div>
+        <p class="fdc-content">${escapeHtml(topic.content)}</p>
+      </article>
+
+      <div class="forum-replies">
+        <h4>${escapeHtml(t("forum_replies"))} (${replies.length})</h4>
+        ${replies.length ? replies.map((r) => `
+          <div class="forum-reply">
+            <div class="ftc-meta">
+              <strong>${escapeHtml(r.nickname || "—")}</strong>
+              <span>·</span>
+              <span>${escapeHtml(formatForumTime(r.createdAt))}</span>
+            </div>
+            <p>${escapeHtml(r.content)}</p>
+          </div>
+        `).join("") : `<div class="popup-empty"><small>${escapeHtml(t("forum_no_replies"))}</small></div>`}
+      </div>
+
+      <form id="forum-reply-form" class="forum-form" autocomplete="off" data-topic-id="${escapeHtml(topic.id)}">
+        <div class="panel-title"><h4>${escapeHtml(t("forum_reply_title"))}</h4></div>
+        <div class="forum-field">
+          <label>${escapeHtml(t("forum_f_nickname"))}</label>
+          <input type="text" name="nickname" maxlength="20" required />
+        </div>
+        <div class="forum-field">
+          <label>${escapeHtml(t("forum_f_reply"))}</label>
+          <textarea name="content" rows="3" maxlength="1000" required></textarea>
+        </div>
+        ${ForumAntiBotFields()}
+        <div class="forum-actions">
+          <button type="submit" class="refresh-news-btn">${escapeHtml(t("forum_btn_reply"))}</button>
+          <span id="forum-reply-status" class="news-refresh-status"></span>
+        </div>
+      </form>
+    </div>
+  `;
+}
+
+export function ForumAdminPage() {
+  return `
+    <header class="page-header">
+      <div>
+        <h1>${escapeHtml(t("forum_admin_title"))}</h1>
+        <p>${escapeHtml(t("forum_admin_subtitle"))}</p>
+      </div>
+    </header>
+    <section class="panel">
+      <div class="panel-title"><h2>${escapeHtml(t("forum_admin_topics"))}</h2></div>
+      <div id="forum-admin-topics"><div class="forum-loading">${escapeHtml(t("forum_loading"))}</div></div>
+    </section>
+    <section class="panel">
+      <div class="panel-title"><h2>${escapeHtml(t("forum_admin_replies"))}</h2></div>
+      <div id="forum-admin-replies"><div class="forum-loading">${escapeHtml(t("forum_loading"))}</div></div>
+    </section>
+  `;
+}
+
+export function ForumAdminTopicRows(topics) {
+  if (!topics.length) return `<div class="popup-empty"><small>${escapeHtml(t("forum_empty"))}</small></div>`;
+  return `<div class="forum-admin-list">${topics.map((tp) => `
+    <div class="forum-admin-item">
+      <div class="fai-main">
+        <div class="fai-top">
+          <strong>${escapeHtml(tp.title)}</strong>
+          <span class="forum-status forum-status-${escapeHtml((tp.status || "").toLowerCase())}">${escapeHtml(tp.status || "—")}</span>
+        </div>
+        <p class="fai-snippet">${escapeHtml(truncate(tp.content, 120))}</p>
+        <small>${escapeHtml(tp.nickname || "—")} · ${escapeHtml(formatForumTime(tp.createdAt))}${tp.ticker ? " · " + escapeHtml(tp.ticker) : ""}</small>
+      </div>
+      ${ForumAdminActions("topic", tp.id)}
+    </div>
+  `).join("")}</div>`;
+}
+
+export function ForumAdminReplyRows(replies) {
+  if (!replies.length) return `<div class="popup-empty"><small>${escapeHtml(t("forum_no_replies"))}</small></div>`;
+  return `<div class="forum-admin-list">${replies.map((r) => `
+    <div class="forum-admin-item">
+      <div class="fai-main">
+        <div class="fai-top">
+          <strong>${escapeHtml(r.nickname || "—")}</strong>
+          <span class="forum-status forum-status-${escapeHtml((r.status || "").toLowerCase())}">${escapeHtml(r.status || "—")}</span>
+        </div>
+        <p class="fai-snippet">${escapeHtml(truncate(r.content, 120))}</p>
+        <small>${escapeHtml(t("forum_admin_topic_ref"))}: ${escapeHtml(r.topicId || "—")} · ${escapeHtml(formatForumTime(r.createdAt))}</small>
+      </div>
+      ${ForumAdminActions("reply", r.id)}
+    </div>
+  `).join("")}</div>`;
+}
+
+function ForumAdminActions(kind, id) {
+  return `
+    <div class="fai-actions">
+      <button type="button" class="mini-action-btn" data-forum-action="hide" data-kind="${kind}" data-id="${escapeHtml(id)}">${escapeHtml(t("forum_btn_hide"))}</button>
+      <button type="button" class="mini-action-btn" data-forum-action="publish" data-kind="${kind}" data-id="${escapeHtml(id)}">${escapeHtml(t("forum_btn_restore"))}</button>
+      <button type="button" class="mini-action-btn danger" data-forum-action="delete" data-kind="${kind}" data-id="${escapeHtml(id)}">${escapeHtml(t("forum_btn_delete"))}</button>
+    </div>
+  `;
+}
+
+function truncate(value, max) {
+  const s = String(value || "");
+  return s.length > max ? s.slice(0, max) + "…" : s;
+}
+
+function formatForumTime(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return String(iso).slice(0, 16).replace("T", " ");
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 // ─── Settings / Development Test Page ────────────────────────────────────────
