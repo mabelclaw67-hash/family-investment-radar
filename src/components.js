@@ -58,7 +58,7 @@ export function AppShell(content, currentPage = "dashboard", isAdmin = false) {
         </a>
       `).join("")}
       <button class="mbn-tab mbn-admin-tab" data-action="${isAdmin ? "logout" : "adminLogin"}" type="button" aria-label="${t(isAdmin ? "btn_logout" : "btn_admin_login")}">
-        <span class="mbn-icon">${isAdmin ? "⎋" : "⚙"}</span>
+        <span class="mbn-icon">${isAdmin ? "⎋" : "◇"}</span>
         <span>${t(isAdmin ? "mtab_admin_logout" : "mtab_admin_login")}</span>
       </button>
     </nav>
