@@ -24,6 +24,8 @@ const PENDING_RE = /pending|待抓取|待更新|待分析|^n\/?a$|^—$|^-$/i;
 const MAX_BATCH = 10;
 const SOURCE_MARKDOWN_LIMIT = 4000;
 
+// Admin-triggered HTTP handler (Settings page button). Thin wrapper around
+// runEnrichment() so the same logic can be reused by the scheduled function.
 export async function handler(event) {
   if (event.httpMethod !== "POST") {
     return jsonResponse(405, { ok: false, error: "Method not allowed." });
@@ -33,15 +35,6 @@ export async function handler(event) {
     return jsonResponse(401, { ok: false, error: "Admin authorization required." });
   }
 
-  const firecrawlKey = process.env.FIRECRAWL_API_KEY;
-  if (!firecrawlKey) {
-    return jsonResponse(500, { ok: false, error: "FIRECRAWL_API_KEY is not configured." });
-  }
-  const openaiKey = process.env.OPENAI_API_KEY || process.env.HEALTH_PASSPORT_OPENAI_API_KEY || "";
-  if (!openaiKey) {
-    return jsonResponse(500, { ok: false, error: "OPENAI_API_KEY is not configured." });
-  }
-
   let body;
   try {
     body = JSON.parse(event.body || "{}");
@@ -49,23 +42,35 @@ export async function handler(event) {
     return jsonResponse(400, { ok: false, error: "Invalid JSON body." });
   }
 
-  const max = Math.max(1, Math.min(Number(body.max || 3), MAX_BATCH));
-  const force = body.force === true; // re-enrich even rows that already have summaries
-
-  let watchlist;
   try {
-    watchlist = await fetchWatchlist();
+    const result = await runEnrichment({ max: Number(body.max || 3), force: body.force === true });
+    return jsonResponse(result.ok ? 200 : 502, result);
   } catch (error) {
-    return jsonResponse(502, { ok: false, error: `Failed to read watchlist: ${error.message}` });
+    return jsonResponse(500, { ok: false, error: error.message || "Enrichment failed." });
   }
+}
 
-  // Pick rows that still need enrichment (column L is Pending/empty), unless force.
+// Core enrichment routine. Reads active watchlist rows that still have any of
+// L/M/N/O pending, generates summaries, and writes them back. Bounded by both
+// `max` rows and an optional `timeBudgetMs` so a scheduled run never overruns
+// the function timeout. Returns a plain result object (no HTTP wrapping).
+export async function runEnrichment({ max = 3, force = false, timeBudgetMs = 0 } = {}) {
+  const startedAt = Date.now();
+
+  const firecrawlKey = process.env.FIRECRAWL_API_KEY;
+  if (!firecrawlKey) throw new Error("FIRECRAWL_API_KEY is not configured.");
+  const openaiKey = process.env.OPENAI_API_KEY || process.env.HEALTH_PASSPORT_OPENAI_API_KEY || "";
+  if (!openaiKey) throw new Error("OPENAI_API_KEY is not configured.");
+
+  const cap = Math.max(1, Math.min(Number(max) || 3, MAX_BATCH));
+  const watchlist = await fetchWatchlist();
+
+  // Pick active rows where ANY of the four target columns (L/M/N/O) is pending/empty.
   const candidates = watchlist
     .filter((row) => {
       const status = String(field(row, ["状态 / Status"]) || "").toLowerCase();
       if (status === "archived") return false;
       if (force) return true;
-      // Enrich the row if ANY of the four target columns (L/M/N/O) is still pending/empty.
       const targets = [
         field(row, ["最新中文新闻摘要 / Latest Chinese News Summary"]),
         field(row, ["财报/公告摘要 / Earnings or Filing Summary"]),
@@ -74,24 +79,28 @@ export async function handler(event) {
       ].map((v) => String(v || "").trim());
       return targets.some((v) => !v || PENDING_RE.test(v));
     })
-    .slice(0, max);
+    .slice(0, cap);
 
   if (!candidates.length) {
-    return jsonResponse(200, {
+    return {
       ok: true,
       updatedRows: 0,
       processed: 0,
       message: "No watchlist rows pending enrichment.",
       updatedAt: new Date().toISOString(),
-    });
+    };
   }
 
   const results = [];
   const errors = [];
+  let processed = 0;
 
   for (const row of candidates) {
+    if (timeBudgetMs && Date.now() - startedAt > timeBudgetMs) break;
+
     const watchId = String(field(row, ["观察ID / Watch ID"]) || "").trim();
     if (!watchId) continue;
+    processed += 1;
 
     try {
       const query = buildQuery(row);
@@ -111,26 +120,17 @@ export async function handler(event) {
 
   let updatedRows = 0;
   if (results.length) {
-    try {
-      const writeback = await writeBack(results);
-      updatedRows = Number(writeback.updatedRows || 0);
-    } catch (error) {
-      return jsonResponse(502, {
-        ok: false,
-        error: `Enrichment generated but write-back failed: ${error.message}`,
-        processed: candidates.length,
-        errors,
-      });
-    }
+    const writeback = await writeBack(results);
+    updatedRows = Number(writeback.updatedRows || 0);
   }
 
-  return jsonResponse(200, {
+  return {
     ok: true,
     updatedRows,
-    processed: candidates.length,
+    processed,
     errors,
     updatedAt: new Date().toISOString(),
-  });
+  };
 }
 
 // ── Watchlist read ──────────────────────────────────────────────────────────
