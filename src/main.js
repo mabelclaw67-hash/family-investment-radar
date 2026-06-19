@@ -18,6 +18,7 @@ import { buildDecisionLogModel } from "./data/decisionLogMapper.js";
 import {
   AlertsPanel,
   AppShell,
+  BuffettMottoBanner,
   DecisionLogPage,
   ErrorState,
   Header,
@@ -293,6 +294,7 @@ async function renderCurrentPage() {
 function renderDashboard(dashboard) {
   app.innerHTML = AppShell(`
     ${Header()}
+    ${BuffettMottoBanner()}
     ${checkAuth() ? KpiCards(dashboard.kpis) : ""}
     ${MarketSection(dashboard.marketData)}
     ${StockRadarHomeEntry()}

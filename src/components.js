@@ -96,6 +96,25 @@ export function Header() {
   `;
 }
 
+export function BuffettMottoBanner() {
+  return `
+    <section class="buffett-motto-banner" aria-label="Warren Buffett investment motto">
+      <img
+        class="buffett-motto-image"
+        src="/buffett-motto-banner.png"
+        alt=""
+        aria-hidden="true"
+      />
+      <span class="buffett-motto-sr">
+        家庭投资趋势分析 · Family Investment Radar.
+        Be fearful when others are greedy, and be greedy only when others are fearful.
+        别人贪婪时保持谨慎；只有在别人恐惧时，才考虑勇敢。
+        Warren Buffett.
+      </span>
+    </section>
+  `;
+}
+
 // ─── KPI Cards ────────────────────────────────────────────────────────────────
 
 export function KpiCards(kpis) {
