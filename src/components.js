@@ -530,6 +530,7 @@ function formatNewsTime(raw) {
 
 function alertItem(row) {
   const status = get(row, "人工处理状态 / Human Review Status") || get(row, "需要行动 / Action Needed") || "Review";
+  const sourceLink = publicSourceLink(get(row, "来源链接 / Source Link"));
   const pillClass = status === "High Attention" ? "action-high"
                   : status === "Review"         ? "action-review"
                   : status === "Watch"          ? "action-watch"
@@ -549,10 +550,18 @@ function alertItem(row) {
       <div>
         <strong>${escapeHtml(get(row, "关注主题 / Watch Topic"))}</strong>
         <p>${escapeHtml(summary)}</p>
+        ${sourceLink ? `<a class="alert-source-link" href="${escapeHtml(sourceLink)}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("alerts_source_link"))}</a>` : ""}
       </div>
-      <span class="status-pill ${pillClass}">${escapeHtml(status)}</span>
+      <span class="status-pill ${pillClass}">${escapeHtml(alertStatusLabel(status))}</span>
     </article>
   `;
+}
+
+function alertStatusLabel(status) {
+  if (status === "High Attention") return t("alerts_status_high");
+  if (status === "Review") return t("alerts_status_review");
+  if (status === "Watch") return t("alerts_status_watch");
+  return status;
 }
 
 // ─── Summary table / list ─────────────────────────────────────────────────────

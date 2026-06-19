@@ -195,7 +195,8 @@ function buildNewsAlerts(dailyNews) {
 
       return {
         "关注主题 / Watch Topic":               title,
-        "最新中文摘要 / Latest Chinese Summary": `${category} · ${time}`,
+        "最新中文摘要 / Latest Chinese Summary": time,
+        "来源链接 / Source Link":                get(row, "来源链接 / Source Link"),
         "人工处理状态 / Human Review Status":    severity,
         "提醒级别 / Alert Priority":             severity === "High Attention" ? "High" : "Medium",
         "状态 / Status":                        "Active",

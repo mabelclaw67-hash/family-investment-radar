@@ -619,6 +619,16 @@ h2 {
   margin-top: 4px;
 }
 
+.alert-source-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .morning-brief-list {
   display: grid;
   gap: 12px;
