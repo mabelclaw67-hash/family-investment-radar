@@ -927,6 +927,14 @@ function bindStockDetailSelection() {
       });
     });
   });
+
+  document.querySelectorAll("[data-stock-back-target]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const target = button.getAttribute("data-stock-back-target");
+      const listItem = listItems.find((item) => item.getAttribute("data-stock-detail-target") === target);
+      listItem?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  });
 }
 
 // ── Decision Log ──────────────────────────────────────────────────────────────

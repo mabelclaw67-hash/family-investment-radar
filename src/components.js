@@ -1902,6 +1902,7 @@ function stockAnalysisRow(row, lang, detailId, active, extraClass = "") {
         <span>${lang === "zh" ? "行业" : "Sector"}: ${escapeHtml(pickStockValue(row, ["行业", "Sector"]) || type || "—")}</span>
         <span>${lang === "zh" ? "更新时间" : "Updated"}: ${escapeHtml(updated || "—")}</span>
       </div>
+      ${extraClass ? `<button class="stock-back-to-list" type="button" data-stock-back-target="${escapeHtml(detailId)}">${escapeHtml(lang === "zh" ? "返回股票列表" : "Back to stock list")}</button>` : ""}
     </article>
   `;
 }

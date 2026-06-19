@@ -3041,6 +3041,10 @@ h2 {
   font-weight: 700;
 }
 
+.stock-back-to-list {
+  display: none;
+}
+
 .stock-official-links {
   margin-top: 12px;
   padding: 12px;
@@ -3105,6 +3109,20 @@ h2 {
 
   .stock-mobile-detail.active {
     display: block;
+  }
+
+  .stock-back-to-list {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--blue);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
   }
 
   .stock-card-main {
