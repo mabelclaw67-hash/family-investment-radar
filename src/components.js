@@ -1129,6 +1129,11 @@ export function WatchlistPopupHtml(popupData) {
   const action   = get(item, "需要行动 / Action Needed") || "Review";
   const pClass   = watchPriorityClass(priority);
 
+  const newsSummary     = get(item, "最新中文新闻摘要 / Latest Chinese News Summary");
+  const earningsSummary = get(item, "财报/公告摘要 / Earnings or Filing Summary");
+  const mainRisks       = get(item, "主要风险 / Main Risks");
+  const aiComment       = get(item, "AI中文点评 / AI Chinese Comment");
+
   return `
     <div id="watchlist-popup-overlay" class="popup-overlay" role="dialog" aria-modal="true">
       <div class="popup-modal">
@@ -1152,6 +1157,11 @@ export function WatchlistPopupHtml(popupData) {
         <div class="popup-section">
           <h3>${t("popup_market_snapshot")}</h3>
           ${PopupMarketSnapshot(marketData)}
+        </div>
+
+        <div class="popup-section">
+          <h3>${t("popup_ai_analysis")}</h3>
+          ${PopupAiAnalysis({ newsSummary, earningsSummary, mainRisks, aiComment })}
         </div>
 
         <div class="popup-section">
@@ -1195,6 +1205,41 @@ function watchPriorityClass(priority) {
   if (priority.includes("High")) return "high";
   if (priority.includes("Low"))  return "low";
   return "medium";
+}
+
+function PopupAiAnalysis({ newsSummary, earningsSummary, mainRisks, aiComment }) {
+  // Treat still-pending / empty values as "no content yet".
+  const clean = (v) => {
+    const s = String(v || "").trim();
+    return !s || /pending|待抓取|待分析/i.test(s) ? "" : s;
+  };
+
+  const rows = [
+    [t("popup_ai_news"),     clean(newsSummary)],
+    [t("popup_ai_earnings"), clean(earningsSummary)],
+    [t("popup_ai_risks"),    clean(mainRisks)],
+    [t("popup_ai_comment"),  clean(aiComment)],
+  ].filter(([, value]) => value);
+
+  if (!rows.length) {
+    return `
+      <div class="popup-empty">
+        <strong>${t("popup_ai_empty_main")}</strong>
+        <small>${t("popup_ai_empty_sub")}</small>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="popup-ai-list">
+      ${rows.map(([label, value]) => `
+        <div class="popup-ai-item">
+          <span class="popup-ai-label">${escapeHtml(label)}</span>
+          <p class="popup-ai-text">${escapeHtml(value)}</p>
+        </div>
+      `).join("")}
+    </div>
+  `;
 }
 
 function PopupMarketSnapshot(marketData) {

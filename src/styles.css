@@ -1829,6 +1829,30 @@ h2 {
   margin-bottom: 12px;
 }
 
+.popup-ai-list {
+  display: grid;
+  gap: 12px;
+}
+
+.popup-ai-item {
+  display: grid;
+  gap: 3px;
+}
+
+.popup-ai-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+.popup-ai-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
 .popup-empty {
   color: var(--muted);
   font-size: 13px;
