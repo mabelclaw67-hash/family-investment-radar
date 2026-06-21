@@ -3478,20 +3478,59 @@ function analyzeStocks_(params) {
     tickers = tickers.concat(['AAPL', 'V', 'MA', 'LLY', 'JPM']); // 更多行业龙头
   }
   
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheetForPriority_ = spreadsheet.getSheetByName('11 Stock Analysis');
+  const rowInfoByTicker_ = {};
+  if (industry === 'all' && sheetForPriority_ && sheetForPriority_.getLastRow() > 1) {
+    // 把表里已有的票（含 radar_upgrade 之后新加的）并入候选池，这样新票也能
+    // 被排进优先级，而不是永远不在 analyze_stocks 的候选范围内。
+    const existingRows_ = sheetForPriority_.getRange(2, 1, sheetForPriority_.getLastRow() - 1, 12).getValues(); // A..L
+    existingRows_.forEach(function (row) {
+      const tk = String(row[0] || '').trim().toUpperCase();
+      if (!tk) return;
+      rowInfoByTicker_[tk] = { price: row[2], updatedAt: row[11] };
+      tickers.push(tk);
+    });
+  }
+
   // 去重
   tickers = [...new Set(tickers.map(t => t.toUpperCase()))];
   const totalCandidates = tickers.length;
 
+  // 优先级排序，确保"最需要更新的"先被刷新，而不是每次都刷同样的前几只：
+  //   第 0 档：表里还没有这一行（全新票），或当前价格缺失/N/A/待更新；
+  //   第 1 档：已有有效数据，按更新时间从旧到新；
+  //   第 2 档：未上市占位票（不可投-未上市，如 OPENAI/ANTHROPIC/CURSOR），
+  //           永远查不出真实数据，排到最后，避免占满名额。
+  // 已有正常且较新数据的行不会被选中，也不会被这次请求改写。
+  function priorityTier_(tk) {
+    if (isPrivateOrPlaceholderTicker_(tk)) return 2;
+    const info = rowInfoByTicker_[tk];
+    if (!info) return 0;
+    const price = String(info.price || '').trim();
+    if (!price || price === 'N/A' || price === '待更新') return 0;
+    return 1;
+  }
+  function lastUpdateMs_(tk) {
+    const raw = rowInfoByTicker_[tk] && rowInfoByTicker_[tk].updatedAt;
+    const ts = raw ? new Date(raw).getTime() : NaN;
+    return isNaN(ts) ? 0 : ts;
+  }
+  tickers.sort(function (a, b) {
+    const ta = priorityTier_(a), tb = priorityTier_(b);
+    if (ta !== tb) return ta - tb;
+    return lastUpdateMs_(a) - lastUpdateMs_(b);
+  });
+
   // 限制单次请求处理的票数。实测 10 只耗时 30+ 秒，撞到 Netlify 函数背后
   // AWS API Gateway 固定 29 秒超时（这个上限不可配置，跟 Netlify 套餐无关），
-  // 导致 504。默认改成 5 只，最多 8 只；超出部分需要再点一次按钮才会轮到
-  // （候选列表顺序固定，见下方 tickers 拼接顺序）。
+  // 导致 504。默认 5 只，最多 8 只；排序在前（最需要更新）的先选中，
+  // 其余的下次点击会自然轮到。
   const maxParam = params && params.max ? Number(params.max) : 5;
   const maxToAnalyze = Math.max(1, Math.min(maxParam || 5, 8));
   tickers = tickers.slice(0, maxToAnalyze);
 
   let results = [];
-  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
 
   tickers.forEach(ticker => {
     try {
