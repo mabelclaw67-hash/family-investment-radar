@@ -4436,28 +4436,25 @@ function saveStockAnalysisToSheet_(spreadsheet, results) {
   ];
 
   const infoMap = getStockAnalysisInfoMap_();
-  const fixedTickers = Object.keys(infoMap);
 
-  // Preserve existing fundamentals and links after S by ticker before rewriting A:S.
+  // Sheet-driven watch pool: keep every existing ticker row, and only append
+  // result tickers that are not already on the sheet.
   const lastRowBefore = sheet.getLastRow();
-  const existingFundamentalsByTicker = {};
+  const existingRowsByTicker = {};
+  const existingTickers = [];
   if (lastRowBefore > 1) {
     const existingWidth = Math.max(headers.length, sheet.getLastColumn());
     const existingValues = sheet.getRange(2, 1, lastRowBefore - 1, existingWidth).getValues();
     existingValues.forEach((row) => {
       const ticker = String(row[0] || '').trim();
       if (ticker) {
-        existingFundamentalsByTicker[ticker] = row.slice(19, headers.length);
+        existingRowsByTicker[ticker] = row.slice(0, headers.length);
+        existingTickers.push(ticker);
       }
     });
   }
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-
-  // Clear visible stock rows, then rebuild from the single source stock pool below.
-  if (sheet.getLastRow() > 1) {
-    sheet.getRange(2, 1, sheet.getLastRow() - 1, headers.length).clearContent();
-  }
 
   const resultMap = {};
   (results || []).forEach((r) => {
@@ -4465,33 +4462,62 @@ function saveStockAnalysisToSheet_(spreadsheet, results) {
     if (ticker) resultMap[ticker] = r;
   });
 
-  const rows = fixedTickers.map((ticker) => {
+  const resultTickers = Object.keys(resultMap);
+  const tickerSeen = {};
+  const tickers = [];
+  existingTickers.forEach((ticker) => {
+    if (!tickerSeen[ticker]) {
+      tickerSeen[ticker] = true;
+      tickers.push(ticker);
+    }
+  });
+  resultTickers.forEach((ticker) => {
+    if (!tickerSeen[ticker]) {
+      tickerSeen[ticker] = true;
+      tickers.push(ticker);
+    }
+  });
+
+  // Fallback only for an empty/new sheet. Existing 11 Stock Analysis remains the source of truth.
+  if (tickers.length === 0) {
+    Object.keys(infoMap).forEach((ticker) => {
+      if (!tickerSeen[ticker]) {
+        tickerSeen[ticker] = true;
+        tickers.push(ticker);
+      }
+    });
+  }
+
+  const rows = tickers.map((ticker) => {
     const r = resultMap[ticker] || {};
-    const info = infoMap[ticker];
+    const info = infoMap[ticker] || {};
+    const existing = existingRowsByTicker[ticker] || [];
+    const existingBase = existing.slice(0, 19);
 
     const baseRow = [
       ticker,
-      r.名称 || r.Name || ticker,
-      '',
-      '',
-      r.ForwardPE || r.ForwardPe || 'N/A',
-      r.Beta || 'N/A',
-      '',
-      r.价值评分 || '6',
-      r.风险评分 || '6',
-      r.综合评分 || '6',
-      r.行业 || info.industry || info.type || '其他',
-      r.更新时间 || new Date().toISOString(),
-      r.备注 || '供参考，仅家庭内部使用',
-      info.zh,
-      info.en,
-      info.type,
-      info.desc,
-      info.focus,
-      info.theme
+      existingBase[1] || r.名称 || r.Name || ticker,
+      existingBase[2] || '',
+      existingBase[3] || '',
+      existingBase[4] || r.ForwardPE || r.ForwardPe || 'N/A',
+      existingBase[5] || r.Beta || 'N/A',
+      existingBase[6] || '',
+      existingBase[7] || r.价值评分 || '6',
+      existingBase[8] || r.风险评分 || '6',
+      existingBase[9] || r.综合评分 || '6',
+      existingBase[10] || r.行业 || info.industry || info.type || '其他',
+      existingBase[11] || r.更新时间 || new Date().toISOString(),
+      existingBase[12] || r.备注 || '供参考，仅家庭内部使用',
+      existingBase[13] || info.zh || '',
+      existingBase[14] || info.en || '',
+      existingBase[15] || info.type || '',
+      existingBase[16] || info.desc || '',
+      existingBase[17] || info.focus || '',
+      existingBase[18] || info.theme || ''
     ];
 
-    const preservedFundamentals = existingFundamentalsByTicker[ticker] || new Array(headers.length - baseRow.length).fill('');
+    const preservedFundamentals = existing.slice(19, headers.length);
+    while (preservedFundamentals.length < headers.length - baseRow.length) preservedFundamentals.push('');
     const row = baseRow.concat(preservedFundamentals);
     const links = getOfficialStockLinks_()[ticker] || {};
     if (links.officialWebsite && !row[36]) row[36] = links.officialWebsite;

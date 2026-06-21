@@ -146,6 +146,14 @@ function enrichStockAnalysis_(ss) {
   var tks=sh.getRange(2,C_TICK,numRows,1).getValues();
   var fpe=A1(C_FPE),grow=A1(C_GROW),price=A1(C_PRICE),hi=A1(C_HI),lo=A1(C_LO),div=A1(C_DIV),fupd=A1(C_FUPD),tk=A1(C_TICK);
   var links=(typeof getOfficialStockLinks_==='function')?getOfficialStockLinks_():{};
+  var existingLay=sh.getRange(2,P_LAY,numRows,1).getValues();
+  var existingDrv=sh.getRange(2,P_DRV,numRows,1).getValues();
+  var existingInv=sh.getRange(2,P_INV,numRows,1).getValues();
+  var existingPeg=sh.getRange(2,P_PEG,numRows,1).getValues();
+  var existingDivy=sh.getRange(2,P_DIVY,numRows,1).getValues();
+  var existing52=sh.getRange(2,P_52,numRows,1).getValues();
+  var existingAge=sh.getRange(2,P_AGE,numRows,1).getValues();
+  var existingCcy=sh.getRange(2,P_CCY,numRows,1).getValues();
   var existingWeb=sh.getRange(2,P_WEB,numRows,1).getValues();
   var existingIr=sh.getRange(2,P_IR,numRows,1).getValues();
   var existingFin=sh.getRange(2,P_FIN,numRows,1).getValues();
@@ -153,12 +161,14 @@ function enrichStockAnalysis_(ss) {
   for (var r=0;r<numRows;r++){
     var R=r+2; var t=String(tks[r][0]||'').trim(); var m=RADAR_LAYER_MAP[t];
     var link=links[t]||{};
-    lay.push([m?m[0]:'']); drv.push([m?m[1]:'']); inv.push([m?m[2]:'']);
-    peg.push([fpe&&grow?'=IFERROR(IF(OR('+fpe+R+'="",'+fpe+R+'="N/A",'+grow+R+'="",'+grow+R+'="N/A",'+grow+R+'<=0),"",'+fpe+R+'/('+grow+R+'*100)),"")':'']);
-    dvy.push([div?'=IFERROR(IF(OR('+div+R+'="",'+div+R+'="N/A"),"",IF('+div+R+'>0,"是","否")),"")':'']);
-    p52.push([(price&&hi&&lo)?'=IFERROR(IF(OR('+price+R+'="",'+hi+R+'="",'+lo+R+'="",'+hi+R+'='+lo+R+'),"",('+price+R+'-'+lo+R+')/('+hi+R+'-'+lo+R+')),"")':'']);
-    age.push([fupd?'=IFERROR(IF('+fupd+R+'="","",TODAY()-DATEVALUE(LEFT('+fupd+R+',10))),"")':'']);
-    ccy.push(['=IF(RIGHT('+tk+R+',3)=".TO","CAD 加元","USD 美元")']);
+    lay.push([existingLay[r][0] || (m?m[0]:'')]);
+    drv.push([existingDrv[r][0] || (m?m[1]:'')]);
+    inv.push([existingInv[r][0] || (m?m[2]:'')]);
+    peg.push([existingPeg[r][0] || (fpe&&grow?'=IFERROR(IF(OR('+fpe+R+'="",'+fpe+R+'="N/A",'+grow+R+'="",'+grow+R+'="N/A",'+grow+R+'<=0),"",'+fpe+R+'/('+grow+R+'*100)),"")':'')]);
+    dvy.push([existingDivy[r][0] || (div?'=IFERROR(IF(OR('+div+R+'="",'+div+R+'="N/A"),"",IF('+div+R+'>0,"是","否")),"")':'')]);
+    p52.push([existing52[r][0] || ((price&&hi&&lo)?'=IFERROR(IF(OR('+price+R+'="",'+hi+R+'="",'+lo+R+'="",'+hi+R+'='+lo+R+'),"",('+price+R+'-'+lo+R+')/('+hi+R+'-'+lo+R+')),"")':'')]);
+    age.push([existingAge[r][0] || (fupd?'=IFERROR(IF('+fupd+R+'="","",TODAY()-DATEVALUE(LEFT('+fupd+R+',10))),"")':'')]);
+    ccy.push([existingCcy[r][0] || '=IF(RIGHT('+tk+R+',3)=".TO","CAD 加元","USD 美元")']);
     web.push([existingWeb[r][0] || link.officialWebsite || '']);
     ir.push([existingIr[r][0] || link.investorRelations || '']);
     fin.push([existingFin[r][0] || link.financialReports || '']);
