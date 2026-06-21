@@ -1110,6 +1110,10 @@ function readGoogleDocText_(docId) {
   }
 }
 
+function updateStockFundamentals() {
+  return updateStockFundamentalsForStockAnalysis_();
+}
+
 function jsonResponse_(payload) {
   return ContentService
     .createTextOutput(JSON.stringify(payload))
@@ -3491,6 +3495,7 @@ function analyzeStocks_(params) {
   
   // 保存到 11 Stock Analysis
   const updatedRows = saveStockAnalysisToSheet_(spreadsheet, results);
+  enrichStockAnalysis_(spreadsheet);
   
   return {
     ok: true,
@@ -3521,17 +3526,18 @@ function getStockValueRiskAnalysis_(ticker, apiKey) {
     Logger.log('[Stock] GOOGLEFINANCE failed for ' + ticker + ': ' + e.message);
   }
 
-  // Alpha Vantage 补充 PE / Beta
+  // Finnhub 优先补充 PE / Beta，Alpha Vantage 仅作 fallback。
   let pe = null;
   let beta = null;
-  if (apiKey) {
-    try {
-      const av = fetchAlphaVantageOverview_(apiKey, ticker);
-      if (av) {
-        pe = av['ForwardPE'] || av['TrailingPE'];
-        beta = av['Beta'];
-      }
-    } catch (e) {}
+  try {
+    const overview = fetchStockOverview_(ticker);
+    if (overview) {
+      pe = overview.ForwardPE || overview.PERatio || overview.TrailingPE;
+      beta = overview.Beta;
+      Utilities.sleep(overview._ThrottleMs || (overview._Provider === 'Finnhub' ? 1200 : 13000));
+    }
+  } catch (e) {
+    Logger.log('[Stock] fundamentals provider failed for ' + ticker + ': ' + e.message);
   }
 
   const volatility = changePct ? Math.abs(Number(changePct)) * 8 : 25;
@@ -3865,7 +3871,7 @@ function updateStockFundamentalsForStockAnalysis_(params) {
     throw new Error('11 Stock Analysis sheet not found.');
   }
 
-  const apiKey = getAlphaVantageApiKey_();
+  const providerMode = getStockOverviewProviderMode_();
   const lastRow = sheet.getLastRow();
 
   if (lastRow < 2) {
@@ -3877,13 +3883,17 @@ function updateStockFundamentalsForStockAnalysis_(params) {
     };
   }
 
-  const maxParam = params && params.max ? Number(params.max) : 5;
-  const maxToUpdate = Math.max(1, Math.min(maxParam, 10));
+  const defaultMax = providerMode === 'finnhub' ? 60 : 5;
+  const maxParam = params && params.max ? Number(params.max) : defaultMax;
+  const maxLimit = providerMode === 'finnhub' ? 60 : 5;
+  const maxToUpdate = Math.max(1, Math.min(maxParam, maxLimit));
+  const requestedTickers = parseRequestedTickers_(params && params.symbols);
 
   const values = sheet.getRange(2, 1, lastRow - 1, 36).getValues();
   const errors = [];
   let updated = 0;
   let skipped = 0;
+  let alphaFallbacks = 0;
 
   for (let i = 0; i < values.length; i++) {
     if (updated >= maxToUpdate) break;
@@ -3897,7 +3907,12 @@ function updateStockFundamentalsForStockAnalysis_(params) {
       continue;
     }
 
-    // 跳过未上市或无法从 Alpha Vantage 抓基本面的观察项
+    if (requestedTickers && !requestedTickers[ticker.toUpperCase()]) {
+      skipped++;
+      continue;
+    }
+
+    // 跳过未上市或无法从公开数据源抓基本面的观察项
     if (isPrivateOrPlaceholderTicker_(ticker)) {
       sheet.getRange(rowNum, 20, 1, 17).setValues([[
         'N/A',
@@ -3932,14 +3947,13 @@ function updateStockFundamentalsForStockAnalysis_(params) {
     }
 
     try {
-      const avSymbol = normalizeTickerForAlphaVantage_(ticker);
-      const overview = fetchAlphaVantageOverview_(avSymbol, apiKey);
+      const overview = fetchStockOverview_(ticker);
 
       if (!overview || !overview.Symbol) {
         errors.push({
           row: rowNum,
           ticker,
-          error: 'No overview data returned from Alpha Vantage.',
+          error: 'No overview data returned from Finnhub or Alpha Vantage.',
         });
         skipped++;
         continue;
@@ -3949,9 +3963,10 @@ function updateStockFundamentalsForStockAnalysis_(params) {
       sheet.getRange(rowNum, 20, 1, 17).setValues([financialRow]);
 
       updated++;
+      if (overview._Provider === 'Alpha Vantage' && !shouldUseAlphaVantageFirst_(ticker)) alphaFallbacks++;
 
-      // 避免触发 Alpha Vantage 频率限制。免费 API 通常不适合一次抓太多。
-      Utilities.sleep(13000);
+      Utilities.sleep(overview._ThrottleMs || (overview._Provider === 'Finnhub' ? 1200 : 13000));
+      if (providerMode === 'finnhub' && alphaFallbacks >= 5) break;
 
     } catch (err) {
       errors.push({
@@ -3981,8 +3996,30 @@ function updateStockFundamentalsForStockAnalysis_(params) {
     updated,
     skipped,
     errors,
-    message: 'Fundamentals update completed. Use max parameter to control API usage.',
+    provider: providerMode,
+    message: 'Fundamentals update completed. Finnhub defaults to max 60; Alpha Vantage fallback stays at max 5.',
   };
+}
+
+function testFinnhubFundamentalsSmallBatch() {
+  return updateStockFundamentalsForStockAnalysis_({
+    symbols: 'NVDA,MSFT,AMD,PLTR,CVE.TO,SU.TO,SHOP.TO,QQQ',
+    max: 8,
+    force: 'true'
+  });
+}
+
+
+function parseRequestedTickers_(symbols) {
+  if (!symbols) return null;
+
+  const result = {};
+  String(symbols).split(',').forEach((symbol) => {
+    const ticker = String(symbol || '').trim().toUpperCase();
+    if (ticker) result[ticker] = true;
+  });
+
+  return Object.keys(result).length ? result : null;
 }
 
 
@@ -4002,6 +4039,21 @@ function getAlphaVantageApiKey_() {
   }
 
   throw new Error('Alpha Vantage API key not found in Script Properties.');
+}
+
+function getFinnhubApiKey_() {
+  return PropertiesService.getScriptProperties().getProperty('FINNHUB_API_KEY') || '';
+}
+
+
+function getStockOverviewProviderMode_() {
+  return getFinnhubApiKey_() ? 'finnhub' : 'alpha_vantage';
+}
+
+
+function shouldUseAlphaVantageFirst_(symbol) {
+  const ticker = String(symbol || '').trim().toUpperCase();
+  return ticker.endsWith('.TO') || ticker.endsWith('.V');
 }
 
 
@@ -4028,6 +4080,182 @@ function isPrivateOrPlaceholderTicker_(ticker) {
     'CURSOR',
     'ANYSphere'.toUpperCase()
   ].includes(t);
+}
+
+
+function fetchStockOverview_(symbol) {
+  if (shouldUseAlphaVantageFirst_(symbol)) {
+    const alphaKey = getAlphaVantageApiKey_();
+    const alphaSymbol = normalizeTickerForAlphaVantage_(symbol);
+    const overview = fetchAlphaVantageOverview_(alphaSymbol, alphaKey);
+    if (overview) {
+      overview._Provider = 'Alpha Vantage';
+      overview._ThrottleMs = 13000;
+    }
+    return overview;
+  }
+
+  const finnhubKey = getFinnhubApiKey_();
+
+  if (finnhubKey) {
+    try {
+      const overview = fetchFinnhubOverview_(symbol, finnhubKey);
+      if (hasEnoughOverviewFields_(overview)) return overview;
+      Logger.log('[Fundamentals] Finnhub returned too little data for ' + symbol + '; falling back to Alpha Vantage.');
+    } catch (err) {
+      Logger.log('[Fundamentals] Finnhub failed for ' + symbol + ': ' + (err && err.message ? err.message : err));
+    }
+  }
+
+  const alphaKey = getAlphaVantageApiKey_();
+  const alphaSymbol = normalizeTickerForAlphaVantage_(symbol);
+  const overview = fetchAlphaVantageOverview_(alphaSymbol, alphaKey);
+  if (overview) {
+    overview._Provider = 'Alpha Vantage';
+    overview._ThrottleMs = 13000;
+  }
+  return overview;
+}
+
+
+function hasEnoughOverviewFields_(overview) {
+  if (!overview || !overview.Symbol) return false;
+
+  const importantFields = [
+    'MarketCapitalization',
+    'PERatio',
+    'PEGRatio',
+    'DividendYield',
+    'EPS',
+    'ProfitMargin',
+    'ReturnOnEquityTTM',
+    'QuarterlyRevenueGrowthYOY',
+    '52WeekHigh',
+    '52WeekLow'
+  ];
+
+  let found = 0;
+  importantFields.forEach((field) => {
+    const value = overview[field];
+    if (value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'N/A') {
+      found++;
+    }
+  });
+
+  return found >= 3;
+}
+
+
+function fetchFinnhubOverview_(symbol, key) {
+  const apiKey = key || getFinnhubApiKey_();
+  if (!apiKey) throw new Error('FINNHUB_API_KEY not found in Script Properties.');
+
+  const cleanSymbol = String(symbol || '').trim().toUpperCase();
+  const metricUrl =
+    'https://finnhub.io/api/v1/stock/metric'
+    + '?symbol=' + encodeURIComponent(cleanSymbol)
+    + '&metric=all'
+    + '&token=' + encodeURIComponent(apiKey);
+  const profileUrl =
+    'https://finnhub.io/api/v1/stock/profile2'
+    + '?symbol=' + encodeURIComponent(cleanSymbol)
+    + '&token=' + encodeURIComponent(apiKey);
+
+  const metricResponse = UrlFetchApp.fetch(metricUrl, {
+    method: 'get',
+    muteHttpExceptions: true,
+  });
+  const profileResponse = UrlFetchApp.fetch(profileUrl, {
+    method: 'get',
+    muteHttpExceptions: true,
+  });
+
+  const metricStatus = metricResponse.getResponseCode();
+  const profileStatus = profileResponse.getResponseCode();
+  const metricText = metricResponse.getContentText();
+  const profileText = profileResponse.getContentText();
+
+  if (metricStatus < 200 || metricStatus >= 300) {
+    throw new Error('Finnhub metric HTTP error ' + metricStatus + ': ' + metricText.slice(0, 200));
+  }
+  if (profileStatus < 200 || profileStatus >= 300) {
+    throw new Error('Finnhub profile HTTP error ' + profileStatus + ': ' + profileText.slice(0, 200));
+  }
+
+  const metricData = JSON.parse(metricText || '{}');
+  const profile = JSON.parse(profileText || '{}');
+  const metric = metricData.metric || {};
+  const metricKeys = Object.keys(metric);
+  const profileKeys = Object.keys(profile);
+
+  const marketCapMillions = cleanFinnhubNumber_(metric.marketCapitalization);
+  const marketCap = marketCapMillions === null ? '' : String(Math.round(marketCapMillions * 1000000));
+  const pe = firstCleanFinnhubValue_([metric.peNormalizedAnnual, metric.peTTM]);
+  const overview = {
+    Symbol: cleanSymbol,
+    Name: profile.name || cleanSymbol,
+    Sector: profile.finnhubIndustry || '',
+    Industry: profile.finnhubIndustry || '',
+    Exchange: profile.exchange || '',
+    Currency: profile.currency || '',
+    MarketCapitalization: marketCap,
+    PERatio: pe,
+    ForwardPE: pe,
+    Beta: cleanFinnhubText_(metric.beta),
+    PEGRatio: cleanFinnhubText_(metric.pegRatio),
+    DividendYield: normalizeFinnhubPercent_(metric.dividendYieldIndicatedAnnual),
+    EPS: cleanFinnhubText_(metric.epsNormalizedAnnual),
+    RevenueTTM: cleanFinnhubText_(metric.revenuePerShareTTM),
+    ProfitMargin: normalizeFinnhubPercent_(metric.netProfitMarginTTM),
+    OperatingMarginTTM: normalizeFinnhubPercent_(metric.operatingMarginTTM),
+    ReturnOnEquityTTM: normalizeFinnhubPercent_(metric.roeTTM),
+    QuarterlyEarningsGrowthYOY: normalizeFinnhubPercent_(metric.epsGrowthTTMYoy),
+    QuarterlyRevenueGrowthYOY: normalizeFinnhubPercent_(metric.revenueGrowthTTMYoy),
+    '52WeekHigh': cleanFinnhubText_(metric['52WeekHigh']),
+    '52WeekLow': cleanFinnhubText_(metric['52WeekLow']),
+    _Provider: 'Finnhub',
+    _ThrottleMs: 1200,
+    _FinnhubMetricReturned: metricKeys.length > 0,
+    _FinnhubProfileReturned: profileKeys.length > 0,
+    _FinnhubMetricKeyCount: metricKeys.length,
+    _FinnhubProfileKeyCount: profileKeys.length
+  };
+
+  overview._EmptyFinnhubFields = getEmptyOverviewFields_(overview).join(',');
+
+  return overview;
+}
+
+
+function firstCleanFinnhubValue_(values) {
+  for (let i = 0; i < values.length; i++) {
+    const text = cleanFinnhubText_(values[i]);
+    if (text !== '') return text;
+  }
+  return '';
+}
+
+
+function cleanFinnhubNumber_(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const num = Number(value);
+  return isNaN(num) ? null : num;
+}
+
+
+function cleanFinnhubText_(value) {
+  const num = cleanFinnhubNumber_(value);
+  if (num === null) return '';
+  return String(num);
+}
+
+
+function normalizeFinnhubPercent_(value) {
+  const num = cleanFinnhubNumber_(value);
+  if (num === null) return '';
+
+  // Finnhub metric percentages are commonly returned as percent values, e.g. 12.5 means 12.5%.
+  return String(num / 100);
 }
 
 
@@ -4103,7 +4331,7 @@ function buildFundamentalRow_(overview) {
     new Date().toISOString(),
     summary,
     aiComment,
-    'Alpha Vantage OVERVIEW'
+    overview._Provider ? overview._Provider + ' fundamentals' : 'Alpha Vantage OVERVIEW'
   ];
 }
 
@@ -4856,7 +5084,17 @@ function getStockAnalysisInfoMap_() {
       desc: 'AI 编程工具公司，暂未公开上市。',
       focus: '开发者采用率、订阅增长、AI编程竞争、未来融资或IPO。',
       theme: '未上市 / IPO观察'
-    }
+    },
+    'MRVL': { zh:'迈威尔', en:'Marvell', type:'光互连/定制芯片', industry:'科技/AI', desc:'AI服务器互连与定制芯片(ASIC)，数据传输瓶颈受益方。', focus:'800G/1.6T光互连放量、定制芯片订单。', theme:'AI / 光互连 / 定制芯片' },
+    'COHR': { zh:'相干', en:'Coherent', type:'光模块/光器件', industry:'科技/AI', desc:'数据中心光模块与激光器件供应商，弹性大波动大。', focus:'光模块需求、800G渗透、毛利率。', theme:'AI / 光互连 / 光模块' },
+    'EQIX': { zh:'Equinix', en:'Equinix', type:'数据中心REIT', industry:'REIT', desc:'全球数据中心REIT，收租派息，驱动逻辑不同于硬件。', focus:'机柜出租率、派息、互连收入。', theme:'AI / 数据中心 / REIT / 派息' },
+    'DLR': { zh:'Digital Realty', en:'Digital Realty', type:'数据中心REIT', industry:'REIT', desc:'数据中心REIT，长期租约现金流，贴合保守现金流风格。', focus:'签约容量、派息、利率敏感度。', theme:'AI / 数据中心 / REIT / 派息' },
+    'NOW': { zh:'ServiceNow', en:'ServiceNow', type:'企业软件/Agent', industry:'科技/AI', desc:'企业工作流软件，把AI做成生产力变现，与硬件周期错开。', focus:'订阅增长、AI模块渗透、净留存率。', theme:'AI / 企业软件 / Agent' },
+    'SNOW': { zh:'Snowflake', en:'Snowflake', type:'数据云/Agent', industry:'科技/AI', desc:'数据云平台，AI/Agent依赖的数据底座。', focus:'消费量增长、净留存、AI工作负载。', theme:'AI / 数据 / Agent' },
+    'DDOG': { zh:'Datadog', en:'Datadog', type:'可观测性/Agent', industry:'科技/AI', desc:'云监控可观测性，AI工作负载越多用量越大。', focus:'用量增长、AI客户占比、利润率。', theme:'AI / 可观测性 / Agent' },
+    'AMAT': { zh:'应用材料', en:'Applied Materials', type:'半导体设备', industry:'科技/AI', desc:'沉积/刻蚀设备，跟晶圆厂整体扩产，有股息。', focus:'晶圆厂资本开支、订单、股息。', theme:'AI / 半导体设备' },
+    'VST': { zh:'Vistra', en:'Vistra', type:'独立发电', industry:'电力', desc:'独立发电+核电，给数据中心供电的战略标的，随电价波动。', focus:'供电协议、电价、核电资产。', theme:'AI / 电力 / 独立发电' },
+    'GEV': { zh:'GE Vernova', en:'GE Vernova', type:'发电设备/电网', industry:'电力', desc:'发电设备与电网龙头，AI扩张的电力基建瓶颈受益方。', focus:'订单积压、电网投资、估值。', theme:'AI / 电力 / 电网设备' }
   };
 }
 
@@ -4868,7 +5106,7 @@ function updateStockFundamentalsForStockAnalysis_(params) {
     throw new Error('11 Stock Analysis sheet not found.');
   }
 
-  const apiKey = getAlphaVantageApiKey_();
+  const providerMode = getStockOverviewProviderMode_();
   const lastRow = sheet.getLastRow();
 
   if (lastRow < 2) {
@@ -4880,13 +5118,17 @@ function updateStockFundamentalsForStockAnalysis_(params) {
     };
   }
 
-  const maxParam = params && params.max ? Number(params.max) : 5;
-  const maxToUpdate = Math.max(1, Math.min(maxParam, 10));
+  const defaultMax = providerMode === 'finnhub' ? 60 : 5;
+  const maxParam = params && params.max ? Number(params.max) : defaultMax;
+  const maxLimit = providerMode === 'finnhub' ? 60 : 5;
+  const maxToUpdate = Math.max(1, Math.min(maxParam, maxLimit));
+  const requestedTickers = parseRequestedTickers_(params && params.symbols);
 
   const values = sheet.getRange(2, 1, lastRow - 1, 36).getValues();
   const errors = [];
   let updated = 0;
   let skipped = 0;
+  let alphaFallbacks = 0;
 
   for (let i = 0; i < values.length; i++) {
     if (updated >= maxToUpdate) break;
@@ -4900,7 +5142,12 @@ function updateStockFundamentalsForStockAnalysis_(params) {
       continue;
     }
 
-    // 跳过未上市或无法从 Alpha Vantage 抓基本面的观察项
+    if (requestedTickers && !requestedTickers[ticker.toUpperCase()]) {
+      skipped++;
+      continue;
+    }
+
+    // 跳过未上市或无法从公开数据源抓基本面的观察项
     if (isPrivateOrPlaceholderTicker_(ticker)) {
       sheet.getRange(rowNum, 20, 1, 17).setValues([[
         'N/A',
@@ -4935,14 +5182,13 @@ function updateStockFundamentalsForStockAnalysis_(params) {
     }
 
     try {
-      const avSymbol = normalizeTickerForAlphaVantage_(ticker);
-      const overview = fetchAlphaVantageOverview_(avSymbol, apiKey);
+      const overview = fetchStockOverview_(ticker);
 
       if (!overview || !overview.Symbol) {
         errors.push({
           row: rowNum,
           ticker,
-          error: 'No overview data returned from Alpha Vantage.',
+          error: 'No overview data returned from Finnhub or Alpha Vantage.',
         });
         skipped++;
         continue;
@@ -4952,9 +5198,10 @@ function updateStockFundamentalsForStockAnalysis_(params) {
       sheet.getRange(rowNum, 20, 1, 17).setValues([financialRow]);
 
       updated++;
+      if (overview._Provider === 'Alpha Vantage' && !shouldUseAlphaVantageFirst_(ticker)) alphaFallbacks++;
 
-      // 避免触发 Alpha Vantage 频率限制。免费 API 通常不适合一次抓太多。
-      Utilities.sleep(13000);
+      Utilities.sleep(overview._ThrottleMs || (overview._Provider === 'Finnhub' ? 1200 : 13000));
+      if (providerMode === 'finnhub' && alphaFallbacks >= 5) break;
 
     } catch (err) {
       errors.push({
@@ -4984,8 +5231,30 @@ function updateStockFundamentalsForStockAnalysis_(params) {
     updated,
     skipped,
     errors,
-    message: 'Fundamentals update completed. Use max parameter to control API usage.',
+    provider: providerMode,
+    message: 'Fundamentals update completed. Finnhub defaults to max 60; Alpha Vantage fallback stays at max 5.',
   };
+}
+
+function testFinnhubFundamentalsSmallBatch() {
+  return updateStockFundamentalsForStockAnalysis_({
+    symbols: 'NVDA,MSFT,AMD,PLTR,CVE.TO,SU.TO,SHOP.TO,QQQ',
+    max: 8,
+    force: 'true'
+  });
+}
+
+
+function parseRequestedTickers_(symbols) {
+  if (!symbols) return null;
+
+  const result = {};
+  String(symbols).split(',').forEach((symbol) => {
+    const ticker = String(symbol || '').trim().toUpperCase();
+    if (ticker) result[ticker] = true;
+  });
+
+  return Object.keys(result).length ? result : null;
 }
 
 
@@ -5005,6 +5274,21 @@ function getAlphaVantageApiKey_() {
   }
 
   throw new Error('Alpha Vantage API key not found in Script Properties.');
+}
+
+function getFinnhubApiKey_() {
+  return PropertiesService.getScriptProperties().getProperty('FINNHUB_API_KEY') || '';
+}
+
+
+function getStockOverviewProviderMode_() {
+  return getFinnhubApiKey_() ? 'finnhub' : 'alpha_vantage';
+}
+
+
+function shouldUseAlphaVantageFirst_(symbol) {
+  const ticker = String(symbol || '').trim().toUpperCase();
+  return ticker.endsWith('.TO') || ticker.endsWith('.V');
 }
 
 
@@ -5031,6 +5315,182 @@ function isPrivateOrPlaceholderTicker_(ticker) {
     'CURSOR',
     'ANYSphere'.toUpperCase()
   ].includes(t);
+}
+
+
+function fetchStockOverview_(symbol) {
+  if (shouldUseAlphaVantageFirst_(symbol)) {
+    const alphaKey = getAlphaVantageApiKey_();
+    const alphaSymbol = normalizeTickerForAlphaVantage_(symbol);
+    const overview = fetchAlphaVantageOverview_(alphaSymbol, alphaKey);
+    if (overview) {
+      overview._Provider = 'Alpha Vantage';
+      overview._ThrottleMs = 13000;
+    }
+    return overview;
+  }
+
+  const finnhubKey = getFinnhubApiKey_();
+
+  if (finnhubKey) {
+    try {
+      const overview = fetchFinnhubOverview_(symbol, finnhubKey);
+      if (hasEnoughOverviewFields_(overview)) return overview;
+      Logger.log('[Fundamentals] Finnhub returned too little data for ' + symbol + '; falling back to Alpha Vantage.');
+    } catch (err) {
+      Logger.log('[Fundamentals] Finnhub failed for ' + symbol + ': ' + (err && err.message ? err.message : err));
+    }
+  }
+
+  const alphaKey = getAlphaVantageApiKey_();
+  const alphaSymbol = normalizeTickerForAlphaVantage_(symbol);
+  const overview = fetchAlphaVantageOverview_(alphaSymbol, alphaKey);
+  if (overview) {
+    overview._Provider = 'Alpha Vantage';
+    overview._ThrottleMs = 13000;
+  }
+  return overview;
+}
+
+
+function hasEnoughOverviewFields_(overview) {
+  if (!overview || !overview.Symbol) return false;
+
+  const importantFields = [
+    'MarketCapitalization',
+    'PERatio',
+    'PEGRatio',
+    'DividendYield',
+    'EPS',
+    'ProfitMargin',
+    'ReturnOnEquityTTM',
+    'QuarterlyRevenueGrowthYOY',
+    '52WeekHigh',
+    '52WeekLow'
+  ];
+
+  let found = 0;
+  importantFields.forEach((field) => {
+    const value = overview[field];
+    if (value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'N/A') {
+      found++;
+    }
+  });
+
+  return found >= 3;
+}
+
+
+function fetchFinnhubOverview_(symbol, key) {
+  const apiKey = key || getFinnhubApiKey_();
+  if (!apiKey) throw new Error('FINNHUB_API_KEY not found in Script Properties.');
+
+  const cleanSymbol = String(symbol || '').trim().toUpperCase();
+  const metricUrl =
+    'https://finnhub.io/api/v1/stock/metric'
+    + '?symbol=' + encodeURIComponent(cleanSymbol)
+    + '&metric=all'
+    + '&token=' + encodeURIComponent(apiKey);
+  const profileUrl =
+    'https://finnhub.io/api/v1/stock/profile2'
+    + '?symbol=' + encodeURIComponent(cleanSymbol)
+    + '&token=' + encodeURIComponent(apiKey);
+
+  const metricResponse = UrlFetchApp.fetch(metricUrl, {
+    method: 'get',
+    muteHttpExceptions: true,
+  });
+  const profileResponse = UrlFetchApp.fetch(profileUrl, {
+    method: 'get',
+    muteHttpExceptions: true,
+  });
+
+  const metricStatus = metricResponse.getResponseCode();
+  const profileStatus = profileResponse.getResponseCode();
+  const metricText = metricResponse.getContentText();
+  const profileText = profileResponse.getContentText();
+
+  if (metricStatus < 200 || metricStatus >= 300) {
+    throw new Error('Finnhub metric HTTP error ' + metricStatus + ': ' + metricText.slice(0, 200));
+  }
+  if (profileStatus < 200 || profileStatus >= 300) {
+    throw new Error('Finnhub profile HTTP error ' + profileStatus + ': ' + profileText.slice(0, 200));
+  }
+
+  const metricData = JSON.parse(metricText || '{}');
+  const profile = JSON.parse(profileText || '{}');
+  const metric = metricData.metric || {};
+  const metricKeys = Object.keys(metric);
+  const profileKeys = Object.keys(profile);
+
+  const marketCapMillions = cleanFinnhubNumber_(metric.marketCapitalization);
+  const marketCap = marketCapMillions === null ? '' : String(Math.round(marketCapMillions * 1000000));
+  const pe = firstCleanFinnhubValue_([metric.peNormalizedAnnual, metric.peTTM]);
+  const overview = {
+    Symbol: cleanSymbol,
+    Name: profile.name || cleanSymbol,
+    Sector: profile.finnhubIndustry || '',
+    Industry: profile.finnhubIndustry || '',
+    Exchange: profile.exchange || '',
+    Currency: profile.currency || '',
+    MarketCapitalization: marketCap,
+    PERatio: pe,
+    ForwardPE: pe,
+    Beta: cleanFinnhubText_(metric.beta),
+    PEGRatio: cleanFinnhubText_(metric.pegRatio),
+    DividendYield: normalizeFinnhubPercent_(metric.dividendYieldIndicatedAnnual),
+    EPS: cleanFinnhubText_(metric.epsNormalizedAnnual),
+    RevenueTTM: cleanFinnhubText_(metric.revenuePerShareTTM),
+    ProfitMargin: normalizeFinnhubPercent_(metric.netProfitMarginTTM),
+    OperatingMarginTTM: normalizeFinnhubPercent_(metric.operatingMarginTTM),
+    ReturnOnEquityTTM: normalizeFinnhubPercent_(metric.roeTTM),
+    QuarterlyEarningsGrowthYOY: normalizeFinnhubPercent_(metric.epsGrowthTTMYoy),
+    QuarterlyRevenueGrowthYOY: normalizeFinnhubPercent_(metric.revenueGrowthTTMYoy),
+    '52WeekHigh': cleanFinnhubText_(metric['52WeekHigh']),
+    '52WeekLow': cleanFinnhubText_(metric['52WeekLow']),
+    _Provider: 'Finnhub',
+    _ThrottleMs: 1200,
+    _FinnhubMetricReturned: metricKeys.length > 0,
+    _FinnhubProfileReturned: profileKeys.length > 0,
+    _FinnhubMetricKeyCount: metricKeys.length,
+    _FinnhubProfileKeyCount: profileKeys.length
+  };
+
+  overview._EmptyFinnhubFields = getEmptyOverviewFields_(overview).join(',');
+
+  return overview;
+}
+
+
+function firstCleanFinnhubValue_(values) {
+  for (let i = 0; i < values.length; i++) {
+    const text = cleanFinnhubText_(values[i]);
+    if (text !== '') return text;
+  }
+  return '';
+}
+
+
+function cleanFinnhubNumber_(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const num = Number(value);
+  return isNaN(num) ? null : num;
+}
+
+
+function cleanFinnhubText_(value) {
+  const num = cleanFinnhubNumber_(value);
+  if (num === null) return '';
+  return String(num);
+}
+
+
+function normalizeFinnhubPercent_(value) {
+  const num = cleanFinnhubNumber_(value);
+  if (num === null) return '';
+
+  // Finnhub metric percentages are commonly returned as percent values, e.g. 12.5 means 12.5%.
+  return String(num / 100);
 }
 
 
@@ -5106,7 +5566,7 @@ function buildFundamentalRow_(overview) {
     new Date().toISOString(),
     summary,
     aiComment,
-    'Alpha Vantage OVERVIEW'
+    overview._Provider ? overview._Provider + ' fundamentals' : 'Alpha Vantage OVERVIEW'
   ];
 }
 
@@ -5215,4 +5675,128 @@ function buildSimpleFinancialComment_(overview) {
   }
 
   return comments.join(' ');
+}
+
+
+function debugFinnhubAiFundamentalsSmallBatch() {
+  const symbols = [
+    'NVDA',
+    'AMD',
+    'MRVL',
+    'COHR',
+    'EQIX',
+    'DDOG',
+    'AMAT',
+    'VST',
+    'GEV',
+    'QQQ',
+    'SMH'
+  ];
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = spreadsheet.getSheetByName('11 Stock Analysis');
+  if (!sheet) throw new Error('11 Stock Analysis sheet not found.');
+
+  const lastRow = sheet.getLastRow();
+  const values = sheet.getRange(2, 1, Math.max(lastRow - 1, 1), 36).getValues();
+  const rowByTicker = {};
+  values.forEach((row, index) => {
+    const ticker = String(row[0] || '').trim().toUpperCase();
+    if (ticker) rowByTicker[ticker] = index + 2;
+  });
+
+  const headers = sheet.getRange(1, 20, 1, 17).getValues()[0];
+  const result = [];
+
+  symbols.forEach((symbol) => {
+    const rowNum = rowByTicker[symbol];
+    if (!rowNum) {
+      Logger.log('[Debug Fundamentals] ' + symbol + ' row not found in 11 Stock Analysis.');
+      result.push({ symbol, updated: false, reason: 'row not found' });
+      return;
+    }
+
+    try {
+      const overview = fetchStockOverview_(symbol);
+      if (!overview || !overview.Symbol) {
+        Logger.log('[Debug Fundamentals] ' + symbol + ' no overview returned.');
+        result.push({ symbol, updated: false, reason: 'no overview returned' });
+        return;
+      }
+
+      const financialRow = buildFundamentalRow_(overview);
+      sheet.getRange(rowNum, 20, 1, 17).setValues([financialRow]);
+
+      const writtenFields = [];
+      const blankFields = [];
+      headers.forEach((header, index) => {
+        const value = financialRow[index];
+        if (value === null || value === undefined || String(value).trim() === '' || String(value).trim() === 'N/A') {
+          blankFields.push(header);
+        } else {
+          writtenFields.push(header);
+        }
+      });
+
+      Logger.log(
+        '[Debug Fundamentals] ' + symbol
+        + ' provider=' + (overview._Provider || 'unknown')
+        + ' metric=' + (overview._FinnhubMetricReturned === undefined ? 'n/a' : overview._FinnhubMetricReturned)
+        + ' metricKeys=' + (overview._FinnhubMetricKeyCount === undefined ? 'n/a' : overview._FinnhubMetricKeyCount)
+        + ' profile=' + (overview._FinnhubProfileReturned === undefined ? 'n/a' : overview._FinnhubProfileReturned)
+        + ' profileKeys=' + (overview._FinnhubProfileKeyCount === undefined ? 'n/a' : overview._FinnhubProfileKeyCount)
+      );
+      Logger.log('[Debug Fundamentals] ' + symbol + ' written=' + writtenFields.join(' | '));
+      Logger.log('[Debug Fundamentals] ' + symbol + ' blanks=' + blankFields.join(' | '));
+      if (overview._EmptyFinnhubFields) {
+        Logger.log('[Debug Fundamentals] ' + symbol + ' empty overview fields=' + overview._EmptyFinnhubFields);
+      }
+
+      result.push({
+        symbol,
+        provider: overview._Provider || '',
+        updated: true,
+        written: writtenFields.length,
+        blanks: blankFields
+      });
+
+      Utilities.sleep(overview._ThrottleMs || (overview._Provider === 'Finnhub' ? 1200 : 13000));
+    } catch (err) {
+      const message = String(err && err.message ? err.message : err);
+      Logger.log('[Debug Fundamentals] ' + symbol + ' failed: ' + message);
+      result.push({ symbol, updated: false, reason: message });
+    }
+  });
+
+  SpreadsheetApp.flush();
+  return result;
+}
+
+
+function getEmptyOverviewFields_(overview) {
+  const fields = [
+    'MarketCapitalization',
+    'PERatio',
+    'ForwardPE',
+    'PEGRatio',
+    'DividendYield',
+    'EPS',
+    'RevenueTTM',
+    'ProfitMargin',
+    'OperatingMarginTTM',
+    'ReturnOnEquityTTM',
+    'QuarterlyEarningsGrowthYOY',
+    'QuarterlyRevenueGrowthYOY',
+    '52WeekHigh',
+    '52WeekLow',
+    'Currency',
+    'Name',
+    'Sector',
+    'Industry',
+    'Exchange'
+  ];
+
+  return fields.filter((field) => {
+    const value = overview[field];
+    return value === null || value === undefined || String(value).trim() === '' || String(value).trim() === 'N/A';
+  });
 }
