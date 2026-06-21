@@ -3482,12 +3482,12 @@ function analyzeStocks_(params) {
   tickers = [...new Set(tickers.map(t => t.toUpperCase()))];
   const totalCandidates = tickers.length;
 
-  // 限制单次请求处理的票数，避免 Apps Script Web App 因执行耗时过长
-  // 触发前端 "Inactivity Timeout"（每只票含基本面 API 调用 + 限速 sleep，
-  // 一次处理太多票容易超时）。默认 10 只，最多 15 只；超出部分需要再点一次
-  // 按钮才会轮到（候选列表顺序固定，见下方 tickers 拼接顺序）。
-  const maxParam = params && params.max ? Number(params.max) : 10;
-  const maxToAnalyze = Math.max(1, Math.min(maxParam || 10, 15));
+  // 限制单次请求处理的票数。实测 10 只耗时 30+ 秒，撞到 Netlify 函数背后
+  // AWS API Gateway 固定 29 秒超时（这个上限不可配置，跟 Netlify 套餐无关），
+  // 导致 504。默认改成 5 只，最多 8 只；超出部分需要再点一次按钮才会轮到
+  // （候选列表顺序固定，见下方 tickers 拼接顺序）。
+  const maxParam = params && params.max ? Number(params.max) : 5;
+  const maxToAnalyze = Math.max(1, Math.min(maxParam || 5, 8));
   tickers = tickers.slice(0, maxToAnalyze);
 
   let results = [];
