@@ -34,6 +34,7 @@ export async function handler(event) {
     url.searchParams.set("_", String(Date.now()));
     if (action === "analyze_stocks") {
       url.searchParams.set("industry", "all");
+      url.searchParams.set("max", String(Math.max(1, Math.min(Number(body.max || 10), 15))));
     }
     if (action === "update_stock_fundamentals") {
       url.searchParams.set("max", String(Math.max(1, Math.min(Number(body.max || 5), 10))));

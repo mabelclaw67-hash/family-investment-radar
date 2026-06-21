@@ -3480,10 +3480,19 @@ function analyzeStocks_(params) {
   
   // 去重
   tickers = [...new Set(tickers.map(t => t.toUpperCase()))];
-  
+  const totalCandidates = tickers.length;
+
+  // 限制单次请求处理的票数，避免 Apps Script Web App 因执行耗时过长
+  // 触发前端 "Inactivity Timeout"（每只票含基本面 API 调用 + 限速 sleep，
+  // 一次处理太多票容易超时）。默认 10 只，最多 15 只；超出部分需要再点一次
+  // 按钮才会轮到（候选列表顺序固定，见下方 tickers 拼接顺序）。
+  const maxParam = params && params.max ? Number(params.max) : 10;
+  const maxToAnalyze = Math.max(1, Math.min(maxParam || 10, 15));
+  tickers = tickers.slice(0, maxToAnalyze);
+
   let results = [];
   const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-  
+
   tickers.forEach(ticker => {
     try {
       const analysis = getStockValueRiskAnalysis_(ticker, apiKey);
@@ -3492,17 +3501,19 @@ function analyzeStocks_(params) {
       Logger.log('分析 ' + ticker + ' 失败: ' + e.message);
     }
   });
-  
+
   // 保存到 11 Stock Analysis
   const updatedRows = saveStockAnalysisToSheet_(spreadsheet, results);
   enrichStockAnalysis_(spreadsheet);
-  
+
   return {
     ok: true,
     data: results,
     count: results.length,
     updatedRows,
     industry: industry || 'all',
+    processedTickers: tickers.length,
+    totalCandidates: totalCandidates,
     updatedAt: new Date().toISOString()
   };
 }
