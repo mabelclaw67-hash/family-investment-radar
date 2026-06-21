@@ -9,8 +9,8 @@ export async function loadSheetTab(sheetName) {
   return Array.isArray(payload.data) ? payload.data : [];
 }
 
-export async function loadDashboardSource() {
-  const url = buildApiUrl("dashboard");
+export async function loadDashboardSource(options = {}) {
+  const url = buildApiUrl("dashboard", {}, options);
   const payload = await fetchJson(url);
   const dashboardData = payload.data ?? {};
   const morningBrief = dashboardData.morningBrief
@@ -86,22 +86,22 @@ export async function loadWatchlistPageSource() {
 }
 
 export async function refreshNews() {
-  const url = buildApiUrl("refreshNews");
+  const url = buildApiUrl("refreshNews", {}, { force: true });
   return await fetchJson(url);
 }
 
 export async function syncNewsFromSheet() {
-  const url = buildApiUrl("syncNewsFromSheet");
+  const url = buildApiUrl("syncNewsFromSheet", {}, { force: true });
   return await fetchJson(url);
 }
 
 export async function refreshMarketData() {
-  const url = buildApiUrl("refreshMarketData");
+  const url = buildApiUrl("refreshMarketData", {}, { force: true });
   return await fetchJson(url);
 }
 
 export async function syncMorningBrief() {
-  const url = buildApiUrl("syncMorningBrief");
+  const url = buildApiUrl("syncMorningBrief", {}, { force: true });
   return await fetchJson(url);
 }
 
@@ -149,8 +149,8 @@ export async function archiveDecisionLog(decisionId) {
   return await fetchJson(url);
 }
 
-export async function loadStockAnalysisPageSource() {
-  return await loadSheetTab(SHEET_CONFIG.tabs.stockAnalysis);
+export async function loadStockAnalysisPageSource(options = {}) {
+  return await loadSheetTabWithOptions(SHEET_CONFIG.tabs.stockAnalysis, options);
 }
 
 export async function refreshStockAnalysis(adminToken = "") {
@@ -166,20 +166,30 @@ export async function refreshStockAnalysis(adminToken = "") {
   return await parseBackendJson(response);
 }
 
-function buildApiUrl(action, params = {}, apiUrl = FAMILY_INVESTMENT_API_URL) {
+function buildApiUrl(action, params = {}, options = {}) {
+  if (typeof options === "string") {
+    options = { apiUrl: options };
+  }
+  const apiUrl = options.apiUrl || FAMILY_INVESTMENT_API_URL;
   if (!apiUrl) {
     throw new Error(
       "Missing API URL. Set VITE_FAMILY_INVESTMENT_API_URL or window.FAMILY_INVESTMENT_API_URL to the Apps Script Web App exec URL."
     );
   }
 
-  const url = new URL(apiUrl);
+  const url = new URL("/.netlify/functions/readSheetData", window.location.origin);
   url.searchParams.set("action", action);
-  url.searchParams.set("_", String(Date.now()));
+  if (options.force) url.searchParams.set("force", "1");
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.set(key, value);
   });
   return url;
+}
+
+async function loadSheetTabWithOptions(sheetName, options = {}) {
+  const url = buildApiUrl("tab", { name: sheetName }, options);
+  const payload = await fetchJson(url);
+  return Array.isArray(payload.data) ? payload.data : [];
 }
 
 async function fetchJson(url) {
@@ -198,7 +208,15 @@ async function fetchJson(url) {
   if (!payload.ok) {
     throw new Error(payload.error || "Apps Script API returned ok:false");
   }
+  notifyStaleCache(payload);
   return payload;
+}
+
+function notifyStaleCache(payload) {
+  if (!payload?.cache?.stale || typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent("family-investment-cache-stale", {
+    detail: { message: payload.warning || "Showing cached data." },
+  }));
 }
 
 async function parseBackendJson(response) {

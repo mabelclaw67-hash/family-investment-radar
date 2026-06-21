@@ -9,9 +9,10 @@ const MOBILE_TABS = [
   ["mtab_stock_lookup", "⌕", "stock-lookup"],
   ["mtab_stock_analysis", "↗", "stock-analysis"],
   ["mtab_market", "◎", "market"],
-  ["mtab_alerts", "!", "alerts"],
   ["mtab_news", "▤", "news"],
+  ["mtab_alerts", "!", "alerts"],
   ["mtab_forum", "❝", "forum"],
+  ["mtab_learning", "101", "learning"],
   ["mtab_share", "□", "share"],
 ];
 
@@ -1811,7 +1812,7 @@ export function StockDetailCard(d) {
     [t("stock_f_exchange"),  d.exchange],
     [t("stock_f_country"),   d.country],
     [t("stock_f_currency"),  d.currency],
-    [t("stock_f_marketcap"), formatMarketCap(d.marketCap, cur)],
+    [t("stock_f_marketcap"), formatLargeNumber(d.marketCap, cur)],
     [t("stock_f_sector"),    d.sector],
     [t("stock_f_industry"),  d.industry],
   ].filter(([, v]) => String(v ?? "").trim());
@@ -1876,8 +1877,8 @@ function formatStockTime(iso) {
 }
 
 function formatPrice(value, currency) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return "—";
+  const n = parseDisplayNumber(value);
+  if (!Number.isFinite(n)) return "N/A";
   return `${currency ? currency + " " : ""}${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
@@ -1886,15 +1887,6 @@ function formatSigned(value) {
   if (!Number.isFinite(n)) return "—";
   const s = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   return n > 0 ? `+${s}` : s;
-}
-
-function formatMarketCap(value, currency) {
-  const n = Number(value);
-  if (!Number.isFinite(n) || n <= 0) return "";
-  const prefix = currency ? currency + " " : "";
-  if (n >= 1e12) return `${prefix}${(n / 1e12).toFixed(2)} 万亿`;
-  if (n >= 1e8)  return `${prefix}${(n / 1e8).toFixed(2)} 亿`;
-  return `${prefix}${n.toLocaleString("en-US")}`;
 }
 
 // ─── Public Forum ("大家在关注") ──────────────────────────────────────────────
@@ -2191,6 +2183,159 @@ export function SharePage() {
   `;
 }
 
+export function LearningCenterPage() {
+  const sections = [
+    { id: "terms", title: "投资术语学习", subtitle: "Stock Metrics 101" },
+    { id: "stock", title: "如何读懂一只股票", subtitle: "内容待补充" },
+    { id: "etf", title: "如何读懂 ETF", subtitle: "内容待补充" },
+    { id: "conservative", title: "保守型投资者注意事项", subtitle: "内容待补充" },
+  ];
+
+  return `
+    <header class="page-header">
+      <div>
+        <h1>学习中心</h1>
+        <p>帮助普通投资者读懂基础指标、股票、ETF 和常见风险。</p>
+      </div>
+    </header>
+
+    <section class="panel learning-center">
+      <nav class="learning-nav" aria-label="Learning Center">
+        ${sections.map((item) => `
+          <a href="#learning-${escapeHtml(item.id)}">
+            <strong>${escapeHtml(item.title)}</strong>
+            <span>${escapeHtml(item.subtitle)}</span>
+          </a>
+        `).join("")}
+      </nav>
+
+      <div class="learning-content">
+        ${LearningTermsArticle()}
+        ${LearningPlaceholder("learning-stock", "如何读懂一只股票")}
+        ${LearningPlaceholder("learning-etf", "如何读懂 ETF")}
+        ${LearningPlaceholder("learning-conservative", "保守型投资者注意事项")}
+      </div>
+    </section>
+  `;
+}
+
+export function AdminLearningPage() {
+  return `
+    <header class="page-header">
+      <div>
+        <h1>${escapeHtml(t("admin_learning_title"))}</h1>
+        <p>${escapeHtml(t("admin_learning_subtitle"))}</p>
+      </div>
+    </header>
+    <section class="panel">
+      <div class="panel-title"><h2>${escapeHtml(t("admin_learning_reserved_title"))}</h2></div>
+      <p class="learning-admin-note">${escapeHtml(t("admin_learning_reserved_body"))}</p>
+    </section>
+  `;
+}
+
+function LearningPlaceholder(id, title) {
+  return `
+    <article id="${escapeHtml(id)}" class="learning-article learning-placeholder">
+      <h2>${escapeHtml(title)}</h2>
+      <p>内容待补充。</p>
+    </article>
+  `;
+}
+
+function LearningTermsArticle() {
+  const sections = [
+    {
+      title: "一、价格与估值类",
+      items: [
+        ["当前价格 Current Price", "股票现在的交易价格。价格高不代表一定贵，价格低也不代表一定便宜，要结合盈利、市值和成长性一起看。"],
+        ["市值 Market Cap", "公司总价值的大致估算。公式：市值 = 股价 × 总股数。大市值公司通常更成熟、更稳定；小市值公司成长空间可能大，但波动和风险也更高。"],
+        ["市盈率 P/E Ratio", "市盈率 = 股价 ÷ 每股盈利。它表示投资者愿意为公司每赚 1 元钱，支付多少价格。P/E 低可能便宜，也可能增长慢或有问题；P/E 高代表市场期待高增长，但如果增长跟不上，股价容易回调。市盈率是倍数，不是百分比。"],
+        ["远期市盈率 Forward P/E", "用未来预期盈利计算出来的市盈率。如果远期 P/E 明显低于当前 P/E，说明市场预期公司未来盈利会增长。"],
+        ["市销率 P/S Ratio", "市销率 = 市值 ÷ 营收。适合看一些还没有稳定盈利、但营收增长快的成长型公司。P/S 越高，说明市场对公司未来增长期待越高。"],
+      ],
+    },
+    {
+      title: "二、盈利能力类",
+      items: [
+        ["每股盈利 EPS", "EPS = 公司净利润 ÷ 股数。它表示每一股对应的盈利能力。EPS 持续增长，通常是好信号。"],
+        ["毛利率 Gross Margin", "毛利率表示公司卖产品或服务后，扣除直接成本还能留下多少利润。毛利率高，通常说明公司产品有竞争力、定价能力强。"],
+        ["净利率 Net Margin", "净利率表示公司最终能把多少营收变成真正利润。净利率越高，说明公司赚钱效率越强。"],
+        ["ROE 净资产收益率", "ROE 表示公司用股东的钱赚钱的能力。ROE 越高，说明公司利用资本赚钱的效率越好。但如果公司负债太高，ROE 也可能被放大，所以要结合债务一起看。"],
+      ],
+    },
+    {
+      title: "三、成长性类",
+      items: [
+        ["营收增长 Revenue Growth", "看公司销售收入是否持续增长。成长股最重要的指标之一。如果股价很贵，但营收和利润增长跟不上，就容易有风险。"],
+        ["盈利增长 Earnings Growth", "看公司利润是否持续增长。营收增长只是“卖得更多”，盈利增长才是“真正赚得更多”。"],
+        ["自由现金流 Free Cash Flow", "公司经营后真正剩下、可以自由使用的钱。自由现金流强，说明公司不仅账面赚钱，也真正产生现金。"],
+      ],
+    },
+    {
+      title: "四、风险与波动类",
+      items: [
+        ["52周高低点 52-Week High / Low", "过去一年股价最高和最低的位置。如果股价接近52周高点，说明市场情绪较热；如果接近52周低点，可能便宜，也可能公司遇到问题。"],
+        ["波动率 Volatility", "表示股价上下波动的程度。波动率高，不一定不好，但说明心理承受压力会更大。保守型投资者要特别注意。"],
+        ["Beta", "Beta 表示这只股票相对大盘的波动程度。Beta = 1 表示和大盘差不多；Beta > 1 表示比大盘波动更大；Beta < 1 表示比大盘更稳定。"],
+        ["最大回撤 Drawdown", "从高点跌到低点的最大跌幅。这个指标很重要，因为它告诉我们：这只股票历史上最痛的时候可能跌多少。"],
+      ],
+    },
+    {
+      title: "五、分红与稳定性类",
+      items: [
+        ["股息率 Dividend Yield", "股息率 = 每年分红 ÷ 股价。适合看银行、公用事业、能源管道等偏稳定型股票。"],
+        ["派息率 Payout Ratio", "派息率 = 分红 ÷ 盈利。如果派息率过高，说明公司把大部分利润都拿去分红，未来分红可能不够安全。"],
+      ],
+    },
+    {
+      title: "六、ETF 常用术语",
+      items: [
+        ["ETF", "ETF 是一篮子股票组成的基金，可以像股票一样买卖。例如：VFV / VOO 跟踪标普500，QQQ 偏科技和成长股，VCNS 偏保守配置型基金。"],
+        ["管理费 MER", "MER 是 ETF 或基金每年的管理费用。长期投资时，费用越低越有优势。"],
+        ["持仓 Holdings", "ETF 里面具体买了哪些股票。看 ETF 不能只看名字，也要看它里面真正持有哪些公司。"],
+      ],
+    },
+  ];
+
+  return `
+    <article id="learning-terms" class="learning-article">
+      <h2>投资术语学习｜Stock Metrics 101</h2>
+      <p class="learning-lead">本页用于帮助普通投资者读懂股票和 ETF 的基础指标。这些指标不能单独决定买卖，但可以帮助我们判断：一家公司贵不贵、赚钱能力强不强、成长是否健康、风险是否偏高。</p>
+      ${sections.map((section) => `
+        <section>
+          <h3>${escapeHtml(section.title)}</h3>
+          ${section.items.map(([title, body]) => `
+            <div class="learning-term">
+              <h4>${escapeHtml(title)}</h4>
+              <p>${escapeHtml(body)}</p>
+            </div>
+          `).join("")}
+        </section>
+      `).join("")}
+      <section>
+        <h3>七、普通投资者的基本判断顺序</h3>
+        <ol>
+          <li>这家公司是做什么的？</li>
+          <li>它属于什么行业？</li>
+          <li>行业未来有没有增长空间？</li>
+          <li>公司有没有持续赚钱？</li>
+          <li>营收和利润有没有增长？</li>
+          <li>市盈率、市销率是否已经太高？</li>
+          <li>股价是否已经涨太多？</li>
+          <li>风险和波动自己能不能承受？</li>
+          <li>是否适合自己的账户类型和投资目标？</li>
+          <li>是否需要分批买入，而不是一次重仓？</li>
+        </ol>
+      </section>
+      <section>
+        <h3>温馨提示</h3>
+        <p>所有指标都不能单独使用。低估值不一定安全，高估值也不一定不能买。真正重要的是：公司质量、行业趋势、盈利增长、估值水平和个人风险承受能力是否匹配。</p>
+      </section>
+    </article>
+  `;
+}
+
 function currentStockTheme() {
   const hash = window.location.hash || "";
   const query = hash.includes("?") ? hash.slice(hash.indexOf("?") + 1) : "";
@@ -2286,7 +2431,7 @@ function stockAnalysisListItem(row, lang, detailId, active) {
     ? (get(row, "中文名称") || get(row, "名称") || ticker || "—")
     : (get(row, "英文名称") || get(row, "名称") || ticker || "—");
   const type = get(row, "类型") || get(row, "行业") || (lang === "zh" ? "其他" : "Other");
-  const price = get(row, "当前价格") || "—";
+  const price = formatStockPrice(get(row, "当前价格"));
   const daily = get(row, "日变动%") || get(row, "日变动");
   const dailyClass = numberToneClass(daily);
   const overall = get(row, "综合评分");
@@ -2321,7 +2466,7 @@ function stockAnalysisRow(row, lang, detailId, active, extraClass = "") {
   const overallClass = scoreToneClass(overall);
   const valueScore = get(row, "价值评分");
   const riskScore = get(row, "风险评分");
-  const price = get(row, "当前价格") || "—";
+  const price = formatStockPrice(get(row, "当前价格"));
   const currency = get(row, "币种 / Currency");
   const volatility = get(row, "简化波动参考%") || get(row, "年化波动率%") || "—";
   const updated = formatStockUpdate(get(row, "更新时间"));
@@ -2343,7 +2488,7 @@ function stockAnalysisRow(row, lang, detailId, active, extraClass = "") {
           </div>
         </div>
         <div class="stock-metrics">
-          <div><span>${lang === "zh" ? "价格" : "Price"}</span><strong>${escapeHtml(price)}${hasDisplayValue(currency) ? ` <small class="stock-currency-note">${escapeHtml(currency)}</small>` : ""}</strong></div>
+          <div><span>${lang === "zh" ? "价格" : "Price"}</span><strong>${escapeHtml(price)}${price !== "N/A" && hasDisplayValue(currency) ? ` <small class="stock-currency-note">${escapeHtml(currency)}</small>` : ""}</strong></div>
           <div><span>${lang === "zh" ? "日变动" : "Daily"}</span><strong class="${dailyClass}">${escapeHtml(daily || "—")}</strong></div>
           <div><span>${lang === "zh" ? "波动参考" : "Volatility Ref."}</span><strong>${escapeHtml(volatility)}</strong></div>
           ${hasDisplayValue(valueScore) ? `<div><span>${lang === "zh" ? "价值评分" : "Value Score"}</span><strong>${escapeHtml(valueScore)}</strong></div>` : ""}
@@ -2588,15 +2733,30 @@ function formatYieldValue(value) {
   return `${(n * 100).toFixed(2)}%`;
 }
 
-function formatLargeNumber(value) {
+function formatStockPrice(value) {
+  const n = parseDisplayNumber(value);
+  if (!Number.isFinite(n)) return "N/A";
+  return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function formatLargeNumber(value, prefix = "") {
   if (!hasDisplayValue(value)) return "";
-  const text = String(value).replace(/,/g, "").trim();
-  const n = Number(text);
+  const n = parseDisplayNumber(value);
   if (!Number.isFinite(n)) return String(value);
-  if (Math.abs(n) >= 1_000_000_000_000) return `${(n / 1_000_000_000_000).toFixed(2)}T`;
-  if (Math.abs(n) >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(2)}B`;
-  if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
-  return String(value);
+  const label = prefix ? `${prefix} ` : "";
+  const abs = Math.abs(n);
+  if (abs >= 1_000_000_000_000) return `${label}${(n / 1_000_000_000_000).toFixed(2)}T`;
+  if (abs >= 1_000_000_000) return `${label}${(n / 1_000_000_000).toFixed(2)}B`;
+  if (abs >= 1_000_000) return `${label}${(n / 1_000_000).toFixed(2)}M`;
+  if (abs >= 1_000) return `${label}${(n / 1_000).toFixed(2)}K`;
+  return `${label}${n.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+}
+
+function parseDisplayNumber(value) {
+  if (!hasDisplayValue(value)) return NaN;
+  const text = String(value).replace(/,/g, "").trim();
+  const match = text.match(/[-+]?\d*\.?\d+(?:e[-+]?\d+)?/i);
+  return match ? Number(match[0]) : NaN;
 }
 
 function latestStockUpdate(items) {

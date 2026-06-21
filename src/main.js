@@ -20,6 +20,7 @@ import { buildHoldingsModel } from "./data/holdingsMapper.js";
 import { buildWatchlistModel } from "./data/watchlistMapper.js";
 import { buildDecisionLogModel } from "./data/decisionLogMapper.js";
 import {
+  AdminLearningPage,
   AlertsPanel,
   AppShell,
   BuffettMottoBanner,
@@ -28,6 +29,7 @@ import {
   Header,
   HoldingsPage,
   KpiCards,
+  LearningCenterPage,
   LiveUpdatesPanel,
   LoadingState,
   MarketSection,
@@ -248,6 +250,7 @@ const state = {
 
 async function bootstrap() {
   document.documentElement.lang = getLang() === "zh" ? "zh-CN" : "en";
+  bindCacheWarning();
 
   app.innerHTML = LoadingState(checkAuth());
 
@@ -258,6 +261,26 @@ async function bootstrap() {
     console.error(error);
     bindGlobalActions();
   }
+}
+
+function bindCacheWarning() {
+  window.addEventListener("family-investment-cache-stale", () => {
+    showCacheWarning();
+  });
+}
+
+function showCacheWarning() {
+  const message = getLang() === "zh"
+    ? "当前显示的是缓存数据，Google Sheet 暂时不可用，数据可能不是最新。"
+    : "Showing cached data because Google Sheet is temporarily unavailable. Data may not be current.";
+  let el = document.getElementById("cache-stale-warning");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "cache-stale-warning";
+    el.className = "cache-stale-warning";
+    document.body.appendChild(el);
+  }
+  el.textContent = message;
 }
 
 // ── Page Routing ──────────────────────────────────────────────────────────────
@@ -339,8 +362,18 @@ async function renderCurrentPage() {
     return;
   }
 
+  if (state.page === "admin-learning") {
+    renderAdminLearning();
+    return;
+  }
+
   if (state.page === "share") {
     renderSharePage();
+    return;
+  }
+
+  if (state.page === "learning") {
+    renderLearningCenter();
     return;
   }
 
@@ -625,6 +658,20 @@ function renderSharePage() {
     ${SharePage()}
   `, "share", checkAuth());
   bindShareActions();
+  bindGlobalActions();
+}
+
+function renderLearningCenter() {
+  app.innerHTML = AppShell(`
+    ${LearningCenterPage()}
+  `, "learning", checkAuth());
+  bindGlobalActions();
+}
+
+function renderAdminLearning() {
+  app.innerHTML = AppShell(`
+    ${AdminLearningPage()}
+  `, "admin-learning", checkAuth());
   bindGlobalActions();
 }
 
@@ -1029,7 +1076,7 @@ function bindRefreshNewsButton() {
         : `News sync complete: ${result.count} rows loaded`;
       statusEl.className = "news-refresh-status success";
 
-      const source = await loadDashboardSource();
+      const source = await loadDashboardSource({ force: true });
       const dashboard = buildDashboardModel(source);
       renderDashboard(dashboard);
     } catch (err) {
@@ -1059,7 +1106,7 @@ function bindRefreshMarketButton() {
         : `Market updated: ${result.updated} updated, ${result.errors} errors`;
       statusEl.className = "news-refresh-status success";
 
-      const source = await loadDashboardSource();
+      const source = await loadDashboardSource({ force: true });
       const dashboard = buildDashboardModel(source);
       renderDashboard(dashboard);
     } catch (err) {
@@ -1091,7 +1138,7 @@ function bindSyncMorningBriefButton() {
         : `Morning brief synced: ${result.inserted} inserted`;
       statusEl.className = "news-refresh-status success";
 
-      const source = await loadDashboardSource();
+      const source = await loadDashboardSource({ force: true });
       const dashboard = buildDashboardModel(source);
       renderDashboard(dashboard);
     } catch (err) {
@@ -1366,7 +1413,7 @@ function bindStockAnalysisInteractions() {
 
     try {
       const result = await refreshStockAnalysis(getAdminToken());
-      state.stockAnalysisSource = await loadStockAnalysisPageSource();
+      state.stockAnalysisSource = await loadStockAnalysisPageSource({ force: true });
       renderStockAnalysis();
       const nextStatusEl = document.getElementById("stock-refresh-status");
       if (nextStatusEl) {
@@ -1637,17 +1684,19 @@ function getPageFromUrl() {
   if (hashPage === "stock-lookup") return "stock-lookup";
   if (hashPage === "forum") return "forum";
   if (hashPage === "forum-admin") return "forum-admin";
+  if (hashPage === "admin-learning") return "admin-learning";
   if (hashPage === "settings") return "settings";
   if (hashPage === "market") return "market";
   if (hashPage === "news") return "news";
   if (hashPage === "alerts") return "alerts";
   if (hashPage === "morning-brief") return "morning-brief";
   if (hashPage === "share") return "share";
+  if (hashPage === "learning") return "learning";
   return "dashboard";
 }
 
 function isAdminRoute(page) {
-  return ["morning-brief", "holdings", "watchlist", "decisions", "settings", "forum-admin"].includes(page);
+  return ["morning-brief", "holdings", "watchlist", "decisions", "settings", "forum-admin", "admin-learning"].includes(page);
 }
 
 function escapeHtmlLocal(value) {
