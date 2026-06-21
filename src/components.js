@@ -2319,9 +2319,15 @@ function stockAnalysisRow(row, lang, detailId, active, extraClass = "") {
   const dailyClass = numberToneClass(daily);
   const overall = get(row, "综合评分");
   const overallClass = scoreToneClass(overall);
+  const valueScore = get(row, "价值评分");
+  const riskScore = get(row, "风险评分");
   const price = get(row, "当前价格") || "—";
+  const currency = get(row, "币种 / Currency");
   const volatility = get(row, "简化波动参考%") || get(row, "年化波动率%") || "—";
   const updated = formatStockUpdate(get(row, "更新时间"));
+  const dataAge = get(row, "数据新鲜度(天) / Data Age");
+  const paysDividend = get(row, "是否派息 / Pays Dividend");
+  const investable = get(row, "可投性 / Investable");
   const fundamentalsHtml = stockFundamentalsBlock(row, lang);
 
   return `
@@ -2332,12 +2338,16 @@ function stockAnalysisRow(row, lang, detailId, active, extraClass = "") {
           <div>
             <div class="stock-name-line">${escapeHtml(zhName)} <span>${escapeHtml(enName)}</span></div>
             <div class="stock-type-pill">${escapeHtml(type)}</div>
+            ${hasDisplayValue(investable) ? `<div class="stock-type-pill">${escapeHtml(investable)}</div>` : ""}
+            ${hasDisplayValue(paysDividend) ? `<div class="stock-type-pill">${lang === "zh" ? "派息：" : "Dividend: "}${escapeHtml(paysDividend)}</div>` : ""}
           </div>
         </div>
         <div class="stock-metrics">
-          <div><span>${lang === "zh" ? "价格" : "Price"}</span><strong>${escapeHtml(price)}</strong></div>
+          <div><span>${lang === "zh" ? "价格" : "Price"}</span><strong>${escapeHtml(price)}${hasDisplayValue(currency) ? ` <small class="stock-currency-note">${escapeHtml(currency)}</small>` : ""}</strong></div>
           <div><span>${lang === "zh" ? "日变动" : "Daily"}</span><strong class="${dailyClass}">${escapeHtml(daily || "—")}</strong></div>
           <div><span>${lang === "zh" ? "波动参考" : "Volatility Ref."}</span><strong>${escapeHtml(volatility)}</strong></div>
+          ${hasDisplayValue(valueScore) ? `<div><span>${lang === "zh" ? "价值评分" : "Value Score"}</span><strong>${escapeHtml(valueScore)}</strong></div>` : ""}
+          ${hasDisplayValue(riskScore) ? `<div><span>${lang === "zh" ? "风险评分" : "Risk Score"}</span><strong>${escapeHtml(riskScore)}</strong></div>` : ""}
           <div><span>${lang === "zh" ? "综合评分" : "Overall"}</span><strong class="stock-score ${overallClass}">${escapeHtml(overall || "—")}</strong></div>
         </div>
       </div>
@@ -2355,6 +2365,7 @@ function stockAnalysisRow(row, lang, detailId, active, extraClass = "") {
         <span>Beta: ${escapeHtml(pickStockValue(row, ["Beta", "贝塔系数"]) || "N/A")}</span>
         <span>${lang === "zh" ? "行业" : "Sector"}: ${escapeHtml(pickStockValue(row, ["行业", "Sector"]) || type || "—")}</span>
         <span>${lang === "zh" ? "更新时间" : "Updated"}: ${escapeHtml(updated || "—")}</span>
+        ${hasDisplayValue(dataAge) ? `<span>${lang === "zh" ? `数据已${escapeHtml(dataAge)}天未更新` : `Data age: ${escapeHtml(dataAge)}d`}</span>` : ""}
       </div>
       ${extraClass ? `<button class="stock-back-to-list" type="button" data-stock-back-target="${escapeHtml(detailId)}">${escapeHtml(lang === "zh" ? "返回股票列表" : "Back to stock list")}</button>` : ""}
     </article>
@@ -2491,6 +2502,7 @@ function stockFundamentalsBlock(row, lang) {
     [zh ? "市值" : "Market Cap", formatLargeNumber(get(row, "市值 Market Cap"))],
     [zh ? "P/E 市盈率" : "P/E", get(row, "P/E 市盈率")],
     [zh ? "Forward P/E 预期市盈率" : "Forward P/E", get(row, "Forward P/E 预期市盈率") || get(row, "Forward P/E")],
+    ["PEG", get(row, "PEG")],
     [zh ? "P/S 市销率" : "P/S", get(row, "P/S 市销率")],
     [zh ? "股息率" : "Dividend Yield", formatYieldValue(get(row, "股息率 Dividend Yield"))],
   ].filter(([, value]) => hasDisplayValue(value));
@@ -2507,6 +2519,7 @@ function stockFundamentalsBlock(row, lang) {
   const rangeItems = [
     [zh ? "52周高点" : "52W High", get(row, "52周高点")],
     [zh ? "52周低点" : "52W Low", get(row, "52周低点")],
+    [zh ? "52周位置%" : "52W Position", get(row, "52周位置% / 52W Position")],
     [zh ? "财务数据更新时间" : "Financial Updated", formatStockUpdate(get(row, "财务数据更新时间"))],
     [zh ? "基本面数据来源" : "Source", get(row, "基本面数据来源")],
   ].filter(([, value]) => hasDisplayValue(value));
