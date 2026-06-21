@@ -3488,7 +3488,7 @@ function analyzeStocks_(params) {
     existingRows_.forEach(function (row) {
       const tk = String(row[0] || '').trim().toUpperCase();
       if (!tk) return;
-      rowInfoByTicker_[tk] = { price: row[2], updatedAt: row[11] };
+      rowInfoByTicker_[tk] = { price: row[2], forwardPe: row[4], beta: row[5], updatedAt: row[11] };
       tickers.push(tk);
     });
   }
@@ -3503,12 +3503,16 @@ function analyzeStocks_(params) {
   //   第 2 档：未上市占位票（不可投-未上市，如 OPENAI/ANTHROPIC/CURSOR），
   //           永远查不出真实数据，排到最后，避免占满名额。
   // 已有正常且较新数据的行不会被选中，也不会被这次请求改写。
+  function isBlankOrNA_(v) {
+    const s = String(v || '').trim();
+    return !s || s === 'N/A' || s === '待更新';
+  }
   function priorityTier_(tk) {
     if (isPrivateOrPlaceholderTicker_(tk)) return 2;
     const info = rowInfoByTicker_[tk];
     if (!info) return 0;
-    const price = String(info.price || '').trim();
-    if (!price || price === 'N/A' || price === '待更新') return 0;
+    // 价格、Forward P/E、Beta 任一缺失/N/A，都算"数据不完整"，优先刷新。
+    if (isBlankOrNA_(info.price) || isBlankOrNA_(info.forwardPe) || isBlankOrNA_(info.beta)) return 0;
     return 1;
   }
   function lastUpdateMs_(tk) {
