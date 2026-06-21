@@ -2257,10 +2257,10 @@ function stockAnalysisTable(items, lang) {
   return `
     <div class="stock-research-layout">
       <div class="stock-research-list" role="list" aria-label="${escapeHtml(t("stock_select_label"))}">
-        ${items.map((row, index) => stockAnalysisListEntry(row, lang, stockDetailId(row, index), false)).join("")}
+        ${items.map((row, index) => stockAnalysisListEntry(row, lang, stockDetailId(row, index), index === 0)).join("")}
       </div>
       <div class="stock-research-detail">
-        ${items.map((row, index) => stockAnalysisRow(row, lang, stockDetailId(row, index), false)).join("")}
+        ${items.map((row, index) => stockAnalysisRow(row, lang, stockDetailId(row, index), index === 0)).join("")}
       </div>
     </div>
   `;

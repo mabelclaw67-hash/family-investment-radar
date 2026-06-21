@@ -1386,6 +1386,16 @@ function bindStockDetailSelection() {
   const panels = Array.from(document.querySelectorAll("[data-stock-detail-panel]"));
   if (!listItems.length || !panels.length) return;
 
+  if (!panels.some((panel) => panel.classList.contains("active") && !panel.hidden)) {
+    const firstTarget = listItems[0].getAttribute("data-stock-detail-target");
+    listItems[0].classList.add("active");
+    panels.forEach((panel) => {
+      const active = panel.getAttribute("data-stock-detail-panel") === firstTarget;
+      panel.classList.toggle("active", active);
+      panel.hidden = !active;
+    });
+  }
+
   listItems.forEach((item) => {
     item.addEventListener("click", () => {
       const target = item.getAttribute("data-stock-detail-target");
