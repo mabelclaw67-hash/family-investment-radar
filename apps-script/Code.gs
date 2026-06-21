@@ -4429,28 +4429,32 @@ function saveStockAnalysisToSheet_(spreadsheet, results) {
     '财务数据更新时间',
     '财报摘要',
     'AI财务简评',
-    '基本面数据来源'
+    '基本面数据来源',
+    'Official Website',
+    'Investor Relations',
+    'Financial Reports'
   ];
 
   const infoMap = getStockAnalysisInfoMap_();
   const fixedTickers = Object.keys(infoMap);
 
-  // Preserve existing fundamentals T:AJ by ticker before rewriting A:S.
+  // Preserve existing fundamentals and links after S by ticker before rewriting A:S.
   const lastRowBefore = sheet.getLastRow();
   const existingFundamentalsByTicker = {};
   if (lastRowBefore > 1) {
-    const existingValues = sheet.getRange(2, 1, lastRowBefore - 1, 36).getValues();
+    const existingWidth = Math.max(headers.length, sheet.getLastColumn());
+    const existingValues = sheet.getRange(2, 1, lastRowBefore - 1, existingWidth).getValues();
     existingValues.forEach((row) => {
       const ticker = String(row[0] || '').trim();
       if (ticker) {
-        existingFundamentalsByTicker[ticker] = row.slice(19, 36);
+        existingFundamentalsByTicker[ticker] = row.slice(19, headers.length);
       }
     });
   }
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
 
-  // Clear visible stock rows A:AJ, then rebuild from the single source stock pool below.
+  // Clear visible stock rows, then rebuild from the single source stock pool below.
   if (sheet.getLastRow() > 1) {
     sheet.getRange(2, 1, sheet.getLastRow() - 1, headers.length).clearContent();
   }
@@ -4487,8 +4491,13 @@ function saveStockAnalysisToSheet_(spreadsheet, results) {
       info.theme
     ];
 
-    const preservedFundamentals = existingFundamentalsByTicker[ticker] || new Array(17).fill('');
-    return baseRow.concat(preservedFundamentals);
+    const preservedFundamentals = existingFundamentalsByTicker[ticker] || new Array(headers.length - baseRow.length).fill('');
+    const row = baseRow.concat(preservedFundamentals);
+    const links = getOfficialStockLinks_()[ticker] || {};
+    if (links.officialWebsite && !row[36]) row[36] = links.officialWebsite;
+    if (links.investorRelations && !row[37]) row[37] = links.investorRelations;
+    if (links.financialReports && !row[38]) row[38] = links.financialReports;
+    return row;
   });
 
   if (rows.length > 0) {
@@ -5095,6 +5104,81 @@ function getStockAnalysisInfoMap_() {
     'AMAT': { zh:'应用材料', en:'Applied Materials', type:'半导体设备', industry:'科技/AI', desc:'沉积/刻蚀设备，跟晶圆厂整体扩产，有股息。', focus:'晶圆厂资本开支、订单、股息。', theme:'AI / 半导体设备' },
     'VST': { zh:'Vistra', en:'Vistra', type:'独立发电', industry:'电力', desc:'独立发电+核电，给数据中心供电的战略标的，随电价波动。', focus:'供电协议、电价、核电资产。', theme:'AI / 电力 / 独立发电' },
     'GEV': { zh:'GE Vernova', en:'GE Vernova', type:'发电设备/电网', industry:'电力', desc:'发电设备与电网龙头，AI扩张的电力基建瓶颈受益方。', focus:'订单积压、电网投资、估值。', theme:'AI / 电力 / 电网设备' }
+  };
+}
+
+function getOfficialStockLinks_() {
+  return {
+    'MRVL': {
+      officialWebsite: 'https://www.marvell.com/',
+      investorRelations: 'https://investor.marvell.com/',
+      financialReports: 'https://investor.marvell.com/financials/sec-filings/default.aspx'
+    },
+    'COHR': {
+      officialWebsite: 'https://www.coherent.com/',
+      investorRelations: 'https://investor.coherent.com/',
+      financialReports: 'https://investor.coherent.com/financials/sec-filings/default.aspx'
+    },
+    'EQIX': {
+      officialWebsite: 'https://www.equinix.com/',
+      investorRelations: 'https://investor.equinix.com/',
+      financialReports: 'https://investor.equinix.com/financials/sec-filings/default.aspx'
+    },
+    'DLR': {
+      officialWebsite: 'https://www.digitalrealty.com/',
+      investorRelations: 'https://investor.digitalrealty.com/',
+      financialReports: 'https://investor.digitalrealty.com/financials/sec-filings/default.aspx'
+    },
+    'NOW': {
+      officialWebsite: 'https://www.servicenow.com/',
+      investorRelations: 'https://investors.servicenow.com/',
+      financialReports: 'https://investors.servicenow.com/financials/sec-filings/default.aspx'
+    },
+    'SNOW': {
+      officialWebsite: 'https://www.snowflake.com/',
+      investorRelations: 'https://investors.snowflake.com/',
+      financialReports: 'https://investors.snowflake.com/financials/sec-filings/default.aspx'
+    },
+    'DDOG': {
+      officialWebsite: 'https://www.datadoghq.com/',
+      investorRelations: 'https://investors.datadoghq.com/',
+      financialReports: 'https://investors.datadoghq.com/financials/sec-filings/default.aspx'
+    },
+    'AMAT': {
+      officialWebsite: 'https://www.appliedmaterials.com/',
+      investorRelations: 'https://ir.appliedmaterials.com/',
+      financialReports: 'https://ir.appliedmaterials.com/financial-information/sec-filings'
+    },
+    'VST': {
+      officialWebsite: 'https://www.vistracorp.com/',
+      investorRelations: 'https://investor.vistracorp.com/',
+      financialReports: 'https://investor.vistracorp.com/financials/sec-filings/default.aspx'
+    },
+    'GEV': {
+      officialWebsite: 'https://www.gevernova.com/',
+      investorRelations: 'https://www.gevernova.com/investors',
+      financialReports: 'https://www.gevernova.com/investors/financials'
+    },
+    'SMH': {
+      officialWebsite: 'https://www.vaneck.com/us/en/investments/semiconductor-etf-smh/',
+      investorRelations: 'https://www.vaneck.com/us/en/investments/semiconductor-etf-smh/',
+      financialReports: 'https://www.vaneck.com/us/en/investments/semiconductor-etf-smh/'
+    },
+    'QQQ': {
+      officialWebsite: 'https://www.invesco.com/qqq-etf/en/home.html',
+      investorRelations: 'https://www.invesco.com/qqq-etf/en/home.html',
+      financialReports: 'https://www.invesco.com/qqq-etf/en/home.html'
+    },
+    'SPCX': {
+      officialWebsite: 'https://www.spacex.com/',
+      investorRelations: 'https://www.spacex.com/',
+      financialReports: 'https://www.spacex.com/updates/'
+    },
+    'SPXC': {
+      officialWebsite: 'https://www.spacex.com/',
+      investorRelations: 'https://www.spacex.com/',
+      financialReports: 'https://www.spacex.com/updates/'
+    }
   };
 }
 
