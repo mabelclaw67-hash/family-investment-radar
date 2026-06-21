@@ -3505,7 +3505,8 @@ function analyzeStocks_(params) {
   // 已有正常且较新数据的行不会被选中，也不会被这次请求改写。
   function isBlankOrNA_(v) {
     const s = String(v || '').trim();
-    return !s || s === 'N/A' || s === '待更新';
+    if (!s || s === 'N/A' || s === '待更新') return true;
+    return s.indexOf('#') === 0; // 公式报错（#ERROR!/#N/A/#REF!/#VALUE! 等）也算数据不完整
   }
   function priorityTier_(tk) {
     if (isPrivateOrPlaceholderTicker_(tk)) return 2;
