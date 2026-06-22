@@ -161,14 +161,19 @@ function enrichStockAnalysis_(ss) {
   for (var r=0;r<numRows;r++){
     var R=r+2; var t=String(tks[r][0]||'').trim(); var m=RADAR_LAYER_MAP[t];
     var link=links[t]||{};
+    var divRaw = div ? sh.getRange(R,C_DIV).getValue() : '';
+    var divNum = Number(String(divRaw).replace('%','').trim());
+    if (String(divRaw).indexOf('%') !== -1) divNum = divNum / 100;
     lay.push([existingLay[r][0] || (m?m[0]:'')]);
     drv.push([existingDrv[r][0] || (m?m[1]:'')]);
     inv.push([existingInv[r][0] || (m?m[2]:'')]);
     peg.push([existingPeg[r][0] || (fpe&&grow?'=IFERROR(IF(OR('+fpe+R+'="",'+fpe+R+'="N/A",'+grow+R+'="",'+grow+R+'="N/A",'+grow+R+'<=0),"",'+fpe+R+'/('+grow+R+'*100)),"")':'')]);
-    dvy.push([existingDivy[r][0] || (div?'=IFERROR(IF(OR('+div+R+'="",'+div+R+'="N/A"),"",IF('+div+R+'>0,"是","否")),"")':'')]);
+    dvy.push([isFinite(divNum) && divNum > 0 ? 'Yes' : 'No']);
     p52.push([existing52[r][0] || ((price&&hi&&lo)?'=IFERROR(IF(OR('+price+R+'="",'+hi+R+'="",'+lo+R+'="",'+hi+R+'='+lo+R+'),"",('+price+R+'-'+lo+R+')/('+hi+R+'-'+lo+R+')),"")':'')]);
-    age.push([existingAge[r][0] || (fupd?'=IFERROR(IF('+fupd+R+'="","",TODAY()-DATEVALUE(LEFT('+fupd+R+',10))),"")':'')]);
-    ccy.push([existingCcy[r][0] || '=IF(RIGHT('+tk+R+',3)=".TO","CAD 加元","USD 美元")']);
+    var ageRaw = fupd ? sh.getRange(R,C_FUPD).getValue() : '';
+    var existingAgeValue = String(existingAge[r][0] || '').trim();
+    age.push([existingAgeValue && existingAgeValue.charAt(0) !== '#' ? existingAge[r][0] : radarAgeDays_(ageRaw)]);
+    ccy.push([String(t).toUpperCase().endsWith('.TO') ? 'CAD' : 'USD']);
     web.push([existingWeb[r][0] || link.officialWebsite || '']);
     ir.push([existingIr[r][0] || link.investorRelations || '']);
     fin.push([existingFin[r][0] || link.financialReports || '']);
@@ -177,10 +182,10 @@ function enrichStockAnalysis_(ss) {
   sh.getRange(2,P_DRV,numRows,1).setValues(drv);
   sh.getRange(2,P_INV,numRows,1).setValues(inv);
   if (fpe&&grow) sh.getRange(2,P_PEG,numRows,1).setFormulas(peg);
-  if (div)       sh.getRange(2,P_DIVY,numRows,1).setFormulas(dvy);
+  if (div)       sh.getRange(2,P_DIVY,numRows,1).setValues(dvy);
   if (price&&hi&&lo) sh.getRange(2,P_52,numRows,1).setFormulas(p52);
-  if (fupd)      sh.getRange(2,P_AGE,numRows,1).setFormulas(age);
-  sh.getRange(2,P_CCY,numRows,1).setFormulas(ccy);
+  if (fupd)      sh.getRange(2,P_AGE,numRows,1).setValues(age);
+  sh.getRange(2,P_CCY,numRows,1).setValues(ccy);
   sh.getRange(2,P_WEB,numRows,1).setValues(web);
   sh.getRange(2,P_IR,numRows,1).setValues(ir);
   sh.getRange(2,P_FIN,numRows,1).setValues(fin);
@@ -188,6 +193,16 @@ function enrichStockAnalysis_(ss) {
   sh.getRange(2,P_52,numRows,1).setNumberFormat('0.0%');
   sh.getRange(2,P_AGE,numRows,1).setNumberFormat('0');
   SpreadsheetApp.flush();
+}
+
+function radarAgeDays_(value) {
+  if (value === null || value === undefined || value === '') return '';
+  var date = value instanceof Date ? value : new Date(String(value).slice(0, 10));
+  if (isNaN(date.getTime())) return '';
+  var today = new Date();
+  var start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  var then = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  return Math.max(0, Math.floor((start.getTime() - then.getTime()) / 86400000));
 }
 
 function archiveOldDecisionLogAndAddGuide_(ss) {

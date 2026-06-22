@@ -2467,12 +2467,12 @@ function stockAnalysisRow(row, lang, detailId, active, extraClass = "") {
   const valueScore = get(row, "价值评分");
   const riskScore = get(row, "风险评分");
   const price = formatStockPrice(get(row, "当前价格"));
-  const currency = get(row, "币种 / Currency");
-  const volatility = get(row, "简化波动参考%") || get(row, "年化波动率%") || "—";
+  const currency = cleanDisplayValue(get(row, "币种 / Currency"));
+  const volatility = cleanDisplayValue(get(row, "简化波动参考%") || get(row, "年化波动率%")) || "—";
   const updated = formatStockUpdate(get(row, "更新时间"));
   const dataAge = get(row, "数据新鲜度(天) / Data Age");
-  const paysDividend = get(row, "是否派息 / Pays Dividend");
-  const investable = get(row, "可投性 / Investable");
+  const paysDividend = cleanDisplayValue(get(row, "是否派息 / Pays Dividend"));
+  const investable = cleanDisplayValue(get(row, "可投性 / Investable"));
   const fundamentalsHtml = stockFundamentalsBlock(row, lang);
 
   return `
@@ -2645,10 +2645,10 @@ function stockFundamentalsBlock(row, lang) {
 
   const valuationItems = [
     [zh ? "市值" : "Market Cap", formatLargeNumber(get(row, "市值 Market Cap"))],
-    [zh ? "P/E 市盈率" : "P/E", get(row, "P/E 市盈率")],
-    [zh ? "Forward P/E 预期市盈率" : "Forward P/E", get(row, "Forward P/E 预期市盈率") || get(row, "Forward P/E")],
-    ["PEG", get(row, "PEG")],
-    [zh ? "P/S 市销率" : "P/S", get(row, "P/S 市销率")],
+    [zh ? "P/E 市盈率" : "P/E", cleanDisplayValue(get(row, "P/E 市盈率"))],
+    [zh ? "Forward P/E 预期市盈率" : "Forward P/E", cleanDisplayValue(get(row, "Forward P/E 预期市盈率") || get(row, "Forward P/E"))],
+    ["PEG", cleanDisplayValue(get(row, "PEG"))],
+    [zh ? "P/S 市销率" : "P/S", cleanDisplayValue(get(row, "P/S 市销率"))],
     [zh ? "股息率" : "Dividend Yield", formatYieldValue(get(row, "股息率 Dividend Yield"))],
   ].filter(([, value]) => hasDisplayValue(value));
 
@@ -2658,13 +2658,13 @@ function stockFundamentalsBlock(row, lang) {
     [zh ? "ROE 净资产收益率" : "ROE", formatYieldValue(get(row, "ROE 净资产收益率"))],
     [zh ? "过去12月营收" : "Revenue TTM", formatLargeNumber(get(row, "Revenue TTM 过去12月营收"))],
     [zh ? "营收增长" : "Revenue Growth", formatYieldValue(get(row, "Revenue Growth 营收增长"))],
-    [zh ? "EPS 每股收益" : "EPS", get(row, "EPS 每股收益")],
+    [zh ? "EPS 每股收益" : "EPS", cleanDisplayValue(get(row, "EPS 每股收益"))],
   ].filter(([, value]) => hasDisplayValue(value));
 
   const rangeItems = [
-    [zh ? "52周高点" : "52W High", get(row, "52周高点")],
-    [zh ? "52周低点" : "52W Low", get(row, "52周低点")],
-    [zh ? "52周位置%" : "52W Position", get(row, "52周位置% / 52W Position")],
+    [zh ? "52周高点" : "52W High", cleanDisplayValue(get(row, "52周高点"))],
+    [zh ? "52周低点" : "52W Low", cleanDisplayValue(get(row, "52周低点"))],
+    [zh ? "52周位置%" : "52W Position", cleanDisplayValue(get(row, "52周位置% / 52W Position"))],
     [zh ? "财务数据更新时间" : "Financial Updated", formatStockUpdate(get(row, "财务数据更新时间"))],
     [zh ? "基本面数据来源" : "Source", get(row, "基本面数据来源")],
   ].filter(([, value]) => hasDisplayValue(value));
@@ -2720,7 +2720,12 @@ function pickStockValue(row, keys) {
 function hasDisplayValue(value) {
   const text = String(value ?? "").trim();
   if (!text) return false;
+  if (text.charAt(0) === "#") return false;
   return !["na", "n/a", "null", "undefined", "—", "-"].includes(text.toLowerCase());
+}
+
+function cleanDisplayValue(value) {
+  return hasDisplayValue(value) ? String(value).trim() : "—";
 }
 
 function formatYieldValue(value) {
@@ -2735,14 +2740,14 @@ function formatYieldValue(value) {
 
 function formatStockPrice(value) {
   const n = parseDisplayNumber(value);
-  if (!Number.isFinite(n)) return "N/A";
+  if (!Number.isFinite(n)) return "—";
   return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function formatLargeNumber(value, prefix = "") {
-  if (!hasDisplayValue(value)) return "";
+  if (!hasDisplayValue(value)) return "—";
   const n = parseDisplayNumber(value);
-  if (!Number.isFinite(n)) return String(value);
+  if (!Number.isFinite(n)) return "—";
   const label = prefix ? `${prefix} ` : "";
   const abs = Math.abs(n);
   if (abs >= 1_000_000_000_000) return `${label}${(n / 1_000_000_000_000).toFixed(2)}T`;

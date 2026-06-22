@@ -4043,6 +4043,7 @@ function updateStockFundamentalsForStockAnalysis_(params) {
 
     // AH-AJ 长文本换行
     sheet.getRange(2, 34, lastRow - 1, 3).setWrap(true);
+    repairStockAnalysisDerivedColumns_(sheet);
   }
 
   SpreadsheetApp.flush();
@@ -4610,6 +4611,7 @@ function saveStockAnalysisToSheet_(spreadsheet, results) {
     sheet.getRange(2, 7, rows.length, 1).setNumberFormat('0.00%');
     sheet.getRange(2, 17, rows.length, 2).setWrap(true);
     sheet.getRange(2, 34, rows.length, 3).setWrap(true);
+    repairStockAnalysisDerivedColumns_(sheet);
   }
 
   sheet.getRange(1, 1, 1, headers.length)
@@ -4617,6 +4619,81 @@ function saveStockAnalysisToSheet_(spreadsheet, results) {
     .setHorizontalAlignment('center');
 
   SpreadsheetApp.flush();
+}
+
+function repairStockAnalysisDerivedColumns_(sheet) {
+  if (!sheet) return;
+  const lastRow = sheet.getLastRow();
+  const lastCol = sheet.getLastColumn();
+  if (lastRow < 2 || lastCol < 1) return;
+
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function(header) {
+    return String(header || '').trim();
+  });
+  const tickerCol = findHeaderColumn_(headers, ['Ticker']);
+  const dividendYieldCol = findHeaderColumn_(headers, ['股息率 Dividend Yield', 'Dividend Yield']);
+  const paysDividendCol = findHeaderColumn_(headers, ['是否派息 / Pays Dividend', 'Pays Dividend']);
+  const fundamentalsUpdatedCol = findHeaderColumn_(headers, ['财务数据更新时间', 'Fundamentals Updated']);
+  const dataAgeCol = findHeaderColumn_(headers, ['数据新鲜度(天) / Data Age', 'Data Age']);
+  const currencyCol = findHeaderColumn_(headers, ['币种 / Currency', 'Currency']);
+  const numRows = lastRow - 1;
+
+  if (paysDividendCol && dividendYieldCol) {
+    const dividendValues = sheet.getRange(2, dividendYieldCol, numRows, 1).getValues();
+    const paysValues = dividendValues.map(function(row) {
+      return [isPositiveNumber_(row[0]) ? 'Yes' : 'No'];
+    });
+    sheet.getRange(2, paysDividendCol, numRows, 1).setValues(paysValues);
+  }
+
+  if (currencyCol && tickerCol) {
+    const tickers = sheet.getRange(2, tickerCol, numRows, 1).getValues();
+    const currencyValues = tickers.map(function(row) {
+      const ticker = String(row[0] || '').trim().toUpperCase();
+      return [ticker.endsWith('.TO') ? 'CAD' : 'USD'];
+    });
+    sheet.getRange(2, currencyCol, numRows, 1).setValues(currencyValues);
+  }
+
+  if (dataAgeCol && fundamentalsUpdatedCol) {
+    const updatedValues = sheet.getRange(2, fundamentalsUpdatedCol, numRows, 1).getValues();
+    const ageValues = updatedValues.map(function(row) {
+      return [getDataAgeDays_(row[0])];
+    });
+    sheet.getRange(2, dataAgeCol, numRows, 1).setValues(ageValues);
+  }
+}
+
+function findHeaderColumn_(headers, names) {
+  for (let i = 0; i < headers.length; i++) {
+    for (let j = 0; j < names.length; j++) {
+      if (headers[i] === names[j]) return i + 1;
+    }
+  }
+  return 0;
+}
+
+function isPositiveNumber_(value) {
+  if (value === null || value === undefined || value === '') return false;
+  let text = String(value).trim();
+  if (!text || text.charAt(0) === '#') return false;
+  let divisor = 1;
+  if (text.indexOf('%') !== -1) {
+    divisor = 100;
+    text = text.replace('%', '');
+  }
+  const num = Number(text);
+  return !isNaN(num) && num / divisor > 0;
+}
+
+function getDataAgeDays_(value) {
+  if (value === null || value === undefined || value === '') return '';
+  const date = value instanceof Date ? value : new Date(String(value).slice(0, 10));
+  if (isNaN(date.getTime())) return '';
+  const today = new Date();
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const then = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  return Math.max(0, Math.floor((start.getTime() - then.getTime()) / 86400000));
 }
 
 
@@ -5388,6 +5465,7 @@ function updateStockFundamentalsForStockAnalysis_(params) {
 
     // AH-AJ 长文本换行
     sheet.getRange(2, 34, lastRow - 1, 3).setWrap(true);
+    repairStockAnalysisDerivedColumns_(sheet);
   }
 
   SpreadsheetApp.flush();
