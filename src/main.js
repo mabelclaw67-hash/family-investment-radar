@@ -1399,6 +1399,22 @@ function renderStockAnalysis() {
   bindGlobalActions();
 }
 
+window.addEventListener("stock-fundamentals-updated", async (event) => {
+  if (!window.location.hash.startsWith("#/stock-analysis")) return;
+
+  try {
+    state.stockAnalysisSource = await loadStockAnalysisPageSource({ force: true });
+    renderStockAnalysis();
+    const statusEl = document.getElementById("stock-fundamentals-status");
+    if (statusEl && event.detail?.message) {
+      statusEl.textContent = event.detail.message;
+      statusEl.className = "news-refresh-status success";
+    }
+  } catch (error) {
+    console.error(error);
+  }
+});
+
 function bindStockAnalysisInteractions() {
   bindStockDetailSelection();
 

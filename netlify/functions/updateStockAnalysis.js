@@ -37,7 +37,18 @@ export async function handler(event) {
       url.searchParams.set("max", String(Math.max(1, Math.min(Number(body.max || 5), 8))));
     }
     if (action === "update_stock_fundamentals") {
-      url.searchParams.set("max", String(Math.max(1, Math.min(Number(body.max || 5), 10))));
+      const symbols = normalizeSymbols(body.symbols);
+      const filteredMax = symbols.length ? Math.min(symbols.length, 25) : 10;
+      url.searchParams.set("max", String(Math.max(1, Math.min(Number(body.max || filteredMax), filteredMax))));
+      if (symbols.length) {
+        url.searchParams.set("symbols", symbols.join(","));
+      }
+      if (body.theme) {
+        url.searchParams.set("theme", String(body.theme));
+      }
+      if (body.force) {
+        url.searchParams.set("force", String(body.force));
+      }
     }
 
     const response = await fetch(url, { method: "GET" });
@@ -66,19 +77,18 @@ export async function handler(event) {
 
     const data = payload.data;
     const updatedRows = Number(payload.updatedRows || payload.count || data?.updatedRows || data?.count || (Array.isArray(data) ? data.length : 0));
+    const skippedRows = Number(payload.skippedRows || data?.skipped || data?.skippedRows || 0);
+    const apiLimited = Boolean(payload.apiLimited || data?.apiLimited || hasApiLimitError(data?.errors));
     const updatedAt = payload.updatedAt || data?.updatedAt || new Date().toISOString();
 
-    if (!updatedRows) {
-      return jsonResponse(502, {
-        ok: false,
-        error: "更新失败：股票分析更新接口尚未真正写入数据表。",
-      });
-    }
+    clearReadSheetCache();
 
     return jsonResponse(200, {
       ok: true,
       action,
       updatedRows,
+      skippedRows,
+      apiLimited,
       updatedAt,
     });
   } catch (error) {
@@ -98,4 +108,30 @@ function jsonResponse(statusCode, body) {
     },
     body: JSON.stringify(body),
   };
+}
+
+function normalizeSymbols(value) {
+  return String(value || "")
+    .split(",")
+    .map((symbol) => symbol.trim().toUpperCase())
+    .filter(Boolean)
+    .filter((symbol, index, list) => list.indexOf(symbol) === index);
+}
+
+function hasApiLimitError(errors) {
+  if (!Array.isArray(errors)) return false;
+  return errors.some((item) => {
+    const text = String(item?.error || item || "").toLowerCase();
+    return text.includes("limit") ||
+      text.includes("quota") ||
+      text.includes("rate") ||
+      text.includes("thank you for using alpha vantage");
+  });
+}
+
+function clearReadSheetCache() {
+  const cache = globalThis.__familyInvestmentSheetCache;
+  if (cache && typeof cache.clear === "function") {
+    cache.clear();
+  }
 }

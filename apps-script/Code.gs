@@ -3938,11 +3938,12 @@ function updateStockFundamentalsForStockAnalysis_(params) {
     };
   }
 
-  const defaultMax = providerMode === 'finnhub' ? 60 : 5;
-  const maxParam = params && params.max ? Number(params.max) : defaultMax;
-  const maxLimit = providerMode === 'finnhub' ? 60 : 5;
-  const maxToUpdate = Math.max(1, Math.min(maxParam, maxLimit));
   const requestedTickers = parseRequestedTickers_(params && params.symbols);
+  const requestedCount = requestedTickers ? Object.keys(requestedTickers).length : 0;
+  const defaultMax = requestedCount ? requestedCount : (providerMode === 'finnhub' ? 15 : 5);
+  const maxParam = params && params.max ? Number(params.max) : defaultMax;
+  const maxLimit = requestedCount ? Math.min(requestedCount, 25) : (providerMode === 'finnhub' ? 15 : 5);
+  const maxToUpdate = Math.max(1, Math.min(maxParam, maxLimit));
 
   const values = sheet.getRange(2, 1, lastRow - 1, 36).getValues();
   const errors = [];
@@ -3963,7 +3964,6 @@ function updateStockFundamentalsForStockAnalysis_(params) {
     }
 
     if (requestedTickers && !requestedTickers[ticker.toUpperCase()]) {
-      skipped++;
       continue;
     }
 
@@ -4052,8 +4052,11 @@ function updateStockFundamentalsForStockAnalysis_(params) {
     updated,
     skipped,
     errors,
+    apiLimited: hasStockApiLimitError_(errors),
     provider: providerMode,
-    message: 'Fundamentals update completed. Finnhub defaults to max 60; Alpha Vantage fallback stays at max 5.',
+    requestedTickers: requestedCount,
+    maxToUpdate,
+    message: 'Fundamentals update completed. Filtered requests can update up to 25 tickers; unfiltered manual runs stay capped for API safety.',
   };
 }
 
@@ -4076,6 +4079,18 @@ function parseRequestedTickers_(symbols) {
   });
 
   return Object.keys(result).length ? result : null;
+}
+
+function hasStockApiLimitError_(errors) {
+  if (!Array.isArray(errors)) return false;
+
+  return errors.some((item) => {
+    const text = String(item && item.error ? item.error : item).toLowerCase();
+    return text.indexOf('limit') !== -1 ||
+      text.indexOf('quota') !== -1 ||
+      text.indexOf('rate') !== -1 ||
+      text.indexOf('thank you for using alpha vantage') !== -1;
+  });
 }
 
 
@@ -5360,11 +5375,12 @@ function updateStockFundamentalsForStockAnalysis_(params) {
     };
   }
 
-  const defaultMax = providerMode === 'finnhub' ? 60 : 5;
-  const maxParam = params && params.max ? Number(params.max) : defaultMax;
-  const maxLimit = providerMode === 'finnhub' ? 60 : 5;
-  const maxToUpdate = Math.max(1, Math.min(maxParam, maxLimit));
   const requestedTickers = parseRequestedTickers_(params && params.symbols);
+  const requestedCount = requestedTickers ? Object.keys(requestedTickers).length : 0;
+  const defaultMax = requestedCount ? requestedCount : (providerMode === 'finnhub' ? 15 : 5);
+  const maxParam = params && params.max ? Number(params.max) : defaultMax;
+  const maxLimit = requestedCount ? Math.min(requestedCount, 25) : (providerMode === 'finnhub' ? 15 : 5);
+  const maxToUpdate = Math.max(1, Math.min(maxParam, maxLimit));
 
   const values = sheet.getRange(2, 1, lastRow - 1, 36).getValues();
   const errors = [];
@@ -5385,7 +5401,6 @@ function updateStockFundamentalsForStockAnalysis_(params) {
     }
 
     if (requestedTickers && !requestedTickers[ticker.toUpperCase()]) {
-      skipped++;
       continue;
     }
 
@@ -5474,8 +5489,11 @@ function updateStockFundamentalsForStockAnalysis_(params) {
     updated,
     skipped,
     errors,
+    apiLimited: hasStockApiLimitError_(errors),
     provider: providerMode,
-    message: 'Fundamentals update completed. Finnhub defaults to max 60; Alpha Vantage fallback stays at max 5.',
+    requestedTickers: requestedCount,
+    maxToUpdate,
+    message: 'Fundamentals update completed. Filtered requests can update up to 25 tickers; unfiltered manual runs stay capped for API safety.',
   };
 }
 

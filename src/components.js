@@ -1701,6 +1701,9 @@ export function StockAnalysisPage(rows = [], isAdmin = false) {
   const items = selectedTheme === "all"
     ? allItems
     : allItems.filter((row) => matchesStockTheme(row, selectedTheme));
+  const visibleTickers = items
+    .map((row) => String(get(row, "Ticker") || "").trim())
+    .filter(Boolean);
   const title = t("stock_analysis_page_title");
   const subtitle = t("stock_analysis_page_subtitle");
   const refreshed = latestStockUpdate(allItems);
@@ -1717,7 +1720,14 @@ export function StockAnalysisPage(rows = [], isAdmin = false) {
           <button id="btn-refresh-stock-analysis" class="refresh-news-btn" type="button">
             ${t("btn_refresh_stock_analysis")}
           </button>
-          <button id="btn-update-stock-fundamentals" class="refresh-news-btn" type="button">
+          <button
+            id="btn-update-stock-fundamentals"
+            class="refresh-news-btn"
+            type="button"
+            data-stock-theme="${escapeHtml(selectedTheme)}"
+            data-stock-filter-label="${escapeHtml(activeFilter.label)}"
+            data-stock-symbols="${escapeHtml(visibleTickers.join(","))}"
+          >
             ${t("btn_update_fundamentals")}
           </button>
           <span id="stock-refresh-status" class="news-refresh-status"></span>
@@ -2914,14 +2924,27 @@ function formatTextValue(value) {
 
 
 // ─── Stock Fundamentals Update Button ────────────────────────────────────────
-// Minimal front-end handler: updates only 5 tickers per click to avoid
-// Alpha Vantage free-tier throttling and Apps Script timeout risk.
+// Minimal front-end handler: uses the current filter scope, with a safe cap
+// for the unfiltered page to avoid API throttling and Apps Script timeout risk.
 document.addEventListener("click", async (event) => {
   const btn = event.target.closest("#btn-update-stock-fundamentals");
   if (!btn) return;
 
   const status = document.getElementById("stock-fundamentals-status");
   const lang = getLang();
+  const theme = btn.dataset.stockTheme || "all";
+  const symbols = String(btn.dataset.stockSymbols || "")
+    .split(",")
+    .map((symbol) => symbol.trim())
+    .filter(Boolean);
+  const requestBody = {
+    action: "update_stock_fundamentals",
+    max: theme === "all" ? 10 : Math.min(symbols.length || 10, 25),
+  };
+  if (theme !== "all" && symbols.length) {
+    requestBody.theme = theme;
+    requestBody.symbols = symbols.join(",");
+  }
 
   btn.disabled = true;
   if (status) {
@@ -2936,7 +2959,7 @@ document.addEventListener("click", async (event) => {
         "Content-Type": "application/json",
       },
       cache: "no-store",
-      body: JSON.stringify({ action: "update_stock_fundamentals", max: 5 }),
+      body: JSON.stringify(requestBody),
     });
 
     let data;
@@ -2955,8 +2978,14 @@ document.addEventListener("click", async (event) => {
     }
 
     if (status) {
-      status.textContent = (lang === "zh" ? "更新完成：" : "Updated: ") +
-        `${data.updatedRows || 0} · ${data.updatedAt || ""}`;
+      const apiLimitText = data.apiLimited
+        ? (lang === "zh" ? "有" : "yes")
+        : (lang === "zh" ? "无" : "no");
+      const message = lang === "zh"
+        ? `更新完成：本次更新 ${data.updatedRows || 0} 只，跳过 ${data.skippedRows || 0} 只，API limit：${apiLimitText}`
+        : `Updated: ${data.updatedRows || 0}; skipped: ${data.skippedRows || 0}; API limit: ${apiLimitText}`;
+      status.textContent = message;
+      window.dispatchEvent(new CustomEvent("stock-fundamentals-updated", { detail: { message } }));
     }
   } catch (error) {
     console.error(error);
