@@ -100,6 +100,39 @@ export async function refreshMarketData() {
   return await fetchJson(url);
 }
 
+// Classifies a raw 类型/Type cell value into 'opening', 'closing', or null.
+// Handles: "Opening Brief", "opening brief", "Opening", "open",
+//          "US Market Opening Brief", "Closing Brief", "closing", "close", etc.
+// Intentionally returns null for "Morning Brief" and any other types.
+function classifyMarketBriefType(val) {
+  const t = String(val || '').trim().toLowerCase();
+  // Must not match "morning brief" or standalone "morning"
+  if (t === 'morning brief' || t === 'morning') return null;
+  if (t.includes('opening') || t === 'open') return 'opening';
+  if (t.includes('closing') || t === 'close') return 'closing';
+  return null;
+}
+
+// Treats 'active', 'true', 'yes' (case-insensitive) as active.
+function isMarketBriefActive(val) {
+  const s = String(val || '').trim().toLowerCase();
+  return s === 'active' || s === 'true' || s === 'yes';
+}
+
+export async function loadMarketBriefs() {
+  try {
+    const rows = await loadSheetTab(SHEET_CONFIG.tabs.morningBrief);
+    return rows.filter((row) => {
+      const category = classifyMarketBriefType(row['类型 / Type']);
+      const active = isMarketBriefActive(row['状态 / Status']);
+      return active && category !== null;
+    });
+  } catch (e) {
+    console.warn('Market briefs unavailable:', e.message);
+    return [];
+  }
+}
+
 export async function syncMorningBrief() {
   const url = buildApiUrl("syncMorningBrief", {}, { force: true });
   return await fetchJson(url);

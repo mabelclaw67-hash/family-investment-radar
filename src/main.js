@@ -11,6 +11,7 @@ import {
   refreshMarketData,
   syncNewsFromSheet,
   syncMorningBrief,
+  loadMarketBriefs,
   refreshStockAnalysis,
   updateDecisionLog,
   updateWatchItem,
@@ -35,6 +36,7 @@ import {
   MarketSection,
   MorningBriefPanel,
   AiMarketRadarPanel,
+  DailyMarketBriefPanel,
   StockRadarHomeEntry,
   SharePage,
   SettingsPage,
@@ -241,6 +243,7 @@ const state = {
   stockAnalysisSource: null,
   aiMarketTrendSummary: null,
   aiMarketTrendSources: [],
+  marketBriefs: [],
   decisionLogFilter: "all",
   editingWatchId: "",
   editingDecisionId: "",
@@ -384,7 +387,7 @@ async function renderCurrentPage() {
 
   const source = await loadDashboardSource();
   const dashboard = buildDashboardModel(source);
-  await loadSavedMarketTrendSummary();
+  state.marketBriefs = await loadMarketBriefs();
   renderDashboard(dashboard);
 }
 
@@ -399,7 +402,7 @@ function renderDashboard(dashboard) {
     ${StockRadarHomeEntry()}
     <section class="dashboard-grid">
       ${LiveUpdatesPanel(dashboard.news)}
-      ${AiMarketRadarPanel(state.aiMarketTrendSummary, state.aiMarketTrendSources, checkAuth())}
+      ${DailyMarketBriefPanel(state.marketBriefs)}
     </section>
     <footer class="footer">
       ${t("footer_disclaimer")}
@@ -407,8 +410,6 @@ function renderDashboard(dashboard) {
   `, "dashboard", checkAuth());
   bindRefreshNewsButton();
   bindRefreshMarketButton();
-  bindAiMarketTrendButton();
-  hydrateAiMarketTrendResult();
   bindGlobalActions();
 }
 

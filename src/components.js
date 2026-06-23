@@ -287,6 +287,77 @@ export function StockRadarHomeEntry() {
   `;
 }
 
+export function DailyMarketBriefPanel(briefs = []) {
+  const opening = findBriefByType(briefs, "opening");
+  const closing = findBriefByType(briefs, "closing");
+
+  return `
+    <section class="panel daily-market-brief-panel">
+      <div class="panel-title">
+        <h2>${t("daily_brief_title")}</h2>
+      </div>
+      <div class="daily-brief-cards">
+        ${dailyBriefCard(t("daily_brief_opening"), opening)}
+        ${dailyBriefCard(t("daily_brief_closing"), closing)}
+      </div>
+    </section>
+  `;
+}
+
+// Mirrors classifyMarketBriefType() in googleSheets.js.
+// category: 'opening' | 'closing'
+function classifyBriefType(val) {
+  const t = String(val || "").trim().toLowerCase();
+  if (t === "morning brief" || t === "morning") return null;
+  if (t.includes("opening") || t === "open") return "opening";
+  if (t.includes("closing") || t === "close") return "closing";
+  return null;
+}
+
+// Returns the single most-recent row for the given category.
+// Primary sort: 日期/Date DESC. Secondary: 更新时间/Updated At or 生成时间/Generated At DESC.
+function findBriefByType(briefs, category) {
+  return briefs
+    .filter((row) => classifyBriefType(row["类型 / Type"]) === category)
+    .sort((a, b) => {
+      const dateCmp = String(b["日期 / Date"] || "").localeCompare(String(a["日期 / Date"] || ""));
+      if (dateCmp !== 0) return dateCmp;
+      const aTime = String(a["更新时间 / Updated At"] || a["生成时间 / Generated At"] || "");
+      const bTime = String(b["更新时间 / Updated At"] || b["生成时间 / Generated At"] || "");
+      return bTime.localeCompare(aTime);
+    })[0] || null;
+}
+
+function dailyBriefCard(cardTitle, row) {
+  if (!row) {
+    return `
+      <article class="daily-brief-card daily-brief-empty">
+        <div class="daily-brief-card-header">
+          <h3>${escapeHtml(cardTitle)}</h3>
+        </div>
+        <p class="daily-brief-no-report">${escapeHtml(t("daily_brief_no_report"))}</p>
+      </article>
+    `;
+  }
+
+  const date = String(row["日期 / Date"] || "").trim();
+  const briefTitle = String(row["标题 / Title"] || "").trim();
+  const content = String(row["摘要 / Summary"] || row["_docContent"] || "").trim();
+  const link = String(row["报告链接 / Report Link"] || "").trim();
+
+  return `
+    <article class="daily-brief-card">
+      <div class="daily-brief-card-header">
+        <h3>${escapeHtml(cardTitle)}</h3>
+        ${date ? `<time>${escapeHtml(formatBriefDate(date))}</time>` : ""}
+      </div>
+      ${briefTitle ? `<strong class="daily-brief-report-title">${escapeHtml(briefTitle)}</strong>` : ""}
+      ${content ? renderBriefContent(content) : ""}
+      ${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="daily-brief-link">${escapeHtml(t("daily_brief_open_link"))}</a>` : ""}
+    </article>
+  `;
+}
+
 export function AiMarketRadarPanel(summary = null, sources = [], isAdmin = false) {
   return `
     <section class="panel ai-market-radar-panel">
@@ -2675,6 +2746,9 @@ function stockFundamentalsBlock(row, lang) {
     [zh ? "52周高点" : "52W High", cleanDisplayValue(get(row, "52周高点"))],
     [zh ? "52周低点" : "52W Low", cleanDisplayValue(get(row, "52周低点"))],
     [zh ? "52周位置%" : "52W Position", cleanDisplayValue(get(row, "52周位置% / 52W Position"))],
+    [zh ? "日变动金额" : "Daily Change $", cleanDisplayValue(get(row, "日变动金额 / Daily Change"))],
+    [zh ? "成交量" : "Volume", cleanDisplayValue(get(row, "成交量 / Volume"))],
+    [zh ? "数据时间" : "Trade Time", cleanDisplayValue(get(row, "数据时间 / Trade Time"))],
     [zh ? "财务数据更新时间" : "Financial Updated", formatStockUpdate(get(row, "财务数据更新时间"))],
     [zh ? "基本面数据来源" : "Source", get(row, "基本面数据来源")],
   ].filter(([, value]) => hasDisplayValue(value));

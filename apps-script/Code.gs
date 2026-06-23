@@ -3969,30 +3969,16 @@ function updateStockFundamentalsForStockAnalysis_(params) {
 
     // 跳过未上市或无法从公开数据源抓基本面的观察项
     if (isPrivateOrPlaceholderTicker_(ticker)) {
-      sheet.getRange(rowNum, 20, 1, 17).setValues([[
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        new Date().toISOString(),
-        '未上市或非标准公开股票，暂不抓取基本面数据。',
-        '作为主题观察项保留，不能按普通上市公司财务指标直接比较。',
-        'Manual / Watch only'
-      ]]);
+      // Cols 22-30 (V-AD): ForwardPE, PS, DivYield, ProfitMargin, OperatingMargin, ROE, RevTTM, RevGrowth, EPS
+      sheet.getRange(rowNum, 22, 1, 9).setValues([['N/A','N/A','N/A','N/A','N/A','N/A','N/A','N/A','N/A']]);
+      // Cols 33-36 (AG-AJ): date, summary, comment, source
+      sheet.getRange(rowNum, 33, 1, 4).setValues([[new Date().toISOString(), '未上市或非标准公开股票，暂不抓取基本面数据。', '作为主题观察项保留，不能按普通上市公司财务指标直接比较。', 'Manual / Watch only']]);
+      // Note: cols T(20)=marketcap, U(21)=pe, AE(31)=52WH, AF(32)=52WL are GOOGLEFINANCE — not touched here.
       updated++;
       continue;
     }
 
-    // 如果已经有“基本面数据来源”，默认先跳过，避免浪费 API 次数
+    // 如果已经有”基本面数据来源”，默认先跳过，避免浪费 API 次数
     const existingSource = String(row[35] || '').trim();
     const force = params && String(params.force || '').toLowerCase() === 'true';
 
@@ -4015,7 +4001,15 @@ function updateStockFundamentalsForStockAnalysis_(params) {
       }
 
       const financialRow = buildFundamentalRow_(overview);
-      sheet.getRange(rowNum, 20, 1, 17).setValues([financialRow]);
+      // Write only the Finnhub/AV fundamental columns; skip GOOGLEFINANCE-owned cols:
+      // T(20)=marketcap, U(21)=pe, AE(31)=52WH, AF(32)=52WL are owned by GOOGLEFINANCE.
+      // buildFundamentalRow_ returns: [0]=marketCap,[1]=pe,[2]=forwardPe,[3]=ps,[4]=divYield,
+      //   [5]=profitMargin,[6]=opMargin,[7]=roe,[8]=revTtm,[9]=revGrowth,[10]=eps,
+      //   [11]=52WH,[12]=52WL,[13]=date,[14]=summary,[15]=aiComment,[16]=source
+      // Write V-AD (cols 22-30, indices 2-10): 9 fundamental values
+      sheet.getRange(rowNum, 22, 1, 9).setValues([financialRow.slice(2, 11)]);
+      // Write AG-AJ (cols 33-36, indices 13-16): date, summary, comment, source
+      sheet.getRange(rowNum, 33, 1, 4).setValues([financialRow.slice(13, 17)]);
 
       updated++;
       if (overview._Provider === 'Alpha Vantage' && !shouldUseAlphaVantageFirst_(ticker)) alphaFallbacks++;
@@ -4149,7 +4143,8 @@ function isPrivateOrPlaceholderTicker_(ticker) {
     'OPENAI',
     'ANTHROPIC',
     'CURSOR',
-    'ANYSphere'.toUpperCase()
+    'ANYSPHERE',
+    'SPCX'  // SpaceX is private; no public market data available
   ].includes(t);
 }
 
@@ -4503,7 +4498,10 @@ function saveStockAnalysisToSheet_(spreadsheet, results) {
     '基本面数据来源',
     'Official Website',
     'Investor Relations',
-    'Financial Reports'
+    'Financial Reports',
+    '日变动金额 / Daily Change',
+    '成交量 / Volume',
+    '数据时间 / Trade Time'
   ];
 
   const infoMap = getStockAnalysisInfoMap_();
@@ -4600,7 +4598,11 @@ function saveStockAnalysisToSheet_(spreadsheet, results) {
   if (rows.length > 0) {
     sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
 
-    // GOOGLEFINANCE formulas: C price, D daily change %, G simplified volatility reference.
+    // GOOGLEFINANCE formulas:
+    // C(3)=price, D(4)=changepct, G(7)=volatility ref,
+    // T(20)=marketcap, U(21)=pe, AE(31)=52W high, AF(32)=52W low,
+    // AN(40)=daily change amount, AO(41)=volume, AP(42)=trade time.
+    // These columns are owned by GOOGLEFINANCE and are NOT written by the fundamentals updater.
     for (let i = 0; i < rows.length; i++) {
       const rowNum = i + 2;
       const originalTicker = rows[i][0];
@@ -4609,18 +4611,34 @@ function saveStockAnalysisToSheet_(spreadsheet, results) {
         sheet.getRange(rowNum, 3).setValue('N/A');
         sheet.getRange(rowNum, 4).setValue('N/A');
         sheet.getRange(rowNum, 7).setValue('N/A');
+        sheet.getRange(rowNum, 20).setValue('N/A');
+        sheet.getRange(rowNum, 21).setValue('N/A');
+        sheet.getRange(rowNum, 31).setValue('N/A');
+        sheet.getRange(rowNum, 32).setValue('N/A');
+        sheet.getRange(rowNum, 40).setValue('N/A');
+        sheet.getRange(rowNum, 41).setValue('N/A');
+        sheet.getRange(rowNum, 42).setValue('N/A');
         continue;
       }
 
       let gfTicker = originalTicker;
-
       if (originalTicker.endsWith('.TO')) {
         gfTicker = 'TSE:' + originalTicker.replace('.TO', '');
       }
+      // TECK.B.TO → TSE:TECK-B (Google Finance uses hyphen for share class)
+      gfTicker = gfTicker.replace('TSE:TECK.B', 'TSE:TECK-B');
 
       sheet.getRange(rowNum, 3).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","price"),"N/A")');
       sheet.getRange(rowNum, 4).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","changepct"),"N/A")');
       sheet.getRange(rowNum, 7).setFormula('=IFERROR(ABS(D' + rowNum + ')*8/100,"待更新")');
+      // Price-class fields: auto-refresh daily via GOOGLEFINANCE (NOT overwritten by Finnhub updater)
+      sheet.getRange(rowNum, 20).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","marketcap"),"N/A")');
+      sheet.getRange(rowNum, 21).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","pe"),"N/A")');
+      sheet.getRange(rowNum, 31).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","high52"),"N/A")');
+      sheet.getRange(rowNum, 32).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","low52"),"N/A")');
+      sheet.getRange(rowNum, 40).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","change"),"N/A")');
+      sheet.getRange(rowNum, 41).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","volume"),"N/A")');
+      sheet.getRange(rowNum, 42).setFormula('=IFERROR(TEXT(GOOGLEFINANCE("' + gfTicker + '","tradetime"),"yyyy-mm-dd hh:mm"),"N/A")');
     }
 
     sheet.getRange(2, 7, rows.length, 1).setNumberFormat('0.00%');
@@ -5406,30 +5424,16 @@ function updateStockFundamentalsForStockAnalysis_(params) {
 
     // 跳过未上市或无法从公开数据源抓基本面的观察项
     if (isPrivateOrPlaceholderTicker_(ticker)) {
-      sheet.getRange(rowNum, 20, 1, 17).setValues([[
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        'N/A',
-        new Date().toISOString(),
-        '未上市或非标准公开股票，暂不抓取基本面数据。',
-        '作为主题观察项保留，不能按普通上市公司财务指标直接比较。',
-        'Manual / Watch only'
-      ]]);
+      // Cols 22-30 (V-AD): ForwardPE, PS, DivYield, ProfitMargin, OperatingMargin, ROE, RevTTM, RevGrowth, EPS
+      sheet.getRange(rowNum, 22, 1, 9).setValues([['N/A','N/A','N/A','N/A','N/A','N/A','N/A','N/A','N/A']]);
+      // Cols 33-36 (AG-AJ): date, summary, comment, source
+      sheet.getRange(rowNum, 33, 1, 4).setValues([[new Date().toISOString(), '未上市或非标准公开股票，暂不抓取基本面数据。', '作为主题观察项保留，不能按普通上市公司财务指标直接比较。', 'Manual / Watch only']]);
+      // Note: cols T(20)=marketcap, U(21)=pe, AE(31)=52WH, AF(32)=52WL are GOOGLEFINANCE — not touched here.
       updated++;
       continue;
     }
 
-    // 如果已经有“基本面数据来源”，默认先跳过，避免浪费 API 次数
+    // 如果已经有”基本面数据来源”，默认先跳过，避免浪费 API 次数
     const existingSource = String(row[35] || '').trim();
     const force = params && String(params.force || '').toLowerCase() === 'true';
 
@@ -5452,7 +5456,15 @@ function updateStockFundamentalsForStockAnalysis_(params) {
       }
 
       const financialRow = buildFundamentalRow_(overview);
-      sheet.getRange(rowNum, 20, 1, 17).setValues([financialRow]);
+      // Write only the Finnhub/AV fundamental columns; skip GOOGLEFINANCE-owned cols:
+      // T(20)=marketcap, U(21)=pe, AE(31)=52WH, AF(32)=52WL are owned by GOOGLEFINANCE.
+      // buildFundamentalRow_ returns: [0]=marketCap,[1]=pe,[2]=forwardPe,[3]=ps,[4]=divYield,
+      //   [5]=profitMargin,[6]=opMargin,[7]=roe,[8]=revTtm,[9]=revGrowth,[10]=eps,
+      //   [11]=52WH,[12]=52WL,[13]=date,[14]=summary,[15]=aiComment,[16]=source
+      // Write V-AD (cols 22-30, indices 2-10): 9 fundamental values
+      sheet.getRange(rowNum, 22, 1, 9).setValues([financialRow.slice(2, 11)]);
+      // Write AG-AJ (cols 33-36, indices 13-16): date, summary, comment, source
+      sheet.getRange(rowNum, 33, 1, 4).setValues([financialRow.slice(13, 17)]);
 
       updated++;
       if (overview._Provider === 'Alpha Vantage' && !shouldUseAlphaVantageFirst_(ticker)) alphaFallbacks++;
@@ -5574,7 +5586,8 @@ function isPrivateOrPlaceholderTicker_(ticker) {
     'OPENAI',
     'ANTHROPIC',
     'CURSOR',
-    'ANYSphere'.toUpperCase()
+    'ANYSPHERE',
+    'SPCX'  // SpaceX is private; no public market data available
   ].includes(t);
 }
 
@@ -6060,4 +6073,74 @@ function getEmptyOverviewFields_(overview) {
     const value = overview[field];
     return value === null || value === undefined || String(value).trim() === '' || String(value).trim() === 'N/A';
   });
+}
+
+// ── Repair / refresh GOOGLEFINANCE formula columns on the existing 11 Stock Analysis sheet ──
+// Run this manually from Apps Script or schedule it. It does NOT touch Finnhub columns.
+// Columns written:
+//   C(3)=price, D(4)=changepct, G(7)=volatility ref,
+//   T(20)=marketcap, U(21)=pe, AE(31)=high52, AF(32)=low52,
+//   AN(40)=daily change amount, AO(41)=volume, AP(42)=trade time
+function repairStockGoogleFinanceColumns_() {
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = spreadsheet.getSheetByName('11 Stock Analysis');
+  if (!sheet) throw new Error('11 Stock Analysis sheet not found.');
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return { updated: 0 };
+
+  // Ensure new GF headers exist (AN=40, AO=41, AP=42)
+  const currentWidth = sheet.getLastColumn();
+  if (currentWidth < 40) {
+    sheet.getRange(1, 40, 1, 3).setValues([['日变动金额 / Daily Change', '成交量 / Volume', '数据时间 / Trade Time']]);
+  } else {
+    const existingHeaders = sheet.getRange(1, 40, 1, 3).getValues()[0];
+    if (!existingHeaders[0]) sheet.getRange(1, 40).setValue('日变动金额 / Daily Change');
+    if (!existingHeaders[1]) sheet.getRange(1, 41).setValue('成交量 / Volume');
+    if (!existingHeaders[2]) sheet.getRange(1, 42).setValue('数据时间 / Trade Time');
+  }
+
+  const tickers = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+  let count = 0;
+
+  for (let i = 0; i < tickers.length; i++) {
+    const rowNum = i + 2;
+    const ticker = String(tickers[i][0] || '').trim();
+    if (!ticker) continue;
+
+    if (isPrivateOrPlaceholderTicker_(ticker)) {
+      sheet.getRange(rowNum, 3).setValue('N/A');
+      sheet.getRange(rowNum, 4).setValue('N/A');
+      sheet.getRange(rowNum, 7).setValue('N/A');
+      sheet.getRange(rowNum, 20).setValue('N/A');
+      sheet.getRange(rowNum, 21).setValue('N/A');
+      sheet.getRange(rowNum, 31).setValue('N/A');
+      sheet.getRange(rowNum, 32).setValue('N/A');
+      sheet.getRange(rowNum, 40).setValue('N/A');
+      sheet.getRange(rowNum, 41).setValue('N/A');
+      sheet.getRange(rowNum, 42).setValue('N/A');
+      continue;
+    }
+
+    let gfTicker = ticker;
+    if (ticker.endsWith('.TO')) gfTicker = 'TSE:' + ticker.replace('.TO', '');
+    gfTicker = gfTicker.replace('TSE:TECK.B', 'TSE:TECK-B');
+
+    sheet.getRange(rowNum, 3).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","price"),"N/A")');
+    sheet.getRange(rowNum, 4).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","changepct"),"N/A")');
+    sheet.getRange(rowNum, 7).setFormula('=IFERROR(ABS(D' + rowNum + ')*8/100,"待更新")');
+    sheet.getRange(rowNum, 20).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","marketcap"),"N/A")');
+    sheet.getRange(rowNum, 21).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","pe"),"N/A")');
+    sheet.getRange(rowNum, 31).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","high52"),"N/A")');
+    sheet.getRange(rowNum, 32).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","low52"),"N/A")');
+    sheet.getRange(rowNum, 40).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","change"),"N/A")');
+    sheet.getRange(rowNum, 41).setFormula('=IFERROR(GOOGLEFINANCE("' + gfTicker + '","volume"),"N/A")');
+    sheet.getRange(rowNum, 42).setFormula('=IFERROR(TEXT(GOOGLEFINANCE("' + gfTicker + '","tradetime"),"yyyy-mm-dd hh:mm"),"N/A")');
+
+    count++;
+  }
+
+  SpreadsheetApp.flush();
+  Logger.log('[repairStockGoogleFinanceColumns_] Updated ' + count + ' rows.');
+  return { updated: count };
 }
