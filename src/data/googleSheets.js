@@ -3,8 +3,8 @@ import { FAMILY_INVESTMENT_API_URL, SHEET_CONFIG } from "../config.js";
 const MORNING_BRIEF_API_URL =
   "https://script.google.com/macros/s/AKfycbwxCyBuqCjc8vB4SHe6QtYPx3WgfAsaJN4dHpFqBjc22h3R9gScYzgSs9XlJNrRdSpyNQ/exec";
 
-export async function loadSheetTab(sheetName) {
-  const url = buildApiUrl("tab", { name: sheetName });
+export async function loadSheetTab(sheetName, options = {}) {
+  const url = buildApiUrl("tab", { name: sheetName }, options);
   const payload = await fetchJson(url);
   return Array.isArray(payload.data) ? payload.data : [];
 }
@@ -119,15 +119,27 @@ function isMarketBriefActive(val) {
   return s === 'active' || s === 'true' || s === 'yes';
 }
 
+function getMarketBriefValue(row, keys) {
+  for (const key of keys) {
+    const value = row?.[key];
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      return String(value).trim();
+    }
+  }
+  return "";
+}
+
 export async function loadMarketBriefs() {
   try {
     // Reads from "17 Stock Market Brief" only. Does NOT touch "10 Morning Brief".
-    const rows = await loadSheetTab(SHEET_CONFIG.tabs.stockMarketBrief);
-    return rows.filter((row) => {
-      const category = classifyMarketBriefType(row['类型 / Type']);
-      const active = isMarketBriefActive(row['状态 / Status']);
+    const rows = await loadSheetTab(SHEET_CONFIG.tabs.stockMarketBrief, { force: true });
+    const filteredRows = rows.filter((row) => {
+      const category = classifyMarketBriefType(getMarketBriefValue(row, ["类型 / Type", "Type"]));
+      const active = isMarketBriefActive(getMarketBriefValue(row, ["状态 / Status", "Status"]));
       return active && category !== null;
     });
+    console.log(`[Market Brief] loaded ${filteredRows.length} active market brief rows`);
+    return filteredRows;
   } catch (e) {
     console.warn('Market briefs unavailable:', e.message);
     return [];

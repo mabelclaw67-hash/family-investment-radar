@@ -16,11 +16,12 @@ export async function handler(event) {
   const params = event.queryStringParameters || {};
   const action = String(params.action || "dashboard");
   const force = params.force === "1" || params.force === "true";
+  const bypassCache = shouldBypassCache(params);
   const cacheKey = buildCacheKey(params);
   const cached = memoryCache.get(cacheKey);
   const now = Date.now();
 
-  if (READ_ACTIONS.has(action) && !force && cached && now - cached.savedAt < CACHE_TTL_MS) {
+  if (READ_ACTIONS.has(action) && !force && !bypassCache && cached && now - cached.savedAt < CACHE_TTL_MS) {
     return jsonResponse(200, {
       ...cached.payload,
       cache: { hit: true, stale: false, savedAt: cached.savedAt, ttlSeconds: Math.round(CACHE_TTL_MS / 1000) },
@@ -33,7 +34,9 @@ export async function handler(event) {
       throw new Error(payload.error || "Apps Script returned ok:false");
     }
 
-    if (READ_ACTIONS.has(action)) {
+    logMarketBriefRows(params, payload);
+
+    if (READ_ACTIONS.has(action) && !bypassCache) {
       memoryCache.set(cacheKey, { payload, savedAt: now });
     } else {
       memoryCache.clear();
@@ -63,6 +66,17 @@ export async function handler(event) {
       error: error.message || "Apps Script request failed.",
     });
   }
+}
+
+function shouldBypassCache(params) {
+  return String(params.action || "dashboard") === "tab"
+    && String(params.name || "").trim() === "17 Stock Market Brief";
+}
+
+function logMarketBriefRows(params, payload) {
+  if (!shouldBypassCache(params)) return;
+  const rows = Array.isArray(payload?.data) ? payload.data : [];
+  console.log(`[readSheetData] 17 Stock Market Brief rows loaded: ${rows.length}`);
 }
 
 async function fetchAppsScript(params) {

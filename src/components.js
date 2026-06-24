@@ -314,18 +314,41 @@ function classifyBriefType(val) {
   return null;
 }
 
+function getBriefValue(row, keys) {
+  for (const key of keys) {
+    const value = row?.[key];
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      return String(value).trim();
+    }
+  }
+  return "";
+}
+
+function getBriefDate(row) {
+  return getBriefValue(row, ["日期 / Date", "Date"]);
+}
+
+function getTodayDateString() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 // Returns the single most-recent row for the given category.
 // Primary sort: 日期/Date DESC. Secondary: 更新时间/Updated At or 生成时间/Generated At DESC.
 function findBriefByType(briefs, category) {
-  return briefs
-    .filter((row) => classifyBriefType(row["类型 / Type"]) === category)
+  const matchingRows = briefs
+    .filter((row) => classifyBriefType(getBriefValue(row, ["类型 / Type", "Type"])) === category)
     .sort((a, b) => {
-      const dateCmp = String(b["日期 / Date"] || "").localeCompare(String(a["日期 / Date"] || ""));
+      const dateCmp = getBriefDate(b).localeCompare(getBriefDate(a));
       if (dateCmp !== 0) return dateCmp;
-      const aTime = String(a["更新时间 / Updated At"] || a["生成时间 / Generated At"] || "");
-      const bTime = String(b["更新时间 / Updated At"] || b["生成时间 / Generated At"] || "");
+      const aTime = getBriefValue(a, ["更新时间 / Updated At", "生成时间 / Generated At", "Updated At", "Generated At"]);
+      const bTime = getBriefValue(b, ["更新时间 / Updated At", "生成时间 / Generated At", "Updated At", "Generated At"]);
       return bTime.localeCompare(aTime);
-    })[0] || null;
+    });
+  return matchingRows.find((row) => getBriefDate(row) === getTodayDateString()) || matchingRows[0] || null;
 }
 
 function dailyBriefCard(cardTitle, row) {
@@ -340,13 +363,13 @@ function dailyBriefCard(cardTitle, row) {
     `;
   }
 
-  const date = String(row["日期 / Date"] || "").trim();
-  const briefTitle = String(row["标题 / Title"] || "").trim();
-  const rawContent = String(row["摘要 / Summary"] || row["_docContent"] || "").trim();
+  const date = getBriefDate(row);
+  const briefTitle = getBriefValue(row, ["标题 / Title", "Title"]);
+  const rawContent = getBriefValue(row, ["摘要 / Summary", "Summary", "_docContent"]);
   // Treat known placeholder texts as empty — show "今日报告尚未更新" instead
   const PLACEHOLDERS = ["今日开市报告尚未同步。", "今日收市报告尚未同步。", "尚未同步", "pending", "todo"];
   const content = PLACEHOLDERS.some((p) => rawContent.toLowerCase() === p.toLowerCase()) ? "" : rawContent;
-  const link = String(row["报告链接 / Report Link"] || "").trim();
+  const link = getBriefValue(row, ["报告链接 / Report Link", "Report Link"]);
 
   return `
     <article class="daily-brief-card">

@@ -18,6 +18,7 @@ const DASHBOARD_TABS = {
   publicTopics: '14 Public Topics',
   publicReplies: '15 Public Replies',
   publicStockCache: '16 Public Stock Cache',
+  stockMarketBrief: '17 Stock Market Brief',
 };
 
 const RESEARCH_PACK_HEADERS = [
