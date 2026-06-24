@@ -6144,3 +6144,324 @@ function repairStockGoogleFinanceColumns_() {
   Logger.log('[repairStockGoogleFinanceColumns_] Updated ' + count + ' rows.');
   return { updated: count };
 }
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 17 Stock Market Brief — Drive sync
+// ══════════════════════════════════════════════════════════════════════════════
+// Reads the latest .md (or Google Doc) from the Opening and Closing Drive
+// folders configured in the sheet's "Drive Folder URL" column, then updates
+// the corresponding row in "17 Stock Market Brief" in-place (type-only match).
+// The sheet is designed to hold exactly TWO active rows: Opening Brief + Closing Brief.
+// Does NOT touch "10 Morning Brief", "11 Stock Analysis", or "13 AI Market Trend".
+//
+// Manual entry point — select this in the Apps Script function dropdown and click ▶:
+function runSyncMarketBriefsFromDrive() {
+  var results = syncMarketBriefsFromDrive_();
+  Logger.log('[runSyncMarketBriefsFromDrive] ' + JSON.stringify(results));
+}
+
+// ── Standalone test: run this first to verify DriveApp access ──────────────
+// Logs what folder ID is being tested and whether DriveApp can open it.
+// Does NOT read or write any sheet data.
+function testDriveFolderAccess() {
+  var OPENING_ID = '1VfJpf69evS1z-OkXVN22ZGuPeGTy9Jkj';
+  var CLOSING_ID = '1_poTDckh-Igy7CjsgaHZNL3-m7TFPS0Q';
+
+  var ids = [
+    { label: 'Opening folder', id: OPENING_ID },
+    { label: 'Closing folder', id: CLOSING_ID }
+  ];
+
+  for (var i = 0; i < ids.length; i++) {
+    var label = ids[i].label;
+    var id    = ids[i].id;
+    Logger.log('[testDriveFolderAccess] Testing ' + label
+      + ' — id="' + id + '" length=' + id.length);
+    try {
+      var folder = DriveApp.getFolderById(id);
+      Logger.log('[testDriveFolderAccess] OK: folder name = "' + folder.getName() + '"');
+    } catch (e) {
+      Logger.log('[testDriveFolderAccess] FAIL: ' + e.message);
+    }
+  }
+  Logger.log('[testDriveFolderAccess] Done.');
+}
+
+function syncMarketBriefsFromDrive_() {
+  var SHEET_TAB = '17 Stock Market Brief';
+  // Fallback folder IDs if not found in sheet rows
+  // Folder IDs verified against Google Drive URL bar on 2026-06-23.
+  // Do NOT read these from the sheet — the sheet may contain stale/wrong URLs.
+  var OPENING_FOLDER_ID = '1VfJpf69evS1z-OkXVN22ZGuPeGTy9Jkj';
+  var CLOSING_FOLDER_ID = '1_poTDckh-Igy7CjsgaHZNL3-m7TFPS0Q';
+
+  var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = spreadsheet.getSheetByName(SHEET_TAB);
+  if (!sheet) throw new Error('[syncMarketBriefsFromDrive_] Sheet not found: ' + SHEET_TAB);
+
+  var tz = getScriptTimeZone_();
+  var now = new Date();
+  var nowStr = Utilities.formatDate(now, tz, 'yyyy-MM-dd HH:mm:ss');
+
+  var sources = [
+    { type: 'Opening Brief', folderId: OPENING_FOLDER_ID },
+    { type: 'Closing Brief', folderId: CLOSING_FOLDER_ID }
+  ];
+
+  var results = [];
+
+  for (var s = 0; s < sources.length; s++) {
+    var src = sources[s];
+    try {
+      // Sanitize: strip any accidental whitespace or URL fragments
+      var rawId = String(src.folderId || '').trim().replace(/[^a-zA-Z0-9_-]/g, '');
+      Logger.log('[syncMarketBriefsFromDrive_] ' + src.type
+        + ' — raw folderId="' + src.folderId + '"'
+        + ' sanitized="' + rawId + '"'
+        + ' length=' + rawId.length);
+      if (!rawId) {
+        results.push({ type: src.type, status: 'error', error: 'Empty folder ID after sanitization' });
+        continue;
+      }
+      var folder = DriveApp.getFolderById(rawId);
+      var latestFile = getLatestBriefFileFromFolder_(folder);
+      if (!latestFile) {
+        Logger.log('[syncMarketBriefsFromDrive_] No eligible files in ' + src.type + ' folder (' + src.folderId + ').');
+        results.push({ type: src.type, status: 'skipped', reason: 'no files' });
+        continue;
+      }
+
+      var fileName   = latestFile.getName();
+      var fileUrl    = latestFile.getUrl();
+      var content    = readBriefFileContent_(latestFile);
+
+      // Date: prefer extraction from filename, fallback to file's modified date
+      var fileDate   = extractDateFromFileName_(fileName)
+                    || Utilities.formatDate(latestFile.getLastUpdated(), tz, 'yyyy-MM-dd');
+
+      // Title: first non-empty line of content (strip leading #), fallback to filename
+      var title      = extractTitleFromContent_(content)
+                    || fileName.replace(/\.md$/i, '');
+
+      var data = {
+        '状态 / Status':          'active',
+        '日期 / Date':             fileDate,
+        '标题 / Title':            title,
+        '摘要 / Summary':          content,
+        '报告链接 / Report Link':  fileUrl,
+        'Drive Folder URL':        'https://drive.google.com/drive/folders/' + src.folderId,
+        'Drive File Name':         fileName,
+        '更新时间 / Updated At':   nowStr,
+        '备注 / Notes':            'Auto-synced from Drive'
+      };
+
+      // Update the existing row for this type in-place (TYPE-ONLY match)
+      updateMarketBriefRowByType_(sheet, src.type, data);
+      results.push({ type: src.type, status: 'ok', file: fileName, date: fileDate });
+      Logger.log('[syncMarketBriefsFromDrive_] ' + src.type + ' ← ' + fileName + ' (' + fileDate + ')');
+
+    } catch (e) {
+      Logger.log('[syncMarketBriefsFromDrive_] ERROR ' + src.type + ': ' + e.message);
+      results.push({ type: src.type, status: 'error', error: e.message });
+    }
+  }
+
+  SpreadsheetApp.flush();
+  Logger.log('[syncMarketBriefsFromDrive_] Complete: ' + JSON.stringify(results));
+  return results;
+}
+
+// Read Drive Folder URL from each row's "Drive Folder URL" column.
+// Returns { 'opening brief': 'FOLDER_ID', 'closing brief': 'FOLDER_ID' }
+function readMarketBriefSheetConfig_(sheet) {
+  var config = {};
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return config;
+
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(function(h) {
+    return String(h || '').trim();
+  });
+  var typeIdx   = headers.indexOf('类型 / Type');
+  var folderIdx = headers.indexOf('Drive Folder URL');
+  if (typeIdx < 0 || folderIdx < 0) return config;
+
+  var values = sheet.getRange(2, 1, lastRow - 1, headers.length).getValues();
+  for (var i = 0; i < values.length; i++) {
+    var rowType  = String(values[i][typeIdx]   || '').trim().toLowerCase();
+    var folderUrl = String(values[i][folderIdx] || '').trim();
+    if (folderUrl) {
+      // Extract folder ID from URL: last path segment after /folders/
+      var match = folderUrl.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+      if (match) config[rowType] = match[1];
+    }
+  }
+  return config;
+}
+
+// Returns the most recently modified .md or plain-text or Google Doc file in a folder.
+// .md files are preferred; Google Docs are accepted; plain text (.txt) also accepted.
+function getLatestBriefFileFromFolder_(folder) {
+  var files = folder.getFiles();
+  var latest = null;
+  var latestTime = 0;
+
+  while (files.hasNext()) {
+    var file = files.next();
+    var name = file.getName().toLowerCase();
+    var mime = file.getMimeType();
+    var isMd   = name.endsWith('.md');
+    var isTxt  = name.endsWith('.txt');
+    var isGDoc = (mime === MimeType.GOOGLE_DOCS);
+    var isPlain = (mime === 'text/plain');
+    if (!isMd && !isTxt && !isGDoc && !isPlain) continue;
+
+    var t = file.getLastUpdated().getTime();
+    if (t > latestTime) {
+      latestTime = t;
+      latest = file;
+    }
+  }
+
+  return latest;
+}
+
+// Reads file content as plain text.
+// Google Doc → body text; .md / .txt → raw UTF-8 string.
+function readBriefFileContent_(file) {
+  try {
+    if (file.getMimeType() === MimeType.GOOGLE_DOCS) {
+      return DocumentApp.openById(file.getId()).getBody().getText();
+    }
+    return file.getBlob().getDataAsString('utf-8');
+  } catch (e) {
+    Logger.log('[readBriefFileContent_] Could not read ' + file.getName() + ': ' + e.message);
+    return '';
+  }
+}
+
+// Extracts a date string (yyyy-MM-dd) from a filename.
+// Handles: market-briefing-2026-06-23.md, close_2026-06-23.md, 20260623.md, etc.
+function extractDateFromFileName_(fileName) {
+  // yyyy-MM-dd  (e.g. 2026-06-23)
+  var m = fileName.match(/(\d{4})[.\-_](\d{2})[.\-_](\d{2})/);
+  if (m) return m[1] + '-' + m[2] + '-' + m[3];
+  // yyyyMMdd  (e.g. 20260623)
+  var m2 = fileName.match(/(\d{4})(\d{2})(\d{2})/);
+  if (m2) return m2[1] + '-' + m2[2] + '-' + m2[3];
+  return null;
+}
+
+// Returns the first meaningful line of a markdown/text file as the title.
+// Strips leading # characters (markdown headings).
+function extractTitleFromContent_(content) {
+  if (!content) return null;
+  var lines = content.split('\n');
+  for (var i = 0; i < Math.min(lines.length, 10); i++) {
+    var line = lines[i].replace(/^#+\s*/, '').trim();
+    if (line.length > 3) return line.substring(0, 120); // cap at 120 chars
+  }
+  return null;
+}
+
+// Updates the EXISTING row for the given type in-place.
+// Matches by TYPE ONLY — the sheet keeps exactly one row per type (Opening/Closing).
+// If no matching row is found, appends a new row.
+function updateMarketBriefRowByType_(sheet, type, data) {
+  var lastRow = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+  var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function(h) {
+    return String(h || '').trim();
+  });
+
+  var typeIdx  = headers.indexOf('类型 / Type');
+  var dataType = String(type || '').trim().toLowerCase();
+
+  if (lastRow > 1 && typeIdx >= 0) {
+    var values = sheet.getRange(2, 1, lastRow - 1, headers.length).getValues();
+    for (var i = 0; i < values.length; i++) {
+      var rowType = String(values[i][typeIdx] || '').trim().toLowerCase();
+      if (rowType === dataType) {
+        // Update fields in-place; never touch the 类型/Type column itself
+        var rowNum = i + 2;
+        for (var j = 0; j < headers.length; j++) {
+          var h = headers[j];
+          if (h && h !== '类型 / Type' && data[h] !== undefined) {
+            sheet.getRange(rowNum, j + 1).setValue(data[h]);
+          }
+        }
+        Logger.log('[updateMarketBriefRowByType_] Updated row ' + rowNum + ' for ' + type);
+        return;
+      }
+    }
+  }
+
+  // No row with this type found — append (should only happen on first run)
+  var newRow = headers.map(function(h) {
+    if (h === '类型 / Type') return type;
+    return (h && data[h] !== undefined) ? data[h] : '';
+  });
+  sheet.appendRow(newRow);
+  Logger.log('[updateMarketBriefRowByType_] Appended new row for ' + type);
+}
+
+
+// ── Scheduled trigger management ──────────────────────────────────────────────
+// Installs two daily time-based triggers for syncMarketBriefsFromDrive_:
+//   • 7:00 AM  Pacific Time (after US pre-market / Opening)
+//   • 14:00 PT (after US market close, ~1:00 PM PT / 4:00 PM ET)
+// Apps Script uses the project timezone (set to America/Vancouver in project settings).
+// Run this ONCE to install; it skips creation if triggers already exist.
+function installMarketBriefSyncTrigger() {
+  var FN_NAME = 'syncMarketBriefsFromDrive_';
+  var TARGET_HOURS = [7, 14]; // Pacific Time hours
+
+  // Collect hours already scheduled to avoid duplicates
+  var existing = ScriptApp.getProjectTriggers();
+  var scheduledHours = [];
+  for (var i = 0; i < existing.length; i++) {
+    var t = existing[i];
+    if (t.getHandlerFunction() === FN_NAME) {
+      scheduledHours.push(t.getTriggerSource()); // rough de-dup check
+    }
+  }
+
+  // Check by counting existing triggers for this function
+  var existingCount = existing.filter(function(t) {
+    return t.getHandlerFunction() === FN_NAME;
+  }).length;
+
+  if (existingCount >= TARGET_HOURS.length) {
+    Logger.log('[installMarketBriefSyncTrigger] Triggers already installed (' + existingCount + '). Run removeMarketBriefSyncTriggers() first to reinstall.');
+    return;
+  }
+
+  // Remove any partial installs
+  removeMarketBriefSyncTriggers();
+
+  // Create two daily triggers
+  for (var h = 0; h < TARGET_HOURS.length; h++) {
+    ScriptApp.newTrigger(FN_NAME)
+      .timeBased()
+      .everyDays(1)
+      .atHour(TARGET_HOURS[h])
+      .create();
+    Logger.log('[installMarketBriefSyncTrigger] Created trigger at hour ' + TARGET_HOURS[h] + ' PT.');
+  }
+
+  Logger.log('[installMarketBriefSyncTrigger] Done. Two triggers installed: 7 AM PT + 2 PM PT.');
+}
+
+// Removes all time-based triggers for syncMarketBriefsFromDrive_.
+function removeMarketBriefSyncTriggers() {
+  var FN_NAME = 'syncMarketBriefsFromDrive_';
+  var triggers = ScriptApp.getProjectTriggers();
+  var removed = 0;
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === FN_NAME) {
+      ScriptApp.deleteTrigger(triggers[i]);
+      removed++;
+    }
+  }
+  Logger.log('[removeMarketBriefSyncTriggers] Removed ' + removed + ' trigger(s).');
+}

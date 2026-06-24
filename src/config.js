@@ -13,6 +13,7 @@ export const SHEET_CONFIG = {
     marketRadar: "05 Market Radar",
     stockAnalysis: "11 Stock Analysis",
     aiMarketTrend: "13 AI Market Trend",
+    stockMarketBrief: "17 Stock Market Brief",
   },
 };
 

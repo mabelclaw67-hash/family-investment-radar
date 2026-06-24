@@ -342,7 +342,10 @@ function dailyBriefCard(cardTitle, row) {
 
   const date = String(row["日期 / Date"] || "").trim();
   const briefTitle = String(row["标题 / Title"] || "").trim();
-  const content = String(row["摘要 / Summary"] || row["_docContent"] || "").trim();
+  const rawContent = String(row["摘要 / Summary"] || row["_docContent"] || "").trim();
+  // Treat known placeholder texts as empty — show "今日报告尚未更新" instead
+  const PLACEHOLDERS = ["今日开市报告尚未同步。", "今日收市报告尚未同步。", "尚未同步", "pending", "todo"];
+  const content = PLACEHOLDERS.some((p) => rawContent.toLowerCase() === p.toLowerCase()) ? "" : rawContent;
   const link = String(row["报告链接 / Report Link"] || "").trim();
 
   return `

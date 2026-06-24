@@ -121,7 +121,8 @@ function isMarketBriefActive(val) {
 
 export async function loadMarketBriefs() {
   try {
-    const rows = await loadSheetTab(SHEET_CONFIG.tabs.morningBrief);
+    // Reads from "17 Stock Market Brief" only. Does NOT touch "10 Morning Brief".
+    const rows = await loadSheetTab(SHEET_CONFIG.tabs.stockMarketBrief);
     return rows.filter((row) => {
       const category = classifyMarketBriefType(row['类型 / Type']);
       const active = isMarketBriefActive(row['状态 / Status']);
