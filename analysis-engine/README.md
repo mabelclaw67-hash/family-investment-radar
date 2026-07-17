@@ -12,7 +12,8 @@ Google Sheet "11 Stock Analysis"  (single source of truth for the watchlist)
         ▼
 dsa_adapter.py  (vendored DSA data_provider modules + yfinance)
         ▼
-data/stock-analysis/latest.json  (regenerable read-only cache)
+public/data/stock-analysis/latest.json  (regenerable read-only cache;
+        served by the site at /data/stock-analysis/latest.json)
 ```
 
 - The ticker list is **never** maintained here. It is read from the Google

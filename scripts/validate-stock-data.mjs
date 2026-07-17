@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Validates data/stock-analysis/latest.json (the DSA Adapter output cache).
+// Validates public/data/stock-analysis/latest.json (the DSA Adapter output cache).
 // Zero-dependency: run with `npm run validate:stock-data`.
 //
 // Checks: JSON shape, ticker uniqueness/key consistency, required fields,
@@ -11,7 +11,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const dataPath = resolve(repoRoot, "data/stock-analysis/latest.json");
+const dataPath = resolve(repoRoot, "public/data/stock-analysis/latest.json");
 
 const MAX_AGE_HOURS = 36; // generatedAt older than this = stale warning
 const errors = [];

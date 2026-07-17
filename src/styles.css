@@ -3214,6 +3214,60 @@ h2 {
   margin-bottom: 14px;
 }
 
+/* DSA cache: page-level data status strip */
+.stock-data-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card, #fbfdff);
+}
+
+.stock-data-status-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stock-data-status-item span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.stock-data-status-item strong {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+/* DSA cache: per-stock status line in the detail card foot */
+.stock-data-status-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  align-items: center;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sds-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.sds-ok { background: #e6f6ec; color: #1a7f43; }
+.sds-warn { background: #fdf3e0; color: #9a6a13; }
+.sds-bad { background: #fdeaea; color: #b3261e; }
+.sds-muted { background: #eef1f5; color: #5a6472; }
+
 .stock-table-panel {
   overflow-x: hidden;
 }

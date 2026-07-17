@@ -1859,9 +1859,62 @@ export function StockAnalysisPage(rows = [], isAdmin = false) {
       <article class="mini-stat-card"><span>${lang === "zh" ? "最新更新时间" : "Latest Update"}</span><small>${escapeHtml(refreshed || "—")}</small></article>
     </section>
 
+    ${stockDataStatusStrip(allItems.analysisMeta, lang)}
+
     <section class="panel stock-table-panel">
       ${items.length ? stockAnalysisTable(items, lang) : EmptyState(lang === "zh" ? "这个主题下暂无股票" : "No stocks in this theme yet", lang === "zh" ? "可以切换到“全部”，或稍后在表格里增加更多股票。" : "Switch to All, or add more tickers to this theme later.")}
     </section>
+  `;
+}
+
+// Compact status strip fed by the DSA cache meta (analysisMeta on the rows
+// array). Renders nothing when the cache is unavailable (pure sheet fallback).
+function stockDataStatusStrip(meta, lang) {
+  if (!meta) return "";
+  const zh = lang === "zh";
+  const generated = meta.generatedAt ? formatStockUpdate(meta.generatedAt) : "—";
+  const cells = [
+    [zh ? "数据生成时间" : "Data Generated", generated],
+    [zh ? "股票总数" : "Total", String(meta.totalSymbols ?? "—")],
+    [zh ? "成功更新" : "Updated OK", String(meta.successful ?? "—")],
+    [zh ? "占位标的" : "Placeholders", String(meta.placeholders ?? "—")],
+    [zh ? "失败/不可用" : "Failed/Unavail.", String(meta.failedOrUnavailable ?? "—")],
+  ];
+  return `
+    <section class="stock-data-status" aria-label="${zh ? "数据更新状态" : "Data update status"}">
+      ${cells.map(([label, value]) => `
+        <div class="stock-data-status-item">
+          <span>${escapeHtml(label)}</span>
+          <strong>${escapeHtml(value)}</strong>
+        </div>
+      `).join("")}
+    </section>
+  `;
+}
+
+// Per-stock data status line for the detail card foot.
+function stockDataStatusLine(row, lang) {
+  const status = String(row.__dsaStatus || "").trim();
+  if (!status) return ""; // no cache record for this ticker → nothing extra
+  const zh = lang === "zh";
+  const labels = {
+    ok: { text: zh ? "数据正常" : "Live data", cls: "sds-ok" },
+    partial: { text: zh ? "部分字段缺失" : "Partial data", cls: "sds-warn" },
+    stale: { text: zh ? "数据可能过期" : "Data may be stale", cls: "sds-warn" },
+    unavailable: { text: zh ? "当前数据源暂不可用" : "Data source unavailable", cls: "sds-bad" },
+    placeholder: { text: zh ? "未上市或占位标的" : "Unlisted / placeholder", cls: "sds-muted" },
+  };
+  const badge = labels[status] || { text: status, cls: "sds-muted" };
+  const quote = row.__dsaQuoteUpdatedAt ? formatStockUpdate(row.__dsaQuoteUpdatedAt) : "";
+  const fund = row.__dsaFundamentalsUpdatedAt ? formatStockUpdate(row.__dsaFundamentalsUpdatedAt) : "";
+  const src = String(row.__dsaSources || "").trim();
+  return `
+    <div class="stock-data-status-line">
+      <span class="sds-badge ${badge.cls}">${escapeHtml(badge.text)}</span>
+      ${quote ? `<span>${zh ? "行情更新" : "Quote"}: ${escapeHtml(quote)}</span>` : ""}
+      ${fund ? `<span>${zh ? "基本面更新" : "Fundamentals"}: ${escapeHtml(fund)}</span>` : ""}
+      ${src ? `<span>${zh ? "来源" : "Source"}: ${escapeHtml(src)}</span>` : ""}
+    </div>
   `;
 }
 
@@ -2577,7 +2630,9 @@ function stockAnalysisRow(row, lang, detailId, active, extraClass = "") {
   const currency = cleanDisplayValue(get(row, "币种 / Currency"));
   const volatility = cleanDisplayValue(get(row, "简化波动参考%") || get(row, "年化波动率%")) || "—";
   const updated = formatStockUpdate(get(row, "更新时间"));
-  const dataAge = get(row, "数据新鲜度(天) / Data Age");
+  // The sheet's own "data age" column is stale once the DSA cache supplies a
+  // fresh quote time; suppress it then so the foot isn't self-contradictory.
+  const dataAge = row.__dsaQuoteUpdatedAt ? "" : get(row, "数据新鲜度(天) / Data Age");
   const paysDividend = cleanDisplayValue(get(row, "是否派息 / Pays Dividend"));
   const investable = cleanDisplayValue(get(row, "可投性 / Investable"));
   const fundamentalsHtml = stockFundamentalsBlock(row, lang);
@@ -2619,6 +2674,7 @@ function stockAnalysisRow(row, lang, detailId, active, extraClass = "") {
         <span>${lang === "zh" ? "更新时间" : "Updated"}: ${escapeHtml(updated || "—")}</span>
         ${hasDisplayValue(dataAge) ? `<span>${lang === "zh" ? `数据已${escapeHtml(dataAge)}天未更新` : `Data age: ${escapeHtml(dataAge)}d`}</span>` : ""}
       </div>
+      ${stockDataStatusLine(row, lang)}
       ${extraClass ? `<button class="stock-back-to-list" type="button" data-stock-back-target="${escapeHtml(detailId)}">${escapeHtml(lang === "zh" ? "返回股票列表" : "Back to stock list")}</button>` : ""}
     </article>
   `;

@@ -6,7 +6,8 @@ Reads the stock watchlist from the existing Google Sheet ("11 Stock Analysis"
 tab, via the same Apps Script Web App the site already uses), runs quote +
 fundamental collection through the vendored daily_stock_analysis (DSA)
 modules, and writes a standardized read-only cache to
-../data/stock-analysis/latest.json.
+../public/data/stock-analysis/latest.json (served by the site at
+/data/stock-analysis/latest.json).
 
 Single Source of Truth rules:
   - The ticker list ONLY comes from the Google Sheet. --stocks may narrow the
@@ -39,7 +40,7 @@ from typing import Any, Callable, Dict, List, Optional, TypeVar
 ENGINE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = ENGINE_DIR.parent
 VENDOR_DIR = ENGINE_DIR / "vendor" / "daily_stock_analysis"
-OUTPUT_PATH = REPO_ROOT / "data" / "stock-analysis" / "latest.json"
+OUTPUT_PATH = REPO_ROOT / "public" / "data" / "stock-analysis" / "latest.json"
 SHEET_TAB = "11 Stock Analysis"
 
 # Sheet rows that are known non-investable placeholders (private companies).
@@ -429,12 +430,32 @@ def main() -> int:
             time.sleep(INTER_STOCK_DELAY_S)
     elapsed = time.monotonic() - started
 
+    # This run's buckets (what was processed this invocation).
     ok = buckets["ok"]
     partial = buckets["partial"]
     stale = buckets["stale"]
     unavailable = buckets["unavailable"]
     failed = buckets["failed"]
     placeholders = buckets["placeholder"]
+
+    # Top-level summary describes the WHOLE cache (all 76 tickers), not just the
+    # subset processed this run — so the frontend status strip is meaningful
+    # after an incremental run too.
+    file_counts: Dict[str, int] = {
+        "ok": 0, "partial": 0, "stale": 0, "unavailable": 0, "failed": 0, "placeholder": 0,
+    }
+    file_failed_symbols: List[str] = []
+    file_unavailable_symbols: List[str] = []
+    file_stale_symbols: List[str] = []
+    for tk, entry in merged_stocks.items():
+        st = entry.get("status", "failed")
+        file_counts[st] = file_counts.get(st, 0) + 1
+        if st == "failed":
+            file_failed_symbols.append(tk)
+        elif st == "unavailable":
+            file_unavailable_symbols.append(tk)
+        elif st == "stale":
+            file_stale_symbols.append(tk)
 
     doc = {
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -444,15 +465,21 @@ def main() -> int:
         "runScope": "subset" if args.stocks else "full",
         "requestedSymbols": len(selected),
         "totalSymbols": len(by_ticker),
-        "successful": len(ok),
-        "partial": len(partial),
-        "stale": len(stale),
-        "unavailable": len(unavailable),
-        "failed": len(failed),
-        "placeholders": len(placeholders),
-        "failedSymbols": failed,
-        "staleSymbols": stale,
-        "unavailableSymbols": unavailable,
+        # Whole-file counts (drive the frontend status strip):
+        "successful": file_counts["ok"],
+        "partial": file_counts["partial"],
+        "stale": file_counts["stale"],
+        "unavailable": file_counts["unavailable"],
+        "failed": file_counts["failed"],
+        "placeholders": file_counts["placeholder"],
+        "failedSymbols": file_failed_symbols,
+        "staleSymbols": file_stale_symbols,
+        "unavailableSymbols": file_unavailable_symbols,
+        # This-run detail (for logs/debugging):
+        "thisRun": {
+            "ok": len(ok), "partial": len(partial), "stale": len(stale),
+            "unavailable": len(unavailable), "failed": len(failed), "placeholder": len(placeholders),
+        },
         "rateLimitEvents": rate_limit_events,
         "runSeconds": round(elapsed, 1),
         "stocks": merged_stocks,

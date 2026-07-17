@@ -195,8 +195,92 @@ export async function archiveDecisionLog(decisionId) {
   return await fetchJson(url);
 }
 
+// Read-only cache produced by the DSA Adapter (analysis-engine/dsa_adapter.py),
+// served as a static asset. Fresh market/valuation/fundamental values are
+// overlaid onto the Google Sheet rows here; the sheet stays the source of truth
+// for the watchlist and all human-maintained columns.
+const STOCK_ANALYSIS_JSON_URL = "/data/stock-analysis/latest.json";
+
 export async function loadStockAnalysisPageSource(options = {}) {
-  return await loadSheetTabWithOptions(SHEET_CONFIG.tabs.stockAnalysis, options);
+  const rows = await loadSheetTabWithOptions(SHEET_CONFIG.tabs.stockAnalysis, options);
+
+  // Fetch the DSA cache. On ANY failure, fall back to the plain sheet rows so
+  // the page never blanks out.
+  let cache = null;
+  try {
+    const response = await fetch(`${STOCK_ANALYSIS_JSON_URL}?_=${Date.now()}`, { cache: "no-store" });
+    if (response.ok) {
+      cache = await response.json();
+    } else {
+      console.warn(`[stock-analysis] latest.json HTTP ${response.status}; showing sheet data only.`);
+    }
+  } catch (error) {
+    console.warn("[stock-analysis] latest.json unavailable; showing sheet data only:", error.message);
+  }
+
+  if (!cache || !cache.stocks) {
+    return rows;
+  }
+
+  const merged = rows.map((row) => overlayStockAnalysis(row, cache.stocks));
+  merged.analysisMeta = {
+    generatedAt: cache.generatedAt || "",
+    marketDate: cache.marketDate || "",
+    totalSymbols: cache.totalSymbols ?? rows.length,
+    successful: cache.successful ?? 0,
+    placeholders: cache.placeholders ?? 0,
+    // "failed or unavailable" combined, per the status strip spec.
+    failedOrUnavailable: (cache.failed ?? 0) + (cache.unavailable ?? 0),
+  };
+  return merged;
+}
+
+// Overlays DSA cache values onto one sheet row, matched by Ticker. Only writes
+// a field when the cache has a real value for it — never overwrites a
+// human-maintained column, and never blanks an existing value with null.
+function overlayStockAnalysis(row, stocks) {
+  const ticker = String(row.Ticker ?? row.ticker ?? "").trim().toUpperCase();
+  const s = ticker ? stocks[ticker] : null;
+  if (!s) return row; // no cache record → keep the sheet row exactly as-is
+
+  const out = { ...row };
+  const setNum = (key, value, fmt) => {
+    if (typeof value === "number" && Number.isFinite(value)) out[key] = fmt(value);
+  };
+  const pct = (n) => `${n >= 0 ? "" : ""}${n.toFixed(2)}%`;
+
+  setNum("当前价格", s.price, (n) => n.toFixed(2));
+  setNum("日变动%", s.changePercent, (n) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`);
+  setNum("成交量 / Volume", s.volume, (n) => Math.round(n).toLocaleString("en-US"));
+  if (typeof s.currency === "string" && s.currency) out["币种 / Currency"] = s.currency;
+  setNum("市值 Market Cap", s.marketCap, (n) => n);
+  setNum("P/E 市盈率", s.pe, (n) => n.toFixed(2));
+  setNum("Forward P/E 预期市盈率", s.forwardPe, (n) => n.toFixed(2));
+  setNum("Forward P/E", s.forwardPe, (n) => n.toFixed(2));
+  setNum("PEG", s.peg, (n) => n.toFixed(2));
+  setNum("股息率 Dividend Yield", s.dividendYield, pct);
+  setNum("Profit Margin 净利率", s.profitMargin, pct);
+  setNum("Operating Margin 营业利润率", s.operatingMargin, pct);
+  setNum("ROE 净资产收益率", s.roe, pct);
+  setNum("Revenue TTM 过去12月营收", s.revenue, (n) => n);
+  setNum("Revenue Growth 营收增长", s.revenueGrowth, pct);
+  setNum("EPS 每股收益", s.eps, (n) => n.toFixed(2));
+  setNum("52周高点", s.week52High, (n) => n.toFixed(2));
+  setNum("52周低点", s.week52Low, (n) => n.toFixed(2));
+  setNum("52周位置% / 52W Position", s.week52PositionPercent, (n) => `${n.toFixed(1)}%`);
+
+  if (s.quoteUpdatedAt) out["更新时间"] = s.quoteUpdatedAt;
+  if (s.fundamentalsUpdatedAt) out["财务数据更新时间"] = s.fundamentalsUpdatedAt;
+  if (Array.isArray(s.dataSources) && s.dataSources.length) {
+    out["基本面数据来源"] = s.dataSources.join(", ");
+  }
+  // Machine-readable status for the badge/foot. Sheet has no such column, so
+  // this is additive and never clobbers human content.
+  out.__dsaStatus = s.status || "";
+  out.__dsaQuoteUpdatedAt = s.quoteUpdatedAt || "";
+  out.__dsaFundamentalsUpdatedAt = s.fundamentalsUpdatedAt || "";
+  out.__dsaSources = Array.isArray(s.dataSources) ? s.dataSources.join(", ") : "";
+  return out;
 }
 
 export async function refreshStockAnalysis(adminToken = "") {
