@@ -22,3 +22,8 @@ dist/
 backup_*/
 *.backup-*
 *.rtf
+
+# Analysis engine (DSA Adapter): vendored upstream clone and local venv are
+# recreated from analysis-engine/README.md instructions; never commit them.
+analysis-engine/vendor/
+analysis-engine/.venv/

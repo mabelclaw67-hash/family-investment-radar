@@ -1,0 +1,12 @@
+# Minimal dependency set for the DSA Adapter (analysis-engine/dsa_adapter.py).
+# We vendor daily_stock_analysis (see vendor/, gitignored) but only import its
+# yfinance data_provider modules, so the full DSA requirements.txt (A-share
+# sources, Feishu/Discord bots, backtesting, FastAPI) is intentionally NOT
+# installed. Keep this list to what those imports actually need.
+yfinance>=0.2.0
+pandas>=2.0.0
+tenacity>=8.2.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+fake-useragent>=1.4.0
+pydantic>=2.0.0
