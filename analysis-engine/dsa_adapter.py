@@ -28,11 +28,13 @@ import argparse
 import json
 import logging
 import os
+import random
 import sys
 import tempfile
+import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, TypeVar
 
 ENGINE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = ENGINE_DIR.parent
@@ -44,9 +46,41 @@ SHEET_TAB = "11 Stock Analysis"
 # They stay in the sheet (sheet is SSOT) but are skipped for market data.
 PLACEHOLDER_HINTS = {"不可投", "未上市", "private"}
 
+# Request throttling / retry (be a good Yahoo citizen; never hammer it).
+INTER_STOCK_DELAY_S = 1.5      # pause between tickers (sequential run)
+MAX_RETRIES = 2               # retries per network call, on top of the first try
+BACKOFF_BASE_S = 2.0          # exponential backoff base
+RATE_LIMIT_HINTS = ("rate limit", "too many requests", "429", "try again", "timed out", "timeout")
+
 sys.path.insert(0, str(VENDOR_DIR))
 
 logger = logging.getLogger("dsa_adapter")
+
+# Set by main(): counts how many calls hit an apparent rate limit / retry.
+rate_limit_events = 0
+
+T = TypeVar("T")
+
+
+def with_retry(label: str, fn: Callable[[], T]) -> T:
+    """Run fn with up to MAX_RETRIES retries and exponential backoff.
+    Only transient/rate-limit-looking errors are retried; others fail fast."""
+    global rate_limit_events
+    attempt = 0
+    while True:
+        try:
+            return fn()
+        except Exception as exc:  # noqa: BLE001 — deliberately broad; caller isolates
+            transient = any(h in str(exc).lower() for h in RATE_LIMIT_HINTS)
+            if any(h in str(exc).lower() for h in ("rate limit", "too many requests", "429")):
+                rate_limit_events += 1
+            if attempt >= MAX_RETRIES or not transient:
+                raise
+            delay = BACKOFF_BASE_S * (2 ** attempt) + random.uniform(0, 0.5)
+            logger.warning("[%s] transient error (attempt %d/%d), retrying in %.1fs: %s",
+                           label, attempt + 1, MAX_RETRIES, delay, exc)
+            time.sleep(delay)
+            attempt += 1
 
 
 # ---------------------------------------------------------------------------
@@ -132,7 +166,7 @@ def collect_quote(ticker: str) -> Dict[str, Any]:
 
     if not is_canadian(ticker):
         from data_provider.yfinance_fetcher import YfinanceFetcher
-        quote = YfinanceFetcher().get_realtime_quote(symbol)
+        quote = with_retry(f"{ticker} quote", lambda: YfinanceFetcher().get_realtime_quote(symbol))
         if quote is not None:
             return {
                 "source": "dsa:yfinance_fetcher",
@@ -147,7 +181,7 @@ def collect_quote(ticker: str) -> Dict[str, Any]:
         logger.warning("[%s] DSA fetcher returned None, falling back to yfinance fast_info", ticker)
 
     import yfinance as yf
-    info = yf.Ticker(symbol).fast_info
+    info = with_retry(f"{ticker} fast_info", lambda: yf.Ticker(symbol).fast_info)
     price = info.last_price
     prev = info.previous_close
     if price is None:
@@ -167,7 +201,10 @@ def collect_quote(ticker: str) -> Dict[str, Any]:
 def collect_fundamentals(ticker: str) -> Dict[str, Any]:
     """DSA YfinanceFundamentalAdapter bundle (works for US and .TO)."""
     from data_provider.yfinance_fundamental_adapter import YfinanceFundamentalAdapter
-    bundle = YfinanceFundamentalAdapter().get_fundamental_bundle(to_yahoo_symbol(ticker))
+    bundle = with_retry(
+        f"{ticker} fundamentals",
+        lambda: YfinanceFundamentalAdapter().get_fundamental_bundle(to_yahoo_symbol(ticker)),
+    )
     growth = bundle.get("growth") or {}
     report = (bundle.get("earnings") or {}).get("financial_report") or {}
     dividend = (bundle.get("earnings") or {}).get("dividend") or {}
@@ -189,7 +226,7 @@ def collect_valuation(ticker: str) -> Dict[str, Any]:
     """Valuation/ratio fields DSA's bundle does not cover, from the same
     yfinance library DSA uses (Ticker.info)."""
     import yfinance as yf
-    info = yf.Ticker(to_yahoo_symbol(ticker)).info or {}
+    info = with_retry(f"{ticker} info", lambda: yf.Ticker(to_yahoo_symbol(ticker)).info) or {}
 
     def num(key: str) -> Optional[float]:
         v = info.get(key)
@@ -288,15 +325,20 @@ def build_stock_entry(row: Dict[str, Any], previous: Optional[Dict[str, Any]]) -
         logger.warning("[%s] valuation failed: %s", ticker, exc)
 
     entry["dataSources"] = sorted(sources)
+    has_price = isinstance(entry.get("price"), (int, float))
     if not failures:
         entry["status"] = "ok"
         entry.pop("statusDetail", None)
-    elif len(failures) == 3 and previous:
-        entry["status"] = "stale"  # everything failed; previous values retained above
+    elif not has_price and previous and isinstance(previous.get("price"), (int, float)):
+        # All fresh data missing, but a prior good price exists: keep it, mark stale.
+        entry["status"] = "stale"
         entry["statusDetail"] = "; ".join(failures)
-    elif len(failures) == 3:
-        entry["status"] = "failed"
-        entry["statusDetail"] = "; ".join(failures)
+    elif not has_price:
+        # No fresh price and no last-known-good — do not pretend it's usable.
+        # Most common cause: the sheet ticker does not resolve on Yahoo
+        # (e.g. a wrong exchange suffix). Reported, never fabricated.
+        entry["status"] = "unavailable"
+        entry["statusDetail"] = "; ".join(failures) or "no price data from any source"
     else:
         entry["status"] = "partial"
         entry["statusDetail"] = "; ".join(failures)
@@ -365,20 +407,28 @@ def main() -> int:
     previous_stocks = previous_doc.get("stocks") or {}
     merged_stocks: Dict[str, Any] = dict(previous_stocks)  # keep untouched tickers as-is
 
-    ok, failed, partial, placeholders = [], [], [], []
-    for ticker in selected:
+    buckets: Dict[str, List[str]] = {
+        "ok": [], "partial": [], "stale": [], "unavailable": [], "failed": [], "placeholder": [],
+    }
+    started = time.monotonic()
+    for index, ticker in enumerate(selected):
         entry = build_stock_entry(by_ticker[ticker], previous_stocks.get(ticker))
         merged_stocks[ticker] = entry
         status = entry["status"]
-        if status == "ok":
-            ok.append(ticker)
-        elif status == "placeholder":
-            placeholders.append(ticker)
-        elif status == "partial":
-            partial.append(ticker)
-        else:
-            failed.append(ticker)
+        buckets.get(status, buckets["failed"]).append(ticker)
         logger.info("[%s] status=%s price=%s", ticker, status, entry.get("price"))
+        # Throttle between tickers (skip after the last one and after placeholders,
+        # which made no network calls).
+        if index < len(selected) - 1 and status != "placeholder":
+            time.sleep(INTER_STOCK_DELAY_S)
+    elapsed = time.monotonic() - started
+
+    ok = buckets["ok"]
+    partial = buckets["partial"]
+    stale = buckets["stale"]
+    unavailable = buckets["unavailable"]
+    failed = buckets["failed"]
+    placeholders = buckets["placeholder"]
 
     doc = {
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -390,25 +440,35 @@ def main() -> int:
         "totalSymbols": len(by_ticker),
         "successful": len(ok),
         "partial": len(partial),
+        "stale": len(stale),
+        "unavailable": len(unavailable),
         "failed": len(failed),
         "placeholders": len(placeholders),
         "failedSymbols": failed,
+        "staleSymbols": stale,
+        "unavailableSymbols": unavailable,
+        "rateLimitEvents": rate_limit_events,
+        "runSeconds": round(elapsed, 1),
         "stocks": merged_stocks,
     }
 
     print("\n===== DSA Adapter run summary =====")
-    print(f"  requested : {len(selected)} of {len(by_ticker)} sheet tickers")
-    print(f"  ok        : {len(ok)} {ok}")
-    print(f"  partial   : {len(partial)} {partial}")
-    print(f"  failed    : {len(failed)} {failed}")
-    print(f"  placeholder: {len(placeholders)} {placeholders}")
+    print(f"  requested   : {len(selected)} of {len(by_ticker)} sheet tickers")
+    print(f"  ok          : {len(ok)} {ok}")
+    print(f"  partial     : {len(partial)} {partial}")
+    print(f"  stale       : {len(stale)} {stale}")
+    print(f"  unavailable : {len(unavailable)} {unavailable}")
+    print(f"  failed      : {len(failed)} {failed}")
+    print(f"  placeholder : {len(placeholders)} {placeholders}")
+    print(f"  rate-limit events: {rate_limit_events}")
+    print(f"  elapsed     : {elapsed:.1f}s")
 
     if args.dry_run:
         print("  dry-run: latest.json NOT written")
         return 0
 
     write_output(doc)
-    print(f"  wrote     : {OUTPUT_PATH.relative_to(REPO_ROOT)}")
+    print(f"  wrote       : {OUTPUT_PATH.relative_to(REPO_ROOT)}")
     return 0 if not failed else 1
 
 

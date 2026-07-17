@@ -43,8 +43,9 @@ if (Number.isNaN(generated)) {
 
 // --- per-stock checks ---
 const seen = new Set();
-let okCount = 0, staleCount = 0, failedCount = 0, placeholderCount = 0, partialCount = 0;
+const counts = { ok: 0, partial: 0, stale: 0, unavailable: 0, failed: 0, placeholder: 0 };
 const failedTickers = [];
+const unavailableTickers = [];
 
 for (const [key, s] of Object.entries(stocks)) {
   if (seen.has(key)) errors.push(`duplicate ticker key: ${key}`);
@@ -53,13 +54,18 @@ for (const [key, s] of Object.entries(stocks)) {
   if (s.symbol !== key) errors.push(`${key}: symbol field "${s.symbol}" does not match its key`);
   if (!s.status) errors.push(`${key}: missing status`);
 
-  switch (s.status) {
-    case "ok": okCount++; break;
-    case "partial": partialCount++; break;
-    case "stale": staleCount++; break;
-    case "placeholder": placeholderCount++; continue; // no market-data checks
-    default: failedCount++; failedTickers.push(key); continue;
+  // Rows with no usable market data: honest gaps, not corruption. They must be
+  // clearly marked (statusDetail) but do NOT hard-fail the whole run.
+  if (s.status === "placeholder") { counts.placeholder++; continue; }
+  if (s.status === "unavailable" || s.status === "failed") {
+    counts[s.status]++;
+    (s.status === "failed" ? failedTickers : unavailableTickers).push(key);
+    if (!s.statusDetail) warnings.push(`${key}: status ${s.status} but no statusDetail`);
+    if (s.price != null) errors.push(`${key}: status ${s.status} must not carry a price`);
+    continue;
   }
+  if (s.status in counts) counts[s.status]++;
+  else { errors.push(`${key}: unknown status "${s.status}"`); continue; }
 
   // Required fields for any row that claims ok/partial/stale
   for (const f of ["name", "currency", "quoteUpdatedAt", "dataSources"]) {
@@ -96,7 +102,8 @@ if (doc.runScope === "full" && typeof doc.totalSymbols === "number" && tickers.l
 // --- report ---
 console.log(`latest.json — generated ${doc.generatedAt}, scope=${doc.runScope ?? "?"}`);
 console.log(`  tickers in file : ${tickers.length} (sheet total: ${doc.totalSymbols})`);
-console.log(`  ok=${okCount} partial=${partialCount} stale=${staleCount} failed=${failedCount} placeholder=${placeholderCount}`);
+console.log(`  ok=${counts.ok} partial=${counts.partial} stale=${counts.stale} unavailable=${counts.unavailable} failed=${counts.failed} placeholder=${counts.placeholder}`);
+if (unavailableTickers.length) console.log(`  unavailable     : ${unavailableTickers.join(", ")} (check sheet ticker/exchange suffix)`);
 if (failedTickers.length) console.log(`  failed tickers  : ${failedTickers.join(", ")}`);
 for (const w of warnings) console.log(`  WARN: ${w}`);
 for (const e of errors) console.log(`  ERROR: ${e}`);

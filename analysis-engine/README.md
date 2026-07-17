@@ -26,14 +26,25 @@ data/stock-analysis/latest.json  (regenerable read-only cache)
 
 ## Setup (one-time)
 
+Use the bootstrap script — it clones DSA at a **pinned** version and builds the
+venv, idempotently (safe to re-run, works on a fresh machine or in CI):
+
 ```bash
 cd analysis-engine
-python3 -m venv .venv
-./.venv/bin/pip install -r requirements.txt
-git clone --depth 1 https://github.com/ZhuLinsen/daily_stock_analysis.git vendor/daily_stock_analysis
+./bootstrap.sh --venv
 ```
 
-`vendor/` and `.venv/` are gitignored; CI recreates them.
+`vendor/` and `.venv/` are gitignored and never committed; the script recreates
+them. DSA is pinned so a run never floats to upstream `main`:
+
+| | value |
+| --- | --- |
+| DSA release | **v3.26.1** |
+| commit SHA | `e8a9ca7742e8cb2498c8f491dd76d239b3064e1a` |
+
+To bump the version, edit `DSA_REF` + `DSA_SHA` in `bootstrap.sh` together and
+update this table. The script aborts if the checked-out HEAD does not match the
+pinned SHA.
 
 Required environment (already in the repo root `.env`):
 
@@ -77,3 +88,21 @@ npm run validate:stock-data
 Sheet tickers are already Yahoo-format except Canadian share classes:
 `TECK.B.TO` → `TECK-B.TO`. See `to_yahoo_symbol()`. The JSON key always stays
 the sheet's original ticker.
+
+## Request throttling
+
+Runs are sequential (no concurrency). Between tickers there is a
+`INTER_STOCK_DELAY_S` (1.5s) pause; each network call retries up to
+`MAX_RETRIES` (2) times with exponential backoff, but only on transient /
+rate-limit-looking errors. A single ticker failing never blocks the batch. The
+full 76-row run takes ~3.5 minutes and, in testing, hit zero rate limits.
+
+## Status values in latest.json
+
+| status | meaning |
+| --- | --- |
+| `ok` | all data fetched this run |
+| `partial` | price present, but some fundamentals/valuation fields failed |
+| `stale` | fresh fetch failed; previous last-known-good values retained |
+| `unavailable` | no price from any source and no prior value — usually a wrong sheet ticker/exchange suffix (e.g. `CCJ.TO`; Cameco is `CCJ` on NYSE / `CCO.TO` on TSX). Reported, never fabricated. |
+| `placeholder` | non-investable private company (OPENAI/ANTHROPIC/CURSOR/SPCX); market data skipped |
