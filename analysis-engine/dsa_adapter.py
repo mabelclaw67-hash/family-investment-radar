@@ -259,6 +259,184 @@ def pct(ratio: Optional[float]) -> Optional[float]:
 
 
 # ---------------------------------------------------------------------------
+# News (free, no API key — Yahoo Finance via yfinance)
+# ---------------------------------------------------------------------------
+
+NEWS_LIMIT = 5
+NEWS_MAX_AGE_DAYS = 14
+
+
+def _parse_iso_ts(value: Any) -> Optional[float]:
+    if not value:
+        return None
+    try:
+        s = str(value).replace("Z", "+00:00")
+        return datetime.fromisoformat(s).timestamp()
+    except (ValueError, TypeError):
+        return None
+
+
+def collect_news(ticker: str) -> List[Dict[str, Any]]:
+    import yfinance as yf
+    raw = with_retry(f"{ticker} news", lambda: yf.Ticker(to_yahoo_symbol(ticker)).news) or []
+    cutoff = datetime.now(timezone.utc).timestamp() - NEWS_MAX_AGE_DAYS * 86400
+    items: List[Dict[str, Any]] = []
+    seen = set()
+    for r in raw:
+        c = r.get("content") or r
+        title = str(c.get("title") or "").strip()
+        if not title:
+            continue
+        url = (
+            (c.get("canonicalUrl") or {}).get("url")
+            or (c.get("clickThroughUrl") or {}).get("url")
+            or ""
+        )
+        key = (url or title).lower()
+        if key in seen:
+            continue
+        pub = c.get("pubDate") or c.get("displayTime") or ""
+        ts = _parse_iso_ts(pub)
+        if ts is not None and ts < cutoff:
+            continue
+        seen.add(key)
+        items.append({
+            "title": title,
+            "summary": str(c.get("summary") or c.get("description") or "").strip(),
+            "source": (c.get("provider") or {}).get("displayName") or "Yahoo Finance",
+            "publishedAt": pub,
+            "url": url,
+        })
+        if len(items) >= NEWS_LIMIT:
+            break
+    return items
+
+
+def _news_signature(news: Optional[List[Dict[str, Any]]]) -> List[str]:
+    return sorted((n.get("url") or n.get("title") or "") for n in (news or []))
+
+
+# ---------------------------------------------------------------------------
+# AI analysis (OpenAI, cost-gated — only significant-change stocks)
+# ---------------------------------------------------------------------------
+
+AI_STALE_DAYS = 3
+AI_SIGNIFICANT_MOVE_PCT = 5.0
+OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
+
+
+def openai_key() -> str:
+    return os.environ.get("OPENAI_API_KEY") or os.environ.get("HEALTH_PASSPORT_OPENAI_API_KEY") or ""
+
+
+def openai_model() -> str:
+    return os.environ.get("OPENAI_MODEL", "gpt-5-nano")
+
+
+def determine_ai_need(entry: Dict[str, Any], previous: Optional[Dict[str, Any]],
+                      fresh_news: List[Dict[str, Any]]) -> tuple:
+    """Return (needed, reasons, score). Score orders which stocks get the LLM
+    budget first. Only significant changes trigger a (paid) LLM call; otherwise
+    the previous analysis is carried forward."""
+    prev = previous or {}
+    prev_ai = prev.get("aiAnalysis") or {}
+    reasons: List[str] = []
+    score = 0.0
+    chg = entry.get("changePercent")
+    if isinstance(chg, (int, float)):
+        score = abs(chg)
+        if abs(chg) >= AI_SIGNIFICANT_MOVE_PCT:
+            reasons.append(f"move {chg:+.1f}%")
+    if prev_ai.get("status") != "ok":
+        reasons.append("first analysis")
+        score += 100.0  # first-time stocks get top priority
+    else:
+        if _news_signature(fresh_news) != _news_signature(prev.get("news")):
+            reasons.append("new news")
+            score += 10.0
+        gen = _parse_iso_ts(prev_ai.get("generatedAt"))
+        if gen is None or (datetime.now(timezone.utc).timestamp() - gen) > AI_STALE_DAYS * 86400:
+            reasons.append("stale")
+            score += 5.0
+        if entry.get("reportDate") and entry.get("reportDate") != prev.get("reportDate"):
+            reasons.append("new earnings")
+            score += 20.0
+    return bool(reasons), reasons, score
+
+
+def _extract_openai_text(data: Dict[str, Any]) -> str:
+    if isinstance(data.get("output_text"), str) and data["output_text"].strip():
+        return data["output_text"]
+    for item in data.get("output", []):
+        if item.get("type") == "message":
+            for c in item.get("content", []):
+                if c.get("type") in ("output_text", "text") and c.get("text"):
+                    return c["text"]
+    raise RuntimeError("no text in OpenAI response")
+
+
+def generate_ai_analysis(entry: Dict[str, Any], news: List[Dict[str, Any]]) -> Dict[str, Any]:
+    import requests
+    key = openai_key()
+    if not key:
+        raise RuntimeError("OPENAI_API_KEY not configured")
+    model = openai_model()
+    headlines = "\n".join(
+        f"- {n['title']}" + (f"（{n['summary']}）" if n.get("summary") else "")
+        for n in news[:5]
+    ) or "（暂无近期新闻）"
+    facts = {
+        "名称": entry.get("nameZh") or entry.get("name"),
+        "代码": entry.get("symbol"),
+        "现价": entry.get("price"),
+        "日涨跌%": entry.get("changePercent"),
+        "PE": entry.get("pe"),
+        "ForwardPE": entry.get("forwardPe"),
+        "营收增长%": entry.get("revenueGrowth"),
+        "ROE%": entry.get("roe"),
+        "股息率%": entry.get("dividendYield"),
+        "52周位置%": entry.get("week52PositionPercent"),
+    }
+    prompt = (
+        "你是面向华人家庭投资者的股票观察助手。根据下列公开数据和新闻，用简体中文给出简洁、谨慎的观察分析。"
+        "严禁给出买入/卖出/持有等任何交易建议，只做趋势观察与风险提示。只依据提供的信息，信息不足就写明不确定。\n\n"
+        f"数据：{json.dumps(facts, ensure_ascii=False)}\n近期新闻：\n{headlines}\n\n"
+        "只输出一个JSON对象，字段：summary(一段话中文总结，不超过120字)、trend(取值：偏多/偏空/中性)、"
+        "riskLevel(取值：低/中/高)、catalysts(字符串数组，2-4个关注点或驱动因素)、note(一句风险或不确定性提示)。"
+    )
+    body = {
+        "model": model,
+        "max_output_tokens": 1500,
+        "reasoning": {"effort": "minimal"},
+        "input": [
+            {"role": "system", "content": [{"type": "input_text",
+                "text": "你是谨慎的中文投资观察助手，只分析公开信息，不提供买卖建议，必须只输出严格JSON对象。"}]},
+            {"role": "user", "content": [{"type": "input_text", "text": prompt}]},
+        ],
+        "text": {"format": {"type": "json_object"}},
+    }
+    resp = requests.post(
+        OPENAI_RESPONSES_URL,
+        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+        json=body, timeout=60,
+    )
+    data = resp.json()
+    if not resp.ok:
+        raise RuntimeError((data.get("error") or {}).get("message") or f"OpenAI HTTP {resp.status_code}")
+    parsed = json.loads(_extract_openai_text(data))
+    return {
+        "status": "ok",
+        "summary": str(parsed.get("summary", "")).strip(),
+        "trend": str(parsed.get("trend", "")).strip(),
+        "riskLevel": str(parsed.get("riskLevel", "")).strip(),
+        "catalysts": [str(c).strip() for c in (parsed.get("catalysts") or []) if str(c).strip()][:4],
+        "note": str(parsed.get("note", "")).strip(),
+        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "model": model,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Per-stock assembly with last-known-good fallback
 # ---------------------------------------------------------------------------
 
@@ -324,6 +502,22 @@ def build_stock_entry(row: Dict[str, Any], previous: Optional[Dict[str, Any]]) -
     except Exception as exc:
         failures.append(f"valuation: {exc}")
         logger.warning("[%s] valuation failed: %s", ticker, exc)
+
+    # News — free (Yahoo), refreshed daily for every investable stock. On failure
+    # keep the prior news list rather than blanking it.
+    try:
+        entry["news"] = collect_news(ticker)
+        entry["newsUpdatedAt"] = now
+        sources.add("yfinance:news")
+    except Exception as exc:
+        # News is supplementary — a failure keeps prior news and does NOT
+        # downgrade the market-data status.
+        logger.warning("[%s] news failed (keeping prior): %s", ticker, exc)
+
+    # Decide whether this stock needs a (paid) LLM analysis this run. The actual
+    # OpenAI call happens in the capped AI pass in main(); here we only flag it.
+    needed, reasons, score = determine_ai_need(entry, previous, entry.get("news") or [])
+    entry["_aiNeed"] = {"needed": needed, "reasons": reasons, "score": score}
 
     entry["dataSources"] = sorted(sources)
     has_price = isinstance(entry.get("price"), (int, float))
@@ -428,6 +622,41 @@ def main() -> int:
         # which made no network calls).
         if index < len(selected) - 1 and status != "placeholder":
             time.sleep(INTER_STOCK_DELAY_S)
+
+    # ---- AI analysis pass (cost-gated) --------------------------------------
+    # Only stocks flagged as significantly changed get a (paid) LLM call, capped
+    # per run. Everything else carries its previous analysis forward. On any
+    # failure the prior analysis is kept; nothing is fabricated.
+    ai_done, ai_failed, ai_skipped_budget = 0, 0, 0
+    ai_budget = int(os.environ.get("AI_MAX_CALLS", "30"))
+    candidates = [
+        (t, merged_stocks[t]) for t in selected
+        if merged_stocks[t].get("_aiNeed", {}).get("needed")
+        and merged_stocks[t].get("status") in ("ok", "partial", "stale")
+    ]
+    candidates.sort(key=lambda te: te[1]["_aiNeed"]["score"], reverse=True)
+    if not openai_key():
+        logger.warning("OPENAI_API_KEY not set — skipping AI analysis (news still updated).")
+    else:
+        for rank, (t, e) in enumerate(candidates):
+            if rank >= ai_budget:
+                ai_skipped_budget += 1
+                if (e.get("aiAnalysis") or {}).get("status") != "ok":
+                    e["aiAnalysis"] = {"status": "pending", "summary": "", "generatedAt": None}
+                continue
+            try:
+                e["aiAnalysis"] = generate_ai_analysis(e, e.get("news") or [])
+                ai_done += 1
+                logger.info("[%s] AI analysis generated (%s)", t, ", ".join(e["_aiNeed"]["reasons"]))
+            except Exception as exc:
+                ai_failed += 1
+                logger.warning("[%s] AI analysis failed (keeping prior): %s", t, exc)
+                if (e.get("aiAnalysis") or {}).get("status") != "ok":
+                    e["aiAnalysis"] = {"status": "pending", "summary": "", "generatedAt": None}
+            time.sleep(0.4)
+    for e in merged_stocks.values():
+        e.pop("_aiNeed", None)  # strip internal scheduling field from output
+
     elapsed = time.monotonic() - started
 
     # This run's buckets (what was processed this invocation).
@@ -447,6 +676,8 @@ def main() -> int:
     file_failed_symbols: List[str] = []
     file_unavailable_symbols: List[str] = []
     file_stale_symbols: List[str] = []
+    ai_ok_total = 0
+    news_total = 0
     for tk, entry in merged_stocks.items():
         st = entry.get("status", "failed")
         file_counts[st] = file_counts.get(st, 0) + 1
@@ -456,6 +687,10 @@ def main() -> int:
             file_unavailable_symbols.append(tk)
         elif st == "stale":
             file_stale_symbols.append(tk)
+        if (entry.get("aiAnalysis") or {}).get("status") == "ok":
+            ai_ok_total += 1
+        if entry.get("news"):
+            news_total += 1
 
     doc = {
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -482,6 +717,9 @@ def main() -> int:
         },
         "rateLimitEvents": rate_limit_events,
         "runSeconds": round(elapsed, 1),
+        "aiAnalyzed": ai_ok_total,
+        "newsCovered": news_total,
+        "thisRunAi": {"generated": ai_done, "failed": ai_failed, "skippedOverBudget": ai_skipped_budget, "budget": ai_budget},
         "stocks": merged_stocks,
     }
 
@@ -493,6 +731,8 @@ def main() -> int:
     print(f"  unavailable : {len(unavailable)} {unavailable}")
     print(f"  failed      : {len(failed)} {failed}")
     print(f"  placeholder : {len(placeholders)} {placeholders}")
+    print(f"  news covered: {news_total} | AI analyzed (file total): {ai_ok_total}")
+    print(f"  AI this run : generated={ai_done} failed={ai_failed} over-budget={ai_skipped_budget} (budget={ai_budget})")
     print(f"  rate-limit events: {rate_limit_events}")
     print(f"  elapsed     : {elapsed:.1f}s")
 

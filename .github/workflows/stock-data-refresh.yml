@@ -82,6 +82,11 @@ jobs:
         env:
           # Read-only Apps Script Web App URL. GitHub masks the secret value in logs.
           VITE_FAMILY_INVESTMENT_API_URL: ${{ secrets.FAMILY_INVESTMENT_API_URL }}
+          # OpenAI key for AI analysis. If unset, AI is skipped gracefully (news
+          # still updates). GitHub masks the value in logs.
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # Cap on paid LLM calls per run (cost control).
+          AI_MAX_CALLS: "30"
         run: python analysis-engine/dsa_adapter.py
 
       - name: Validate generated stock data
@@ -133,8 +138,8 @@ jobs:
         id: change
         run: |
           norm() {
-            jq -S 'del(.generatedAt,.runSeconds,.thisRun,.rateLimitEvents)
-                   | .stocks |= (with_entries(.value |= del(.quoteUpdatedAt,.fundamentalsUpdatedAt)))' "$1"
+            jq -S 'del(.generatedAt,.runSeconds,.thisRun,.thisRunAi,.rateLimitEvents)
+                   | .stocks |= (with_entries(.value |= del(.quoteUpdatedAt,.fundamentalsUpdatedAt,.newsUpdatedAt)))' "$1"
           }
           new=$(norm public/data/stock-analysis/latest.json)
           if [ -f "$RUNNER_TEMP/prev/latest.json" ]; then

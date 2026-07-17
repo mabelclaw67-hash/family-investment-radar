@@ -83,8 +83,10 @@ There is exactly **one** stock-data scheduler for this project:
 - **When:** weekdays at **3:37 PM America/Vancouver** (after both the US and
   Canadian markets close). One daily run — no intraday refresh.
 - **Manual run:** GitHub → Actions → *Family Investment Stock Refresh* → *Run workflow*.
-- **Secret required:** `FAMILY_INVESTMENT_API_URL` (repo Actions secret; the
-  read-only Apps Script Web App `/exec` URL). Its value is never logged.
+- **Secrets required:**
+  - `FAMILY_INVESTMENT_API_URL` (read-only Apps Script Web App `/exec` URL).
+  - `OPENAI_API_KEY` (for AI analysis; if unset, AI is skipped and only news
+    + market data update). Both values are never logged.
 
 GitHub Actions `schedule` is UTC-only and does not support a per-schedule
 timezone, so the workflow triggers at both `37 22` and `37 23` UTC (PDT + PST)
@@ -116,7 +118,20 @@ Safety properties:
 - **This workflow is inert until it lands on the default branch `main`;** on the
   feature branch it does not run.
 
-News and AI analysis are **not** part of this scheduler yet (a later phase).
+### News + AI analysis
+
+- **News**: free Yahoo Finance headlines per stock (no key, no cost). Deduped,
+  recent (≤14 days), top 5, with title/source/time/summary/url. Refreshed daily
+  for every investable stock.
+- **AI analysis**: OpenAI (`OPENAI_API_KEY`, model `OPENAI_MODEL` default
+  `gpt-5-nano`). **Cost-gated** — an LLM call happens only when a stock is
+  significantly changed: no prior analysis, |daily move| ≥ 5%, new news, new
+  earnings, or analysis older than 3 days. Otherwise the previous analysis is
+  carried forward. Capped at `AI_MAX_CALLS` (default 30) LLM calls per run.
+  Output is cautious Chinese observation (summary/trend/risk/catalysts/note)
+  with **no buy/sell advice**; on failure the prior analysis is kept, never
+  fabricated. Both live in the same `latest.json` (`stocks[].news`,
+  `stocks[].aiAnalysis`).
 
 ### Replaces the old Netlify stock scheduler
 

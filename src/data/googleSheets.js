@@ -280,6 +280,10 @@ function overlayStockAnalysis(row, stocks) {
   out.__dsaQuoteUpdatedAt = s.quoteUpdatedAt || "";
   out.__dsaFundamentalsUpdatedAt = s.fundamentalsUpdatedAt || "";
   out.__dsaSources = Array.isArray(s.dataSources) ? s.dataSources.join(", ") : "";
+  // News + AI analysis (additive; sheet has no such columns).
+  out.__dsaNews = Array.isArray(s.news) ? s.news : [];
+  out.__dsaNewsUpdatedAt = s.newsUpdatedAt || "";
+  out.__dsaAi = s.aiAnalysis && s.aiAnalysis.status === "ok" ? s.aiAnalysis : null;
   return out;
 }
 

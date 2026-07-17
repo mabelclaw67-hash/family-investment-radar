@@ -1912,6 +1912,54 @@ function stockDataStatusLine(row, lang) {
   `;
 }
 
+// AI analysis block (from the DSA cache). Renders nothing until an analysis exists.
+function stockAiBlock(row, lang) {
+  const ai = row.__dsaAi;
+  if (!ai || !ai.summary) return "";
+  const zh = lang === "zh";
+  const gen = ai.generatedAt ? formatStockUpdate(ai.generatedAt) : "";
+  const cats = Array.isArray(ai.catalysts) ? ai.catalysts : [];
+  return `
+    <div class="stock-ai-block">
+      <div class="stock-ai-title">${zh ? "AI 观察分析" : "AI Analysis"}${gen ? ` <small>${zh ? "生成于 " : "Generated "}${escapeHtml(gen)}</small>` : ""}</div>
+      <p class="stock-ai-summary">${escapeHtml(ai.summary)}</p>
+      <div class="stock-ai-meta">
+        ${ai.trend ? `<span class="stock-ai-pill">${zh ? "趋势" : "Trend"}: ${escapeHtml(ai.trend)}</span>` : ""}
+        ${ai.riskLevel ? `<span class="stock-ai-pill">${zh ? "风险" : "Risk"}: ${escapeHtml(ai.riskLevel)}</span>` : ""}
+      </div>
+      ${cats.length ? `<ul class="stock-ai-catalysts">${cats.map((c) => `<li>${escapeHtml(c)}</li>`).join("")}</ul>` : ""}
+      ${ai.note ? `<p class="stock-ai-note">${escapeHtml(ai.note)}</p>` : ""}
+      <p class="stock-ai-disclaimer">${zh ? "AI 生成，仅供观察参考，不构成任何买卖建议。" : "AI-generated, for observation only — not investment advice."}</p>
+    </div>`;
+}
+
+// Related-news block (from the DSA cache; free Yahoo Finance headlines).
+function stockNewsBlock(row, lang) {
+  const news = Array.isArray(row.__dsaNews) ? row.__dsaNews : [];
+  if (!news.length) return "";
+  const zh = lang === "zh";
+  return `
+    <div class="stock-news-block">
+      <div class="stock-news-title">${zh ? "相关新闻" : "Related News"}</div>
+      <ul class="stock-news-list">
+        ${news.slice(0, 5).map((n) => {
+          const title = escapeHtml(n.title || "");
+          const src = escapeHtml(n.source || "");
+          const time = n.publishedAt ? escapeHtml(formatStockUpdate(n.publishedAt)) : "";
+          const url = typeof n.url === "string" && /^https?:\/\//.test(n.url) ? n.url : "";
+          const headline = url
+            ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${title}</a>`
+            : title;
+          return `<li>
+            <div class="stock-news-headline">${headline}</div>
+            <div class="stock-news-src">${src}${time ? ` · ${time}` : ""}</div>
+            ${n.summary ? `<div class="stock-news-sum">${escapeHtml(n.summary)}</div>` : ""}
+          </li>`;
+        }).join("")}
+      </ul>
+    </div>`;
+}
+
 // ─── Public Stock Lookup ─────────────────────────────────────────────────────
 
 export function StockLookupPage() {
@@ -2658,7 +2706,9 @@ function stockAnalysisRow(row, lang, detailId, active, extraClass = "") {
         <p><strong>${lang === "zh" ? "关注点：" : "Watch: "}</strong>${escapeHtml(focus || (lang === "zh" ? "待补充。" : "To be added."))}</p>
       </div>
 
+      ${stockAiBlock(row, lang)}
       ${fundamentalsHtml}
+      ${stockNewsBlock(row, lang)}
       ${stockOfficialLinks(row, lang)}
 
       <div class="stock-card-foot">
