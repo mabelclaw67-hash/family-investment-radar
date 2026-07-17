@@ -405,7 +405,13 @@ def main() -> int:
 
     previous_doc = load_previous()
     previous_stocks = previous_doc.get("stocks") or {}
-    merged_stocks: Dict[str, Any] = dict(previous_stocks)  # keep untouched tickers as-is
+    # Keep untouched tickers as-is, but drop any that the sheet no longer lists
+    # so latest.json stays in sync with the SSOT even on an incremental run
+    # (e.g. a ticker renamed CCJ.TO -> CCO.TO removes the old key).
+    merged_stocks: Dict[str, Any] = {t: e for t, e in previous_stocks.items() if t in by_ticker}
+    pruned = [t for t in previous_stocks if t not in by_ticker]
+    if pruned:
+        logger.info("Pruned %d ticker(s) no longer in the sheet: %s", len(pruned), pruned)
 
     buckets: Dict[str, List[str]] = {
         "ok": [], "partial": [], "stale": [], "unavailable": [], "failed": [], "placeholder": [],

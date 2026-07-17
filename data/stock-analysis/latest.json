@@ -1,24 +1,22 @@
 {
-  "generatedAt": "2026-07-17T16:39:36+00:00",
+  "generatedAt": "2026-07-17T16:45:48+00:00",
   "marketDate": "2026-07-17",
   "watchlistSource": "Google Sheet '11 Stock Analysis' via Apps Script (read-only)",
   "engine": "dsa-adapter (daily_stock_analysis vendored modules + yfinance)",
-  "runScope": "full",
-  "requestedSymbols": 76,
+  "runScope": "subset",
+  "requestedSymbols": 1,
   "totalSymbols": 76,
-  "successful": 71,
+  "successful": 1,
   "partial": 0,
   "stale": 0,
-  "unavailable": 1,
+  "unavailable": 0,
   "failed": 0,
-  "placeholders": 4,
+  "placeholders": 0,
   "failedSymbols": [],
   "staleSymbols": [],
-  "unavailableSymbols": [
-    "CCJ.TO"
-  ],
+  "unavailableSymbols": [],
   "rateLimitEvents": 0,
-  "runSeconds": 211.1,
+  "runSeconds": 2.4,
   "stocks": {
     "NVDA": {
       "symbol": "NVDA",
@@ -1895,26 +1893,6 @@
       ],
       "status": "ok"
     },
-    "CCJ.TO": {
-      "symbol": "CCJ.TO",
-      "yahooSymbol": "CCJ.TO",
-      "name": "Cameco",
-      "nameZh": "Cameco",
-      "theme": "矿产 / 核能",
-      "news": [],
-      "aiAnalysis": {
-        "status": "not_generated",
-        "summary": "",
-        "generatedAt": null
-      },
-      "fundamentalsUpdatedAt": "2026-07-17T16:38:10+00:00",
-      "dataSources": [
-        "dsa:yfinance_fundamental_adapter",
-        "yfinance:info"
-      ],
-      "status": "unavailable",
-      "statusDetail": "quote: 'exchangeTimezoneName'"
-    },
     "TECK.B.TO": {
       "symbol": "TECK.B.TO",
       "yahooSymbol": "TECK-B.TO",
@@ -3005,6 +2983,49 @@
       "week52High": 161.33,
       "week52Low": 55.86,
       "week52PositionPercent": 68.5,
+      "dataSources": [
+        "dsa:yfinance_fundamental_adapter",
+        "yfinance:fast_info",
+        "yfinance:info"
+      ],
+      "status": "ok"
+    },
+    "CCO.TO": {
+      "symbol": "CCO.TO",
+      "yahooSymbol": "CCO.TO",
+      "name": "Cameco",
+      "nameZh": "Cameco",
+      "theme": "矿产 / 核能",
+      "news": [],
+      "aiAnalysis": {
+        "status": "not_generated",
+        "summary": "",
+        "generatedAt": null
+      },
+      "currency": "CAD",
+      "price": 120.1500015258789,
+      "change": -2.4799957275390625,
+      "changePercent": -2.02,
+      "volume": 541963,
+      "marketCap": 52329287971.270584,
+      "quoteUpdatedAt": "2026-07-17T16:45:45+00:00",
+      "revenue": 845365000.0,
+      "revenueGrowth": 7.0852,
+      "roe": 9.598,
+      "grossMargin": 36.782,
+      "dividendYield": 0.1998,
+      "reportDate": "2026-03-31",
+      "sector": "Energy",
+      "fundamentalsUpdatedAt": "2026-07-17T16:45:45+00:00",
+      "pe": 81.21621,
+      "forwardPe": 44.97981,
+      "peg": 1.92,
+      "profitMargin": 18.39,
+      "operatingMargin": 18.19,
+      "eps": 1.48,
+      "week52High": 182.72,
+      "week52Low": 95.6,
+      "week52PositionPercent": 28.2,
       "dataSources": [
         "dsa:yfinance_fundamental_adapter",
         "yfinance:fast_info",
