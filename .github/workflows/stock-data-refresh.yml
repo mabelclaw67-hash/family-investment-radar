@@ -1,0 +1,205 @@
+name: Family Investment Stock Refresh
+
+# The one and only stock-data scheduler for this project.
+# Reads the watchlist from the Google Sheet (single source of truth), runs the
+# DSA Adapter, and commits public/data/stock-analysis/latest.json to main so
+# Netlify redeploys the fresh cache.
+#
+# Runs after both the US and Canadian markets close, at ~3:37 PM in
+# America/Vancouver. GitHub Actions `schedule` is UTC-only and does NOT support
+# a per-schedule timezone, so we trigger at BOTH candidate UTC times (covering
+# PDT summer and PST winter) and a guard step exits early unless it is really
+# the 15:00 hour in Vancouver — giving one true-local run per weekday, DST-safe.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "37 22 * * 1-5" # 15:37 America/Vancouver during PDT (UTC-7, summer)
+    - cron: "37 23 * * 1-5" # 15:37 America/Vancouver during PST (UTC-8, winter)
+
+# Least privilege: only enough to commit the regenerated cache to the repo.
+permissions:
+  contents: write
+
+# One stock refresh at a time; never cancel a run that is mid-flight.
+concurrency:
+  group: family-investment-stock-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # 0) DST-accurate time gate. On a scheduled trigger, continue only when
+      #    it is the 15:xx hour in America/Vancouver. Manual runs always pass.
+      - name: Gate to 15:xx America/Vancouver (scheduled runs only)
+        id: gate
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "Manual run (${{ github.event_name }}); skipping time gate."
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          hour=$(TZ="America/Vancouver" date +%H)
+          echo "Vancouver hour is ${hour}."
+          if [ "$hour" = "15" ]; then
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            echo "Not 15:xx in Vancouver; this UTC trigger is the off-season one. Exiting cleanly." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Checkout repository
+        if: steps.gate.outputs.proceed == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Setup Python
+        if: steps.gate.outputs.proceed == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: analysis-engine/requirements.txt
+
+      - name: Setup Node
+        if: steps.gate.outputs.proceed == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Bootstrap pinned DSA
+        if: steps.gate.outputs.proceed == 'true'
+        run: bash analysis-engine/bootstrap.sh
+
+      - name: Verify pinned DSA commit
+        if: steps.gate.outputs.proceed == 'true'
+        run: |
+          expected="e8a9ca7742e8cb2498c8f491dd76d239b3064e1a"
+          actual="$(git -C analysis-engine/vendor/daily_stock_analysis rev-parse HEAD)"
+          echo "DSA HEAD: ${actual}"
+          if [ "$actual" != "$expected" ]; then
+            echo "::error::DSA HEAD ${actual} != pinned ${expected}"
+            exit 1
+          fi
+
+      - name: Install Python dependencies
+        if: steps.gate.outputs.proceed == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r analysis-engine/requirements.txt
+
+      - name: Install frontend dependencies
+        if: steps.gate.outputs.proceed == 'true'
+        run: npm ci
+
+      # Capture the currently-committed cache so we can (a) restore it if this
+      # run produces bad data and (b) detect whether anything meaningful changed.
+      - name: Snapshot previous cache
+        if: steps.gate.outputs.proceed == 'true'
+        run: |
+          mkdir -p "$RUNNER_TEMP/prev"
+          if [ -f public/data/stock-analysis/latest.json ]; then
+            cp public/data/stock-analysis/latest.json "$RUNNER_TEMP/prev/latest.json"
+          fi
+
+      - name: Run full stock refresh
+        if: steps.gate.outputs.proceed == 'true'
+        env:
+          # Read-only Apps Script Web App URL. GitHub masks the secret value in logs.
+          VITE_FAMILY_INVESTMENT_API_URL: ${{ secrets.FAMILY_INVESTMENT_API_URL }}
+        run: python analysis-engine/dsa_adapter.py
+
+      - name: Validate generated stock data
+        if: steps.gate.outputs.proceed == 'true'
+        run: npm run validate:stock-data
+
+      - name: Build frontend
+        if: steps.gate.outputs.proceed == 'true'
+        run: npm run build
+
+      - name: Verify deployment assets
+        if: steps.gate.outputs.proceed == 'true'
+        run: |
+          test -s public/data/stock-analysis/latest.json || { echo "::error::public latest.json missing/empty"; exit 1; }
+          test -s dist/data/stock-analysis/latest.json   || { echo "::error::dist latest.json missing/empty"; exit 1; }
+
+      # Sanity-gate the data before any commit. On failure the job stops here,
+      # so the previously-committed (good) latest.json is preserved in git.
+      - name: Check data sanity
+        if: steps.gate.outputs.proceed == 'true'
+        id: sanity
+        run: |
+          node <<'EOF'
+          const fs = require("fs");
+          const doc = JSON.parse(fs.readFileSync("public/data/stock-analysis/latest.json", "utf8"));
+          const s = doc.stocks || {};
+          const keys = Object.keys(s);
+          const errs = [];
+          if (!doc.generatedAt) errs.push("missing generatedAt");
+          if (!doc.marketDate) errs.push("missing marketDate");
+          if (!(keys.length >= 70 && keys.length <= 90)) errs.push(`unexpected total ${keys.length}`);
+          if (!(Number(doc.successful) >= 60)) errs.push(`too few successful (${doc.successful})`);
+          for (const t of ["NVDA", "CCO.TO", "TECK.B.TO"]) if (!s[t]) errs.push(`missing ${t}`);
+          if (s["CCJ.TO"]) errs.push("stale CCJ.TO present");
+          const dups = keys.filter((k, i) => keys.indexOf(k) !== i);
+          if (dups.length) errs.push(`duplicate keys: ${dups.join(",")}`);
+
+          const line = `total=${keys.length} ok=${doc.successful} stale=${doc.stale} unavailable=${doc.unavailable} failed=${doc.failed} placeholder=${doc.placeholders}`;
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Stock refresh\n- ${line}\n- marketDate: ${doc.marketDate}\n- generatedAt: ${doc.generatedAt}\n`);
+          if (Array.isArray(doc.failedSymbols) && doc.failedSymbols.length) {
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `- failed: ${doc.failedSymbols.join(", ")}\n`);
+          }
+          if (errs.length) {
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `- **sanity FAILED:** ${errs.join("; ")}\n`);
+            console.error("::error::data sanity failed: " + errs.join("; "));
+            process.exit(1);
+          }
+          EOF
+
+      # Meaningful-change detection: ignore volatile timestamps so a rerun with
+      # identical prices (e.g. a holiday) does not create a no-op commit.
+      - name: Detect meaningful change
+        if: steps.gate.outputs.proceed == 'true'
+        id: change
+        run: |
+          norm() {
+            jq -S 'del(.generatedAt,.runSeconds,.thisRun,.rateLimitEvents)
+                   | .stocks |= (with_entries(.value |= del(.quoteUpdatedAt,.fundamentalsUpdatedAt)))' "$1"
+          }
+          new=$(norm public/data/stock-analysis/latest.json)
+          if [ -f "$RUNNER_TEMP/prev/latest.json" ]; then
+            old=$(norm "$RUNNER_TEMP/prev/latest.json")
+          else
+            old=""
+          fi
+          if [ "$new" = "$old" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "- No stock data changes detected." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push refreshed cache
+        if: steps.gate.outputs.proceed == 'true' && steps.change.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Stage ONLY the cache file — never dist/, node_modules/, vendor/, .venv/, .env.
+          git add public/data/stock-analysis/latest.json
+          if git diff --cached --quiet; then
+            echo "- Nothing staged; skipping commit." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git commit -m "chore(stock-data): daily refresh $(date -u +%Y-%m-%d)"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "- Committed and pushed refreshed cache to main." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report failure step
+        if: failure()
+        run: echo "- **Workflow failed.** Previous latest.json is preserved (no commit was made)." >> "$GITHUB_STEP_SUMMARY"

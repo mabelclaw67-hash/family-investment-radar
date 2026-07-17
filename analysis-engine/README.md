@@ -74,6 +74,50 @@ Validate the output:
 npm run validate:stock-data
 ```
 
+## Scheduler (the only one)
+
+There is exactly **one** stock-data scheduler for this project:
+
+- **Name:** Family Investment Stock Refresh
+- **File:** `.github/workflows/stock-data-refresh.yml`
+- **When:** weekdays at **3:37 PM America/Vancouver** (after both the US and
+  Canadian markets close). One daily run — no intraday refresh.
+- **Manual run:** GitHub → Actions → *Family Investment Stock Refresh* → *Run workflow*.
+- **Secret required:** `FAMILY_INVESTMENT_API_URL` (repo Actions secret; the
+  read-only Apps Script Web App `/exec` URL). Its value is never logged.
+
+GitHub Actions `schedule` is UTC-only and does not support a per-schedule
+timezone, so the workflow triggers at both `37 22` and `37 23` UTC (PDT + PST)
+and a guard step runs the real work only when it is the 15:xx hour in
+America/Vancouver — one true-local, DST-safe run per weekday.
+
+Data flow:
+
+```text
+Google Sheet 11 Stock Analysis
+  → GitHub Actions (Family Investment Stock Refresh)
+  → DSA Adapter (this engine)
+  → public/data/stock-analysis/latest.json
+  → git commit to main (github-actions[bot])
+  → Netlify automatic deployment
+```
+
+Safety properties:
+
+- Commits **only** `public/data/stock-analysis/latest.json`, and only when the
+  data meaningfully changed (volatile timestamps are ignored, so no no-op commits).
+- A sanity gate (total ≈ 76, ok ≥ 60, required tickers present, no `CCJ.TO`, no
+  dups) must pass before any commit; on failure the job stops and the previously
+  committed **last-known-good** `latest.json` is preserved.
+- No force-push; a rebase conflict fails the job instead.
+- The workflow has no `push`/`pull_request` trigger, so its own data commit can
+  never re-trigger it (no loop).
+- Pinned DSA version is verified before running (see below).
+- **This workflow is inert until it lands on the default branch `main`;** on the
+  feature branch it does not run.
+
+News and AI analysis are **not** part of this scheduler yet (a later phase).
+
 ## DSA reuse map
 
 | Capability | Module used | Notes |
