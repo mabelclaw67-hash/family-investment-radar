@@ -2,6 +2,7 @@ import { NAV_ITEMS, SHEET_CONFIG } from "./config.js";
 import { t, getLang, formatHeaderDate } from "./i18n.js";
 import { get } from "./data/dashboardMapper.js";
 import { deriveActionLabel, displayMarketValue, displayValue, HOLDING_FILTERS } from "./data/holdingsMapper.js";
+import { HOMEPAGE_MARKET_US, HOMEPAGE_MARKET_CA } from "./data/marketSymbols.js";
 
 // Mobile tab definitions: [i18n-key, icon, page-id]
 const MOBILE_TABS = [
@@ -139,16 +140,8 @@ export function MarketSection(marketData) {
   const bySymbol = {};
   rows.forEach((r) => { bySymbol[get(r, "代码 / Symbol")] = r; });
 
-  const dow    = buildIndexDisplayItem(bySymbol, "^DJI",    "Dow Jones");
-  const nasdaq = buildIndexDisplayItem(bySymbol, "^IXIC",   "Nasdaq");
-  const sp500  = buildIndexDisplayItem(bySymbol, "^GSPC",   "S&P 500");
-  const nvda   = buildIndexDisplayItem(bySymbol, "NVDA",    "NVIDIA");
-  const googl  = buildIndexDisplayItem(bySymbol, "GOOGL",   "Alphabet (Google)");
-  const tsx    = buildIndexDisplayItem(bySymbol, "^GSPTSE", "S&P/TSX Composite");
-  const cadusd = buildIndexDisplayItem(bySymbol, "CADUSD=X",         "CAD/USD");
-  const gold   = buildIndexDisplayItem(bySymbol, "GC=F",             "Gold (USD/oz)");
-  const oil    = buildIndexDisplayItem(bySymbol, "USO",              "Oil ETF Proxy (USO)");
-  const ca10y  = buildIndexDisplayItem(bySymbol, "XBB.TO",          "Canada Bond ETF (XBB.TO)");
+  const usItems = HOMEPAGE_MARKET_US.map((s) => buildIndexDisplayItem(bySymbol, s.symbol, s.label));
+  const caItems = HOMEPAGE_MARKET_CA.map((s) => buildIndexDisplayItem(bySymbol, s.symbol, s.label));
 
   return `
     <section class="market-grid">
@@ -160,14 +153,15 @@ export function MarketSection(marketData) {
             <span id="market-refresh-status" class="news-refresh-status"></span>
           </div>
         </div>
-        ${marketQuoteRows([dow, nasdaq, sp500, nvda, googl])}
+        <p class="market-auto-note" id="market-auto-note">${t("market_auto_refresh_note")}</p>
+        ${marketQuoteRows(usItems)}
         <p class="market-proxy-note">${t("market_proxy_note_us")}</p>
       </article>
       <article class="market-card">
         <div class="panel-title compact">
           <h2>${t("market_canada_title")}</h2>
         </div>
-        ${marketQuoteRows([tsx, cadusd, gold, oil, ca10y])}
+        ${marketQuoteRows(caItems)}
         <p class="market-proxy-note">${t("market_proxy_note_ca")}</p>
       </article>
     </section>

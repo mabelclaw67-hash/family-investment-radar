@@ -109,7 +109,7 @@ const STRINGS = {
 
     // ── Header ────────────────────────────────────────────────────────────────
     header_title:          "Family Investment Radar",
-    header_live:           "Live Updates",
+    header_live:           "Auto Updates",
     header_today:          "Today",
     header_search_ph:      "Search stocks, news, topics...",
 
@@ -130,6 +130,13 @@ const STRINGS = {
     market_proxy_note_ca:  "CAD/USD, Gold, Oil, 10Y Bond require GOOGLEFINANCE rows in sheet 09 Market Index Source.",
     market_empty:          "Market data pending",
     market_empty_sub:      "Only real index rows are shown here.",
+    market_auto_refresh_note: "Auto-refresh every 5 min",
+    market_last_updated:   "Last updated",     // "Last updated: 10:35 AM"
+    market_status_updating: "Updating…",
+    market_status_auto:    "Auto Updates",
+    market_status_closed:  "Market Closed",
+    market_status_delayed: "Data Delayed",
+    market_status_failed:  "Update Failed — showing last available data",
 
     // ── News panel ────────────────────────────────────────────────────────────
     news_panel_title:      "Live Updates",
@@ -549,7 +556,7 @@ const STRINGS = {
 
     // ── Header ────────────────────────────────────────────────────────────────
     header_title:          "家庭投资趋势分析",
-    header_live:           "实时更新",
+    header_live:           "自动更新",
     header_today:          "今日日期",
     header_search_ph:      "搜索股票、新闻、主题...",
 
@@ -570,6 +577,13 @@ const STRINGS = {
     market_proxy_note_ca:  "CAD/USD、Gold、Oil、10Y Bond 需在 09 Market Index Source 表格中配置对应 GOOGLEFINANCE 行后方可显示。",
     market_empty:          "行情数据待更新",
     market_empty_sub:      "仅显示真实指数行。",
+    market_auto_refresh_note: "每5分钟自动更新",
+    market_last_updated:   "最后更新",
+    market_status_updating: "更新中…",
+    market_status_auto:    "自动更新",
+    market_status_closed:  "已收盘",
+    market_status_delayed: "数据延迟",
+    market_status_failed:  "更新失败 — 显示最近可用数据",
 
     // ── News panel ────────────────────────────────────────────────────────────
     news_panel_title:      "即时更新",

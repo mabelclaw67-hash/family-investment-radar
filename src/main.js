@@ -8,7 +8,6 @@ import {
   loadHoldingsPageSource,
   loadStockAnalysisPageSource,
   loadWatchlistPageSource,
-  refreshMarketData,
   syncNewsFromSheet,
   syncMorningBrief,
   loadMarketBriefs,
@@ -17,6 +16,11 @@ import {
   updateWatchItem,
 } from "./data/googleSheets.js";
 import { buildDashboardModel, get } from "./data/dashboardMapper.js";
+import {
+  fetchMarketSnapshot,
+  snapshotToMarketRows,
+  isVancouverTradingHours,
+} from "./data/marketSnapshot.js";
 import { buildHoldingsModel } from "./data/holdingsMapper.js";
 import { buildWatchlistModel } from "./data/watchlistMapper.js";
 import { buildDecisionLogModel } from "./data/decisionLogMapper.js";
@@ -292,6 +296,13 @@ async function renderCurrentPage() {
   state.page = getPageFromUrl();
   const isAdmin = checkAuth();
 
+  // Tear down homepage market auto-refresh on every navigation; the dashboard
+  // branch restarts it. Guarantees a single timer and clean unmount.
+  stopMarketAutoRefresh();
+  if (state.page !== "dashboard") {
+    marketAuto.rows = []; // reseed from the sheet next time we open the homepage
+  }
+
   if (isAdminRoute(state.page) && !isAdmin) {
     window.location.hash = "#/dashboard";
     showPasswordGate();
@@ -389,16 +400,22 @@ async function renderCurrentPage() {
   const dashboard = buildDashboardModel(source);
   state.marketBriefs = await loadMarketBriefs();
   renderDashboard(dashboard);
+  startMarketAutoRefresh();
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 
 function renderDashboard(dashboard) {
+  // Seed the auto-refresh row set from the sheet-backed dashboard data, so a
+  // later snapshot merges over it (and a snapshot failure keeps sheet values).
+  if (marketAuto.rows.length === 0) {
+    marketAuto.rows = Array.isArray(dashboard.marketData) ? [...dashboard.marketData] : [];
+  }
   app.innerHTML = AppShell(`
     ${Header()}
     ${BuffettMottoBanner()}
     ${checkAuth() ? KpiCards(dashboard.kpis) : ""}
-    ${MarketSection(dashboard.marketData)}
+    ${MarketSection(marketAuto.rows.length ? marketAuto.rows : dashboard.marketData)}
     ${StockRadarHomeEntry()}
     <section class="dashboard-grid">
       ${LiveUpdatesPanel(dashboard.news)}
@@ -411,6 +428,139 @@ function renderDashboard(dashboard) {
   bindRefreshNewsButton();
   bindRefreshMarketButton();
   bindGlobalActions();
+  setMarketAutoNote(marketAuto.lastRefreshAt);
+}
+
+// ── Homepage market auto-refresh (Homepage Market Snapshot chain) ──────────────
+// Separate from the daily DSA analysis chain: refreshes ONLY the homepage market
+// cards via the read-only getMarketSnapshot function. No sheet write, no AI, no
+// 76-stock analysis. Trading hours are always evaluated in America/Vancouver.
+
+const MARKET_REFRESH_INTERVAL_MS = 5 * 60 * 1000; // production: 5 minutes
+const MARKET_VISIBILITY_STALE_MS = 2 * 60 * 1000; // refresh on re-show if older than this
+
+const marketAuto = {
+  timer: null,
+  inFlight: false,
+  lastRefreshAt: 0,
+  visibilityHandler: null,
+  rows: [],
+};
+
+function marketIntervalMs() {
+  // Dev-only override for testing (e.g. window.__MARKET_REFRESH_MS = 10000).
+  const override = Number(window.__MARKET_REFRESH_MS);
+  return Number.isFinite(override) && override >= 1000 ? override : MARKET_REFRESH_INTERVAL_MS;
+}
+
+function setMarketStatus(text, cls) {
+  const el = document.getElementById("market-refresh-status");
+  if (el) {
+    el.textContent = text;
+    el.className = `news-refresh-status ${cls || ""}`.trim();
+  }
+}
+
+function setMarketAutoNote(lastRefreshAt) {
+  const el = document.getElementById("market-auto-note");
+  if (!el) return;
+  const lang = getLang();
+  const timeStr = lastRefreshAt
+    ? new Date(lastRefreshAt).toLocaleTimeString(lang === "zh" ? "zh-CN" : "en-US", { hour: "2-digit", minute: "2-digit" })
+    : "—";
+  el.textContent = `${t("market_last_updated")}: ${timeStr} · ${t("market_auto_refresh_note")}`;
+}
+
+function mergeMarketRows(freshRows) {
+  const bySymbol = {};
+  (marketAuto.rows || []).forEach((r) => { bySymbol[get(r, "代码 / Symbol")] = r; });
+  freshRows.forEach((r) => { bySymbol[get(r, "代码 / Symbol")] = r; });
+  marketAuto.rows = Object.values(bySymbol);
+}
+
+function updateMarketSectionDom() {
+  const grid = document.querySelector(".market-grid");
+  if (!grid) return;
+  grid.outerHTML = MarketSection(marketAuto.rows);
+  bindRefreshMarketButton(); // re-bind the freshly rendered button
+}
+
+async function refreshHomeMarketSnapshot({ trigger }) {
+  if (state.page !== "dashboard") return;      // only while on the homepage
+  if (marketAuto.inFlight) return;             // no concurrent/duplicate requests
+  marketAuto.inFlight = true;
+
+  const btn = document.getElementById("btn-refresh-market");
+  if (trigger === "manual" && btn) btn.disabled = true;
+  setMarketStatus(t("market_status_updating"), "loading");
+
+  try {
+    const payload = await fetchMarketSnapshot();
+    const freshRows = snapshotToMarketRows(payload.quotes);
+    if (freshRows.length) {
+      mergeMarketRows(freshRows);
+      updateMarketSectionDom();
+    }
+    marketAuto.lastRefreshAt = Date.now();
+    const open = isVancouverTradingHours();
+    setMarketStatus(open ? t("market_status_auto") : t("market_status_closed"), "success");
+    setMarketAutoNote(marketAuto.lastRefreshAt);
+  } catch (error) {
+    // Keep whatever is already on screen; never blank the cards.
+    console.warn("[market snapshot] refresh failed:", error.message);
+    setMarketStatus(t("market_status_failed"), "error");
+  } finally {
+    marketAuto.inFlight = false;
+    const btnAfter = document.getElementById("btn-refresh-market");
+    if (btnAfter) btnAfter.disabled = false;
+  }
+}
+
+function startMarketInterval() {
+  if (marketAuto.timer) return; // never more than one timer
+  marketAuto.timer = setInterval(() => {
+    // Never poll while the tab is backgrounded (belt-and-braces: the
+    // visibilitychange handler also pauses, but this covers any missed event).
+    if (document.visibilityState === "hidden") return;
+    // No network polling outside America/Vancouver trading hours.
+    if (!isVancouverTradingHours()) return;
+    refreshHomeMarketSnapshot({ trigger: "interval" });
+  }, marketIntervalMs());
+}
+
+function stopMarketInterval() {
+  if (marketAuto.timer) {
+    clearInterval(marketAuto.timer);
+    marketAuto.timer = null;
+  }
+}
+
+function startMarketAutoRefresh() {
+  stopMarketAutoRefresh();
+  // Initial refresh always runs once, regardless of whether the market is open.
+  refreshHomeMarketSnapshot({ trigger: "initial" });
+  startMarketInterval();
+  marketAuto.visibilityHandler = () => {
+    if (state.page !== "dashboard") return;
+    if (document.visibilityState === "hidden") {
+      stopMarketInterval(); // pause polling while the tab is backgrounded
+    } else {
+      if (Date.now() - marketAuto.lastRefreshAt > MARKET_VISIBILITY_STALE_MS) {
+        refreshHomeMarketSnapshot({ trigger: "visibility" });
+      }
+      startMarketInterval(); // resume
+    }
+  };
+  document.addEventListener("visibilitychange", marketAuto.visibilityHandler);
+}
+
+function stopMarketAutoRefresh() {
+  stopMarketInterval();
+  if (marketAuto.visibilityHandler) {
+    document.removeEventListener("visibilitychange", marketAuto.visibilityHandler);
+    marketAuto.visibilityHandler = null;
+  }
+  marketAuto.inFlight = false;
 }
 
 async function loadSavedMarketTrendSummary() {
@@ -1094,30 +1244,10 @@ function bindRefreshMarketButton() {
   const statusEl = document.getElementById("market-refresh-status");
   if (!btn || !statusEl) return;
 
-  btn.addEventListener("click", async () => {
-    btn.disabled = true;
-    statusEl.textContent = t("status_refreshing_market");
-    statusEl.className = "news-refresh-status loading";
-
-    try {
-      const result = await refreshMarketData();
-      const lang = getLang();
-      statusEl.textContent = lang === "zh"
-        ? `行情已更新：更新 ${result.updated} 条，错误 ${result.errors} 条`
-        : `Market updated: ${result.updated} updated, ${result.errors} errors`;
-      statusEl.className = "news-refresh-status success";
-
-      const source = await loadDashboardSource({ force: true });
-      const dashboard = buildDashboardModel(source);
-      renderDashboard(dashboard);
-    } catch (err) {
-      const msg = err.message || "";
-      statusEl.textContent = msg.includes("not set") || msg.includes("ALPHA_VANTAGE")
-        ? t("status_alpha_missing")
-        : t("status_refresh_failed") + msg;
-      statusEl.className = "news-refresh-status error";
-      btn.disabled = false;
-    }
+  // The manual button now calls the SAME lightweight snapshot path as the
+  // auto-refresh (no sheet write, no Alpha Vantage quota), per Phase 5C.
+  btn.addEventListener("click", () => {
+    refreshHomeMarketSnapshot({ trigger: "manual" });
   });
 }
 
