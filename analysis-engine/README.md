@@ -118,6 +118,18 @@ Safety properties:
 
 News and AI analysis are **not** part of this scheduler yet (a later phase).
 
+### Replaces the old Netlify stock scheduler
+
+`netlify/functions/scheduledAnalyzeStocks.js` (previously cron `0 15,19,23 * * *`,
+triggering Apps Script `analyze_stocks` to write into the `11 Stock Analysis`
+tab) has had its `schedule` config commented out — it is **superseded** by this
+GitHub Actions workflow, so there is only one automatic stock refresh. The
+function body is kept for manual invocation / rollback. The two unrelated
+schedulers stay active and untouched:
+
+- `scheduledEnrichWatchlist.js` — enriches the `07 Watchlist` summaries
+- `scheduledMarketTrendSummary.js` — daily AI market-trend summary
+
 ## DSA reuse map
 
 | Capability | Module used | Notes |

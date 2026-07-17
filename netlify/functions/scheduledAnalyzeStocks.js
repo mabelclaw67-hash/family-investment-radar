@@ -8,9 +8,15 @@
 // it is a thin, stateless trigger, so manual clicks and scheduled runs never
 // conflict with each other.
 //
-// Runs 3x/day, aligned with the existing scheduledMarketTrendSummary cadence
-// (15:00 UTC ≈ 8am Vancouver during daylight saving time), plus two more
-// passes later in the day.
+// DISABLED as a scheduler (2026-07): superseded by the GitHub Actions workflow
+// "Family Investment Stock Refresh" (.github/workflows/stock-data-refresh.yml),
+// which is now the project's single stock-data scheduler. The `schedule` in the
+// config below is commented out so Netlify no longer registers this as a
+// scheduled function. The function body is kept intact for manual invocation
+// and easy rollback — to re-enable, restore the `schedule` line.
+//
+// Previously ran 3x/day (15/19/23 UTC), triggering Apps Script `analyze_stocks`
+// to write price / Forward P/E / Beta / scores into the "11 Stock Analysis" tab.
 const CURRENT_APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbwxCyBuqCjc8vB4SHe6QtYPx3WgfAsaJN4dHpFqBjc22h3R9gScYzgSs9XlJNrRdSpyNQ/exec";
 const OLD_APPS_SCRIPT_URL =
@@ -24,7 +30,7 @@ const APPS_SCRIPT_URL =
   configuredAppsScriptUrl === OLD_APPS_SCRIPT_URL ? CURRENT_APPS_SCRIPT_URL : configuredAppsScriptUrl;
 
 export const config = {
-  schedule: "0 15,19,23 * * *",
+  // schedule: "0 15,19,23 * * *", // DISABLED — replaced by GitHub Actions "Family Investment Stock Refresh"
 };
 
 export default async function scheduledAnalyzeStocks() {

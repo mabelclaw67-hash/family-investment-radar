@@ -5,16 +5,14 @@ name: Family Investment Stock Refresh
 # DSA Adapter, and commits public/data/stock-analysis/latest.json to main so
 # Netlify redeploys the fresh cache.
 #
-# Runs after both the US and Canadian markets close, at ~3:37 PM in
-# America/Vancouver. GitHub Actions `schedule` is UTC-only and does NOT support
-# a per-schedule timezone, so we trigger at BOTH candidate UTC times (covering
-# PDT summer and PST winter) and a guard step exits early unless it is really
-# the 15:00 hour in Vancouver — giving one true-local run per weekday, DST-safe.
+# Runs weekdays at 3:37 PM America/Vancouver — after both the US and Canadian
+# markets close. GitHub Actions schedule supports an IANA `timezone` field
+# (since March 2026) and handles DST automatically, so a single cron is enough.
 on:
   workflow_dispatch:
   schedule:
-    - cron: "37 22 * * 1-5" # 15:37 America/Vancouver during PDT (UTC-7, summer)
-    - cron: "37 23 * * 1-5" # 15:37 America/Vancouver during PST (UTC-8, winter)
+    - cron: "37 15 * * 1-5"
+      timezone: "America/Vancouver"
 
 # Least privilege: only enough to commit the regenerated cache to the repo.
 permissions:
@@ -30,34 +28,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      # 0) DST-accurate time gate. On a scheduled trigger, continue only when
-      #    it is the 15:xx hour in America/Vancouver. Manual runs always pass.
-      - name: Gate to 15:xx America/Vancouver (scheduled runs only)
-        id: gate
-        run: |
-          if [ "${{ github.event_name }}" != "schedule" ]; then
-            echo "Manual run (${{ github.event_name }}); skipping time gate."
-            echo "proceed=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          hour=$(TZ="America/Vancouver" date +%H)
-          echo "Vancouver hour is ${hour}."
-          if [ "$hour" = "15" ]; then
-            echo "proceed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "proceed=false" >> "$GITHUB_OUTPUT"
-            echo "Not 15:xx in Vancouver; this UTC trigger is the off-season one. Exiting cleanly." >> "$GITHUB_STEP_SUMMARY"
-          fi
-
       - name: Checkout repository
-        if: steps.gate.outputs.proceed == 'true'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: true
 
       - name: Setup Python
-        if: steps.gate.outputs.proceed == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -65,7 +42,6 @@ jobs:
           cache-dependency-path: analysis-engine/requirements.txt
 
       - name: Setup Node
-        if: steps.gate.outputs.proceed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -73,11 +49,9 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Bootstrap pinned DSA
-        if: steps.gate.outputs.proceed == 'true'
         run: bash analysis-engine/bootstrap.sh
 
       - name: Verify pinned DSA commit
-        if: steps.gate.outputs.proceed == 'true'
         run: |
           expected="e8a9ca7742e8cb2498c8f491dd76d239b3064e1a"
           actual="$(git -C analysis-engine/vendor/daily_stock_analysis rev-parse HEAD)"
@@ -88,19 +62,16 @@ jobs:
           fi
 
       - name: Install Python dependencies
-        if: steps.gate.outputs.proceed == 'true'
         run: |
           python -m pip install --upgrade pip
           pip install -r analysis-engine/requirements.txt
 
       - name: Install frontend dependencies
-        if: steps.gate.outputs.proceed == 'true'
         run: npm ci
 
       # Capture the currently-committed cache so we can (a) restore it if this
       # run produces bad data and (b) detect whether anything meaningful changed.
       - name: Snapshot previous cache
-        if: steps.gate.outputs.proceed == 'true'
         run: |
           mkdir -p "$RUNNER_TEMP/prev"
           if [ -f public/data/stock-analysis/latest.json ]; then
@@ -108,22 +79,18 @@ jobs:
           fi
 
       - name: Run full stock refresh
-        if: steps.gate.outputs.proceed == 'true'
         env:
           # Read-only Apps Script Web App URL. GitHub masks the secret value in logs.
           VITE_FAMILY_INVESTMENT_API_URL: ${{ secrets.FAMILY_INVESTMENT_API_URL }}
         run: python analysis-engine/dsa_adapter.py
 
       - name: Validate generated stock data
-        if: steps.gate.outputs.proceed == 'true'
         run: npm run validate:stock-data
 
       - name: Build frontend
-        if: steps.gate.outputs.proceed == 'true'
         run: npm run build
 
       - name: Verify deployment assets
-        if: steps.gate.outputs.proceed == 'true'
         run: |
           test -s public/data/stock-analysis/latest.json || { echo "::error::public latest.json missing/empty"; exit 1; }
           test -s dist/data/stock-analysis/latest.json   || { echo "::error::dist latest.json missing/empty"; exit 1; }
@@ -131,7 +98,6 @@ jobs:
       # Sanity-gate the data before any commit. On failure the job stops here,
       # so the previously-committed (good) latest.json is preserved in git.
       - name: Check data sanity
-        if: steps.gate.outputs.proceed == 'true'
         id: sanity
         run: |
           node <<'EOF'
@@ -164,7 +130,6 @@ jobs:
       # Meaningful-change detection: ignore volatile timestamps so a rerun with
       # identical prices (e.g. a holiday) does not create a no-op commit.
       - name: Detect meaningful change
-        if: steps.gate.outputs.proceed == 'true'
         id: change
         run: |
           norm() {
@@ -185,7 +150,7 @@ jobs:
           fi
 
       - name: Commit and push refreshed cache
-        if: steps.gate.outputs.proceed == 'true' && steps.change.outputs.changed == 'true'
+        if: steps.change.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
