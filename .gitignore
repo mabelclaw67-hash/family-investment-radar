@@ -27,3 +27,4 @@ backup_*/
 # recreated from analysis-engine/README.md instructions; never commit them.
 analysis-engine/vendor/
 analysis-engine/.venv/
+analysis-engine/__pycache__/
