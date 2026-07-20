@@ -5,13 +5,16 @@ name: Family Investment Stock Refresh
 # DSA Adapter, and commits public/data/stock-analysis/latest.json to main so
 # Netlify redeploys the fresh cache.
 #
-# Runs weekdays at 3:37 PM America/Vancouver — after both the US and Canadian
-# markets close. GitHub Actions schedule supports an IANA `timezone` field
-# (since March 2026) and handles DST automatically, so a single cron is enough.
+# Runs weekdays twice a day (America/Vancouver, DST-aware):
+#   • 09:00 — morning brief before markets open
+#   • 16:00 — end-of-day recap after both US and Canadian markets close
+# GitHub Actions supports IANA timezone field (since March 2026).
 on:
   workflow_dispatch:
   schedule:
-    - cron: "37 15 * * 1-5"
+    - cron: "0 9 * * 1-5"
+      timezone: "America/Vancouver"
+    - cron: "0 16 * * 1-5"
       timezone: "America/Vancouver"
 
 # Least privilege: only enough to commit the regenerated cache to the repo.
