@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-13T21:00:31+00:00",
-  "marketDate": "2026-10-13",
+  "generatedAt": "2026-10-14T01:45:14+00:00",
+  "marketDate": "2026-10-14",
   "watchlistSource": "Google Sheet '11 Stock Analysis' via Apps Script (read-only)",
   "engine": "dsa-adapter (daily_stock_analysis vendored modules + yfinance)",
   "runScope": "full",
@@ -24,11 +24,11 @@
     "placeholder": 4
   },
   "rateLimitEvents": 0,
-  "runSeconds": 293.7,
+  "runSeconds": 222.7,
   "aiAnalyzed": 72,
   "newsCovered": 0,
   "thisRunAi": {
-    "generated": 16,
+    "generated": 3,
     "failed": 0,
     "skippedOverBudget": 0,
     "budget": 30
@@ -60,9 +60,9 @@
       "price": 228.52000427246094,
       "change": 2.2,
       "changePercent": 0.97,
-      "volume": 83237708,
+      "volume": 83846800,
       "marketCap": 5518072543167.114,
-      "quoteUpdatedAt": "2026-10-13T20:55:37+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:41:31+00:00",
       "revenue": 96221000000.0,
       "revenueGrowth": 105.8511,
       "roe": 117.211,
@@ -70,7 +70,7 @@
       "dividendYield": 0.2276,
       "reportDate": "2026-07-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:55:37+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:41:31+00:00",
       "pe": 28.890015,
       "forwardPe": 14.359142,
       "peg": 0.4791,
@@ -87,7 +87,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:55:37+00:00"
+      "newsUpdatedAt": "2026-10-14T01:41:31+00:00"
     },
     "QQQ": {
       "symbol": "QQQ",
@@ -115,11 +115,11 @@
       "price": 743.5700073242188,
       "change": -2.47,
       "changePercent": -0.33,
-      "volume": 28425926,
+      "volume": 28608300,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-10-13T20:58:43+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:17+00:00",
       "dividendYield": 0.4157,
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:43+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:17+00:00",
       "pe": 28.471838,
       "week52High": 762.86,
       "week52Low": 555.6,
@@ -131,7 +131,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:43+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:17+00:00"
     },
     "VFV.TO": {
       "symbol": "VFV.TO",
@@ -161,9 +161,9 @@
       "changePercent": -0.36,
       "volume": 271124,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-10-13T20:58:34+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:09+00:00",
       "dividendYield": 0.823,
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:34+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:09+00:00",
       "pe": 25.638023,
       "week52High": 197.83,
       "week52Low": 155.95,
@@ -175,7 +175,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:34+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:09+00:00"
     },
     "HXQ.TO": {
       "symbol": "HXQ.TO",
@@ -203,10 +203,10 @@
       "price": 125.12999725341797,
       "change": -1.7099990844726562,
       "changePercent": -1.35,
-      "volume": 30483,
+      "volume": 30083,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-10-13T20:59:19+00:00",
-      "fundamentalsUpdatedAt": "2026-10-13T20:59:19+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:49+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:49+00:00",
       "week52High": 128.37,
       "week52Low": 91.48,
       "week52PositionPercent": 91.2,
@@ -217,7 +217,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:59:19+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:49+00:00"
     },
     "XIU.TO": {
       "symbol": "XIU.TO",
@@ -247,9 +247,9 @@
       "changePercent": 1.28,
       "volume": 4009202,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-10-13T20:56:35+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:24+00:00",
       "dividendYield": 2.1131,
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:35+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:24+00:00",
       "pe": 19.23818,
       "week52High": 54.96,
       "week52Low": 44.14,
@@ -261,7 +261,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:35+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:24+00:00"
     },
     "TSLA": {
       "symbol": "TSLA",
@@ -289,9 +289,9 @@
       "price": 375.2300109863281,
       "change": -2.8,
       "changePercent": -0.74,
-      "volume": 18211772,
+      "volume": 18349700,
       "marketCap": 1481988712041.6436,
-      "quoteUpdatedAt": "2026-10-13T20:55:42+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:41:35+00:00",
       "revenue": 28236000000.0,
       "revenueGrowth": 25.5156,
       "roe": 4.667,
@@ -299,7 +299,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-06-30",
       "sector": "Consumer Cyclical",
-      "fundamentalsUpdatedAt": "2026-10-13T20:55:42+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:41:35+00:00",
       "pe": 347.43518,
       "forwardPe": 171.93063,
       "peg": 4.5442,
@@ -316,7 +316,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:55:42+00:00"
+      "newsUpdatedAt": "2026-10-14T01:41:35+00:00"
     },
     "GOOGL": {
       "symbol": "GOOGL",
@@ -344,9 +344,9 @@
       "price": 353.7799987792969,
       "change": 1.06,
       "changePercent": 0.3,
-      "volume": 22090690,
+      "volume": 23148200,
       "marketCap": 4326706329582.0605,
-      "quoteUpdatedAt": "2026-10-13T20:55:46+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:41:38+00:00",
       "revenue": 119796000000.0,
       "revenueGrowth": 24.2336,
       "roe": 48.676,
@@ -354,7 +354,7 @@
       "dividendYield": 0.2431,
       "reportDate": "2026-06-30",
       "sector": "Communication Services",
-      "fundamentalsUpdatedAt": "2026-10-13T20:55:46+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:41:38+00:00",
       "pe": 17.75113,
       "forwardPe": 23.207865,
       "peg": 1.2549,
@@ -371,7 +371,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:55:46+00:00"
+      "newsUpdatedAt": "2026-10-14T01:41:38+00:00"
     },
     "MSFT": {
       "symbol": "MSFT",
@@ -399,9 +399,9 @@
       "price": 543.4500122070312,
       "change": 2.3,
       "changePercent": 0.43,
-      "volume": 23647907,
+      "volume": 23824500,
       "marketCap": 4035412787727.816,
-      "quoteUpdatedAt": "2026-10-13T20:55:49+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:41:41+00:00",
       "revenue": 90007000000.0,
       "revenueGrowth": 17.747,
       "roe": 34.039,
@@ -409,13 +409,13 @@
       "dividendYield": 0.6698,
       "reportDate": "2026-06-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:55:49+00:00",
-      "pe": 30.616901,
+      "fundamentalsUpdatedAt": "2026-10-14T01:41:41+00:00",
+      "pe": 30.275764,
       "forwardPe": 22.955486,
       "peg": 1.6173,
       "profitMargin": 40.3,
       "operatingMargin": 45.11,
-      "eps": 17.75,
+      "eps": 17.95,
       "week52High": 553.72,
       "week52Low": 349.2,
       "week52PositionPercent": 95.0,
@@ -426,7 +426,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:55:49+00:00"
+      "newsUpdatedAt": "2026-10-14T01:41:41+00:00"
     },
     "AMZN": {
       "symbol": "AMZN",
@@ -454,9 +454,9 @@
       "price": 258.5799865722656,
       "change": -0.95,
       "changePercent": -0.37,
-      "volume": 24829884,
+      "volume": 25227400,
       "marketCap": 2789124818612.0063,
-      "quoteUpdatedAt": "2026-10-13T20:55:52+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:41:44+00:00",
       "revenue": 775680032768.0,
       "revenueGrowth": 19.6,
       "roe": 30.558,
@@ -464,7 +464,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-06-30",
       "sector": "Consumer Cyclical",
-      "fundamentalsUpdatedAt": "2026-10-13T20:55:52+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:41:44+00:00",
       "pe": 20.802895,
       "forwardPe": 24.735573,
       "peg": 1.4781,
@@ -481,7 +481,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:55:52+00:00"
+      "newsUpdatedAt": "2026-10-14T01:41:44+00:00"
     },
     "HSAI": {
       "symbol": "HSAI",
@@ -509,9 +509,9 @@
       "price": 14.460000038146973,
       "change": -0.66,
       "changePercent": -4.37,
-      "volume": 1966271,
+      "volume": 1966900,
       "marketCap": 18178211016.435997,
-      "quoteUpdatedAt": "2026-10-13T20:55:56+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:41:47+00:00",
       "revenue": 860827000.0,
       "revenueGrowth": 21.8632,
       "roe": 7.489,
@@ -519,7 +519,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-06-30",
       "sector": "Consumer Cyclical",
-      "fundamentalsUpdatedAt": "2026-10-13T20:55:56+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:41:47+00:00",
       "pe": 30.765957,
       "forwardPe": 16.452414,
       "peg": 0.5149,
@@ -536,7 +536,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:55:56+00:00"
+      "newsUpdatedAt": "2026-10-14T01:41:47+00:00"
     },
     "BABA": {
       "symbol": "BABA",
@@ -564,9 +564,9 @@
       "price": 110.8499984741211,
       "change": 0.48,
       "changePercent": 0.43,
-      "volume": 7721021,
+      "volume": 7730800,
       "marketCap": 275766522692.15247,
-      "quoteUpdatedAt": "2026-10-13T20:55:59+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:41:50+00:00",
       "revenue": 268953000000.0,
       "revenueGrowth": 8.6012,
       "roe": 6.36,
@@ -574,7 +574,7 @@
       "dividendYield": 0.9472,
       "reportDate": "2026-06-30",
       "sector": "Consumer Cyclical",
-      "fundamentalsUpdatedAt": "2026-10-13T20:55:59+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:41:50+00:00",
       "pe": 26.840193,
       "forwardPe": 11.939518,
       "peg": 0.5141,
@@ -591,7 +591,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:55:59+00:00"
+      "newsUpdatedAt": "2026-10-14T01:41:50+00:00"
     },
     "CVE.TO": {
       "symbol": "CVE.TO",
@@ -621,7 +621,7 @@
       "changePercent": 4.25,
       "volume": 4631958,
       "marketCap": 86034032064.09454,
-      "quoteUpdatedAt": "2026-10-13T20:56:02+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:41:54+00:00",
       "revenue": 19088000000.0,
       "revenueGrowth": 54.9476,
       "roe": 20.933,
@@ -629,7 +629,7 @@
       "dividendYield": 1.8006,
       "reportDate": "2026-06-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:02+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:41:54+00:00",
       "pe": 12.99443,
       "forwardPe": 12.277383,
       "peg": 15.91,
@@ -646,7 +646,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:02+00:00"
+      "newsUpdatedAt": "2026-10-14T01:41:54+00:00"
     },
     "SU.TO": {
       "symbol": "SU.TO",
@@ -674,9 +674,9 @@
       "price": 106.81999969482422,
       "change": 3.7799996948242125,
       "changePercent": 3.67,
-      "volume": 4499200,
+      "volume": 4492600,
       "marketCap": 126127200728.64517,
-      "quoteUpdatedAt": "2026-10-13T20:56:05+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:41:57+00:00",
       "revenue": 19009000000.0,
       "revenueGrowth": 49.1019,
       "roe": 19.251,
@@ -684,14 +684,14 @@
       "dividendYield": 2.2468,
       "reportDate": "2026-06-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:05+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:41:57+00:00",
       "pe": 14.2616825,
       "forwardPe": 12.230167,
       "peg": 11.41,
       "profitMargin": 15.78,
       "operatingMargin": 29.94,
       "eps": 7.49,
-      "week52High": 107.43,
+      "week52High": 107.42,
       "week52Low": 53.02,
       "week52PositionPercent": 98.9,
       "dataSources": [
@@ -701,7 +701,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:05+00:00"
+      "newsUpdatedAt": "2026-10-14T01:41:57+00:00"
     },
     "XOM": {
       "symbol": "XOM",
@@ -729,9 +729,9 @@
       "price": 174.0800018310547,
       "change": 1.9551,
       "changePercent": 1.14,
-      "volume": 11362664,
+      "volume": 11505200,
       "marketCap": 715801641525.9357,
-      "quoteUpdatedAt": "2026-10-13T20:56:09+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:00+00:00",
       "revenue": 114529000000.0,
       "revenueGrowth": 44.1033,
       "roe": 12.584,
@@ -739,7 +739,7 @@
       "dividendYield": 2.3667,
       "reportDate": "2026-06-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:09+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:00+00:00",
       "pe": 22.40412,
       "forwardPe": 15.190519,
       "peg": 1.3811,
@@ -756,7 +756,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:09+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:00+00:00"
     },
     "CVX": {
       "symbol": "CVX",
@@ -784,9 +784,9 @@
       "price": 217.72999572753906,
       "change": 2.73,
       "changePercent": 1.27,
-      "volume": 7303438,
+      "volume": 7432300,
       "marketCap": 427099872467.1466,
-      "quoteUpdatedAt": "2026-10-13T20:56:12+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:03+00:00",
       "revenue": 67199000000.0,
       "revenueGrowth": 51.4344,
       "roe": 12.231,
@@ -794,9 +794,9 @@
       "dividendYield": 3.238,
       "reportDate": "2026-06-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:12+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:03+00:00",
       "pe": 20.955725,
-      "forwardPe": 14.749597,
+      "forwardPe": 14.540545,
       "peg": 0.8994,
       "profitMargin": 9.83,
       "operatingMargin": 21.87,
@@ -811,7 +811,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:12+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:03+00:00"
     },
     "REI": {
       "symbol": "REI",
@@ -839,9 +839,9 @@
       "price": 1.3600000143051147,
       "change": 0.02,
       "changePercent": 1.49,
-      "volume": 2024250,
+      "volume": 2024400,
       "marketCap": 354333869.247049,
-      "quoteUpdatedAt": "2026-10-13T20:56:16+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:06+00:00",
       "revenue": 104681489.0,
       "revenueGrowth": 26.7288,
       "roe": -26.679,
@@ -849,7 +849,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-06-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:16+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:06+00:00",
       "forwardPe": 5.5891175,
       "profitMargin": -71.44,
       "operatingMargin": 74.27,
@@ -864,7 +864,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:16+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:06+00:00"
     },
     "RY.TO": {
       "symbol": "RY.TO",
@@ -892,9 +892,9 @@
       "price": 277.25,
       "change": 3.4700000000000273,
       "changePercent": 1.27,
-      "volume": 4776307,
+      "volume": 4773007,
       "marketCap": 383833161772.75,
-      "quoteUpdatedAt": "2026-10-13T20:56:19+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:09+00:00",
       "revenue": 18511000000.0,
       "revenueGrowth": 9.145,
       "roe": 16.209,
@@ -902,7 +902,7 @@
       "dividendYield": 2.3733,
       "reportDate": "2026-07-31",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:19+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:09+00:00",
       "pe": 17.481085,
       "forwardPe": 15.508555,
       "peg": 2.2572,
@@ -919,7 +919,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:19+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:09+00:00"
     },
     "TD.TO": {
       "symbol": "TD.TO",
@@ -947,9 +947,9 @@
       "price": 167.8300018310547,
       "change": 3.6400018310546898,
       "changePercent": 2.22,
-      "volume": 11495170,
+      "volume": 11494942,
       "marketCap": 274069200114.72293,
-      "quoteUpdatedAt": "2026-10-13T20:56:22+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:12+00:00",
       "revenue": 16777000000.0,
       "revenueGrowth": 8.3646,
       "roe": 12.828,
@@ -957,7 +957,7 @@
       "dividendYield": 2.6217,
       "reportDate": "2026-07-31",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:22+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:12+00:00",
       "pe": 17.96895,
       "forwardPe": 14.990456,
       "peg": 0.91,
@@ -974,7 +974,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:22+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:12+00:00"
     },
     "SHOP.TO": {
       "symbol": "SHOP.TO",
@@ -1002,9 +1002,9 @@
       "price": 251.0399932861328,
       "change": 7.2099932861328,
       "changePercent": 2.96,
-      "volume": 1697486,
+      "volume": 1697563,
       "marketCap": 322999083799.88354,
-      "quoteUpdatedAt": "2026-10-13T20:56:25+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:15+00:00",
       "revenue": 3583000000.0,
       "revenueGrowth": 33.694,
       "roe": 15.543,
@@ -1012,7 +1012,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-06-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:25+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:15+00:00",
       "pe": 122.458534,
       "forwardPe": 71.66689,
       "peg": 1.7347,
@@ -1029,7 +1029,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:25+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:15+00:00"
     },
     "ENB.TO": {
       "symbol": "ENB.TO",
@@ -1040,17 +1040,17 @@
       "news": [],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "恩桥当前股价67.55，日涨1.56%，市盈26.08，ForwardPE约21.09；营收同比增长约20.84%，ROE约9.22%，股息率约5.70%，52周位置28.1%。整体看估值相对温和，盈利能力与分红水平较稳健，近期缺乏新闻驱动，趋势受市场情绪影响。",
+        "summary": "恩桥（ENB.TO）当前股价约67.55，日涨1.56%。估值方面，PE约26.08、ForwardPE约21.09；营收同比增长显著为97.1%，ROE约9.22%，股息率约5.70%。52周高低位置处于较低区间（在过去52周的分位约28.1%）。总体呈现稳健增长与较高股息的特征，但市盈与增长匹配尚需观察。",
         "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "营收高增长的可持续性与利润率改善的确认",
-          "股息率稳健支撑的吸引力变化",
-          "未来可能的行业或市场利率/宏观因素变化",
-          "公司披露的未公开的重大业务进展或并购消息"
+          "高营收增速显现潜在业务扩张能力",
+          "股息率较高或对分红偏好投资者具吸引力",
+          "Forward PE 相对较低，若增长持续或利润改善可能产生估值修复",
+          "市场情绪与加拿大市场周期对性价比影响"
         ],
-        "note": "信息来自公开数据，缺乏近期新闻，趋势判断存在不确定性。",
-        "generatedAt": "2026-10-13T20:59:40+00:00",
+        "note": "当前信息缺乏近期新闻驱动及行业环境细化，需关注未来季度盈利与分红政策变化。",
+        "generatedAt": "2026-10-14T01:45:09+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "CAD",
@@ -1059,15 +1059,15 @@
       "changePercent": 1.56,
       "volume": 10457050,
       "marketCap": 150558394616.341,
-      "quoteUpdatedAt": "2026-10-13T20:56:28+00:00",
-      "revenue": 22357000000.0,
-      "revenueGrowth": 20.8356,
+      "quoteUpdatedAt": "2026-10-14T01:42:18+00:00",
+      "revenue": 83490996224.0,
+      "revenueGrowth": 97.1,
       "roe": 9.221,
       "grossMargin": 32.594,
       "dividendYield": 5.7039,
-      "reportDate": "2026-03-31",
+      "reportDate": "2026-06-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:28+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:18+00:00",
       "pe": 26.081083,
       "forwardPe": 21.090462,
       "peg": 4.8897,
@@ -1084,7 +1084,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:28+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:18+00:00"
     },
     "XIC.TO": {
       "symbol": "XIC.TO",
@@ -1114,9 +1114,9 @@
       "changePercent": 0.88,
       "volume": 369345,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-10-13T20:56:32+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:21+00:00",
       "dividendYield": 1.9655,
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:32+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:21+00:00",
       "pe": 19.172089,
       "week52High": 59.29,
       "week52Low": 47.17,
@@ -1128,7 +1128,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:32+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:21+00:00"
     },
     "AAPL": {
       "symbol": "AAPL",
@@ -1156,9 +1156,9 @@
       "price": 341.2699890136719,
       "change": 0.3,
       "changePercent": 0.09,
-      "volume": 38701103,
+      "volume": 38946900,
       "marketCap": 4980555648263.55,
-      "quoteUpdatedAt": "2026-10-13T20:56:38+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:27+00:00",
       "revenue": 109417000000.0,
       "revenueGrowth": 16.3565,
       "roe": 148.751,
@@ -1166,7 +1166,7 @@
       "dividendYield": 0.3106,
       "reportDate": "2026-06-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:38+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:27+00:00",
       "pe": 39.136467,
       "forwardPe": 35.58473,
       "peg": 2.706,
@@ -1183,7 +1183,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:38+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:27+00:00"
     },
     "V": {
       "symbol": "V",
@@ -1211,9 +1211,9 @@
       "price": 396.05999755859375,
       "change": 7.1375,
       "changePercent": 1.84,
-      "volume": 7449984,
+      "volume": 7476700,
       "marketCap": 743545319296.1531,
-      "quoteUpdatedAt": "2026-10-13T20:56:42+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:30+00:00",
       "revenue": 11633000000.0,
       "revenueGrowth": 14.363,
       "roe": 61.19,
@@ -1221,7 +1221,7 @@
       "dividendYield": 0.6767,
       "reportDate": "2026-06-30",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:42+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:30+00:00",
       "pe": 33.707233,
       "forwardPe": 26.397295,
       "peg": 1.6368,
@@ -1238,7 +1238,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:42+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:30+00:00"
     },
     "MA": {
       "symbol": "MA",
@@ -1266,9 +1266,9 @@
       "price": 604.7999877929688,
       "change": 9.71,
       "changePercent": 1.63,
-      "volume": 3659428,
+      "volume": 3710300,
       "marketCap": 529810801018.5193,
-      "quoteUpdatedAt": "2026-10-13T20:56:45+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:33+00:00",
       "revenue": 9277000000.0,
       "revenueGrowth": 14.0662,
       "roe": 241.202,
@@ -1276,9 +1276,9 @@
       "dividendYield": 0.5754,
       "reportDate": "2026-06-30",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:45+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:33+00:00",
       "pe": 33.267326,
-      "forwardPe": 26.25621,
+      "forwardPe": 26.226574,
       "peg": 1.462,
       "profitMargin": 46.34,
       "operatingMargin": 61.11,
@@ -1293,7 +1293,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:45+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:33+00:00"
     },
     "LLY": {
       "symbol": "LLY",
@@ -1321,9 +1321,9 @@
       "price": 1166.510009765625,
       "change": -16.11,
       "changePercent": -1.36,
-      "volume": 1834406,
+      "volume": 1843200,
       "marketCap": 1040225276221.4722,
-      "quoteUpdatedAt": "2026-10-13T20:56:48+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:35+00:00",
       "revenue": 22974000000.0,
       "revenueGrowth": 47.6668,
       "roe": 102.286,
@@ -1331,7 +1331,7 @@
       "dividendYield": 0.5735,
       "reportDate": "2026-06-30",
       "sector": "Healthcare",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:48+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:35+00:00",
       "pe": 39.157772,
       "forwardPe": 24.523623,
       "peg": 1.1368,
@@ -1348,7 +1348,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:48+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:35+00:00"
     },
     "JPM": {
       "symbol": "JPM",
@@ -1376,9 +1376,9 @@
       "price": 331.42999267578125,
       "change": -3.3599,
       "changePercent": -1.0,
-      "volume": 13712153,
+      "volume": 13753800,
       "marketCap": 881002631139.7129,
-      "quoteUpdatedAt": "2026-10-13T20:56:52+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:39+00:00",
       "revenue": 52852000000.0,
       "revenueGrowth": 17.7577,
       "roe": 17.789,
@@ -1386,9 +1386,9 @@
       "dividendYield": 1.8556,
       "reportDate": "2026-06-30",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:52+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:39+00:00",
       "pe": 14.200086,
-      "forwardPe": 13.155169,
+      "forwardPe": 13.179457,
       "peg": 1.5696,
       "profitMargin": 34.92,
       "operatingMargin": 50.39,
@@ -1403,7 +1403,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:52+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:39+00:00"
     },
     "AMD": {
       "symbol": "AMD",
@@ -1431,9 +1431,9 @@
       "price": 605.530029296875,
       "change": 11.29,
       "changePercent": 1.9,
-      "volume": 17616788,
+      "volume": 17862600,
       "marketCap": 988512660008.6772,
-      "quoteUpdatedAt": "2026-10-13T20:56:55+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:42+00:00",
       "revenue": 11536000000.0,
       "revenueGrowth": 50.1106,
       "roe": 10.196,
@@ -1441,7 +1441,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-06-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:55+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:42+00:00",
       "pe": 154.47194,
       "forwardPe": 38.51509,
       "peg": 0.626,
@@ -1458,7 +1458,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:55+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:42+00:00"
     },
     "AVGO": {
       "symbol": "AVGO",
@@ -1486,9 +1486,9 @@
       "price": 357.30999755859375,
       "change": 2.58,
       "changePercent": 0.73,
-      "volume": 16684707,
+      "volume": 17241200,
       "marketCap": 1705665675408.7803,
-      "quoteUpdatedAt": "2026-10-13T20:56:59+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:44+00:00",
       "revenue": 29591000000.0,
       "revenueGrowth": 85.5003,
       "roe": 44.245,
@@ -1496,13 +1496,13 @@
       "dividendYield": 0.7277,
       "reportDate": "2026-07-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:56:59+00:00",
-      "pe": 45.63346,
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:44+00:00",
+      "pe": 44.77569,
       "forwardPe": 18.42391,
       "peg": 0.361,
       "profitMargin": 42.94,
       "operatingMargin": 54.31,
-      "eps": 7.83,
+      "eps": 7.98,
       "week52High": 495.0,
       "week52Low": 289.96,
       "week52PositionPercent": 32.8,
@@ -1513,7 +1513,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:56:59+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:44+00:00"
     },
     "TSM": {
       "symbol": "TSM",
@@ -1541,9 +1541,9 @@
       "price": 445.1199951171875,
       "change": 1.2855,
       "changePercent": 0.29,
-      "volume": 8332846,
+      "volume": 8555400,
       "marketCap": 2308603287341.98,
-      "quoteUpdatedAt": "2026-10-13T20:57:02+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:47+00:00",
       "revenue": 1270380250000.0,
       "revenueGrowth": 36.0453,
       "roe": 39.969,
@@ -1551,7 +1551,7 @@
       "dividendYield": 0.8656,
       "reportDate": "2026-06-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:02+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:47+00:00",
       "pe": 32.348835,
       "forwardPe": 19.94502,
       "peg": 0.8581,
@@ -1568,7 +1568,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:02+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:47+00:00"
     },
     "META": {
       "symbol": "META",
@@ -1596,9 +1596,9 @@
       "price": 762.5,
       "change": 19.54,
       "changePercent": 2.63,
-      "volume": 22586972,
+      "volume": 22679300,
       "marketCap": 1942473496562.5,
-      "quoteUpdatedAt": "2026-10-13T20:57:06+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:50+00:00",
       "revenue": 60801000000.0,
       "revenueGrowth": 27.959,
       "roe": 29.848,
@@ -1606,9 +1606,9 @@
       "dividendYield": 0.2754,
       "reportDate": "2026-06-30",
       "sector": "Communication Services",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:06+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:50+00:00",
       "pe": 28.730217,
-      "forwardPe": 22.072449,
+      "forwardPe": 22.003956,
       "peg": 0.9846,
       "profitMargin": 29.83,
       "operatingMargin": 34.83,
@@ -1623,7 +1623,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:06+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:50+00:00"
     },
     "ORCL": {
       "symbol": "ORCL",
@@ -1651,9 +1651,9 @@
       "price": 143.1999969482422,
       "change": 6.33,
       "changePercent": 4.62,
-      "volume": 25917551,
+      "volume": 26280500,
       "marketCap": 434110955285.3927,
-      "quoteUpdatedAt": "2026-10-13T20:57:09+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:53+00:00",
       "revenue": 19345000000.0,
       "revenueGrowth": 29.6061,
       "roe": 41.192,
@@ -1661,7 +1661,7 @@
       "dividendYield": 1.3966,
       "reportDate": "2026-08-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:09+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:53+00:00",
       "pe": 22.44514,
       "forwardPe": 13.019377,
       "peg": 0.8072,
@@ -1678,7 +1678,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:09+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:53+00:00"
     },
     "CRM": {
       "symbol": "CRM",
@@ -1706,9 +1706,9 @@
       "price": 238.00999450683594,
       "change": 4.01,
       "changePercent": 1.71,
-      "volume": 8798645,
+      "volume": 9071700,
       "marketCap": 195882225479.12598,
-      "quoteUpdatedAt": "2026-10-13T20:57:12+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:56+00:00",
       "revenue": 11345000000.0,
       "revenueGrowth": 10.8343,
       "roe": 19.381,
@@ -1716,13 +1716,13 @@
       "dividendYield": 0.7294,
       "reportDate": "2026-07-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:12+00:00",
-      "pe": 21.775845,
-      "forwardPe": 14.856403,
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:56+00:00",
+      "pe": 22.223156,
+      "forwardPe": 14.8543,
       "peg": 0.7791,
       "profitMargin": 21.99,
       "operatingMargin": 21.38,
-      "eps": 10.93,
+      "eps": 10.71,
       "week52High": 269.11,
       "week52Low": 146.32,
       "week52PositionPercent": 74.7,
@@ -1733,7 +1733,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:12+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:56+00:00"
     },
     "PLTR": {
       "symbol": "PLTR",
@@ -1761,9 +1761,9 @@
       "price": 208.6699981689453,
       "change": -0.33,
       "changePercent": -0.16,
-      "volume": 18328771,
+      "volume": 18486000,
       "marketCap": 501446208621.4685,
-      "quoteUpdatedAt": "2026-10-13T20:57:16+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:42:59+00:00",
       "revenue": 1935464000.0,
       "revenueGrowth": 92.8335,
       "roe": 38.097,
@@ -1771,9 +1771,9 @@
       "dividendYield": 0.0,
       "reportDate": "2026-06-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:16+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:42:59+00:00",
       "pe": 179.88794,
-      "forwardPe": 89.01696,
+      "forwardPe": 88.73759,
       "peg": 1.8461,
       "profitMargin": 49.01,
       "operatingMargin": 47.12,
@@ -1788,7 +1788,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:16+00:00"
+      "newsUpdatedAt": "2026-10-14T01:42:59+00:00"
     },
     "ARM": {
       "symbol": "ARM",
@@ -1816,9 +1816,9 @@
       "price": 255.38999938964844,
       "change": 0.15,
       "changePercent": 0.06,
-      "volume": 6740441,
+      "volume": 6756300,
       "marketCap": 272756153885.05542,
-      "quoteUpdatedAt": "2026-10-13T20:57:19+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:43:02+00:00",
       "revenue": 1289000000.0,
       "revenueGrowth": 22.4122,
       "roe": 13.353,
@@ -1826,7 +1826,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-06-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:19+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:02+00:00",
       "pe": 263.28867,
       "forwardPe": 83.38557,
       "peg": 2.731,
@@ -1843,7 +1843,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:19+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:02+00:00"
     },
     "ASML": {
       "symbol": "ASML",
@@ -1871,9 +1871,9 @@
       "price": 1717.760009765625,
       "change": -32.48,
       "changePercent": -1.86,
-      "volume": 1555528,
+      "volume": 1582700,
       "marketCap": 659791619750.9766,
-      "quoteUpdatedAt": "2026-10-13T20:57:22+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:43:05+00:00",
       "revenue": 9326500000.0,
       "revenueGrowth": 21.2541,
       "roe": 53.942,
@@ -1881,7 +1881,7 @@
       "dividendYield": 0.5275,
       "reportDate": "2026-06-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:22+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:05+00:00",
       "pe": 55.753326,
       "forwardPe": 29.226446,
       "peg": 1.5764,
@@ -1898,7 +1898,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:22+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:05+00:00"
     },
     "SMCI": {
       "symbol": "SMCI",
@@ -1926,9 +1926,9 @@
       "price": 39.06999969482422,
       "change": -0.91,
       "changePercent": -2.28,
-      "volume": 24505058,
-      "marketCap": 25273328967.48002,
-      "quoteUpdatedAt": "2026-10-13T20:57:26+00:00",
+      "volume": 25156800,
+      "marketCap": 25667637352.390076,
+      "quoteUpdatedAt": "2026-10-14T01:43:09+00:00",
       "revenue": 11119777000.0,
       "revenueGrowth": 93.1553,
       "roe": 21.466,
@@ -1936,7 +1936,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-06-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:26+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:09+00:00",
       "pe": 11.984662,
       "forwardPe": 7.3358216,
       "peg": 0.91,
@@ -1953,7 +1953,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:26+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:09+00:00"
     },
     "MU": {
       "symbol": "MU",
@@ -1981,9 +1981,9 @@
       "price": 953.1900024414062,
       "change": -35.85,
       "changePercent": -3.62,
-      "volume": 28764038,
+      "volume": 29017300,
       "marketCap": 1078461294208.5437,
-      "quoteUpdatedAt": "2026-10-13T20:57:29+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:43:11+00:00",
       "revenue": 41456000000.0,
       "revenueGrowth": 345.7155,
       "roe": 88.26,
@@ -1991,7 +1991,7 @@
       "dividendYield": 0.0435,
       "reportDate": "2026-05-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:29+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:11+00:00",
       "pe": 12.823759,
       "forwardPe": 4.619681,
       "peg": 0.1598,
@@ -2008,7 +2008,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:29+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:11+00:00"
     },
     "ANET": {
       "symbol": "ANET",
@@ -2036,9 +2036,9 @@
       "price": 204.52000427246094,
       "change": -5.9522,
       "changePercent": -2.83,
-      "volume": 7905501,
+      "volume": 7981100,
       "marketCap": 257945670397.49304,
-      "quoteUpdatedAt": "2026-10-13T20:57:33+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:43:15+00:00",
       "revenue": 3035700000.0,
       "revenueGrowth": 37.686,
       "roe": 31.476,
@@ -2046,7 +2046,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-06-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:33+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:15+00:00",
       "pe": 64.51735,
       "forwardPe": 39.203663,
       "peg": 1.5225,
@@ -2063,7 +2063,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:33+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:15+00:00"
     },
     "VRT": {
       "symbol": "VRT",
@@ -2091,9 +2091,9 @@
       "price": 237.2899932861328,
       "change": -0.33,
       "changePercent": -0.14,
-      "volume": 4793916,
+      "volume": 4801500,
       "marketCap": 91353840986.41054,
-      "quoteUpdatedAt": "2026-10-13T20:57:36+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:43:18+00:00",
       "revenue": 3274300000.0,
       "revenueGrowth": 24.1158,
       "roe": 43.943,
@@ -2101,9 +2101,9 @@
       "dividendYield": 0.1062,
       "reportDate": "2026-06-30",
       "sector": "Industrials",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:36+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:18+00:00",
       "pe": 53.685516,
-      "forwardPe": 25.85278,
+      "forwardPe": 25.812563,
       "peg": 0.8388,
       "profitMargin": 15.09,
       "operatingMargin": 20.36,
@@ -2118,7 +2118,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:36+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:18+00:00"
     },
     "DELL": {
       "symbol": "DELL",
@@ -2146,18 +2146,18 @@
       "price": 572.469970703125,
       "change": -0.51,
       "changePercent": -0.09,
-      "volume": 5526608,
+      "volume": 5535400,
       "marketCap": 363983706365.17334,
-      "quoteUpdatedAt": "2026-10-13T20:57:39+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:43:21+00:00",
       "revenue": 46971000000.0,
       "revenueGrowth": 57.7479,
       "grossMargin": 19.911,
       "dividendYield": 0.4035,
       "reportDate": "2026-07-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:39+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:21+00:00",
       "pe": 33.283134,
-      "forwardPe": 19.660934,
+      "forwardPe": 19.129877,
       "peg": 0.6458,
       "profitMargin": 7.52,
       "operatingMargin": 12.02,
@@ -2172,7 +2172,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:39+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:21+00:00"
     },
     "CNQ.TO": {
       "symbol": "CNQ.TO",
@@ -2200,9 +2200,9 @@
       "price": 74.19000244140625,
       "change": 3.390002441406253,
       "changePercent": 4.79,
-      "volume": 12935920,
+      "volume": 12936308,
       "marketCap": 152942690032.95898,
-      "quoteUpdatedAt": "2026-10-13T20:57:42+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:43:23+00:00",
       "revenue": 17214000000.0,
       "revenueGrowth": 77.9225,
       "roe": 26.685,
@@ -2210,7 +2210,7 @@
       "dividendYield": 3.3199,
       "reportDate": "2026-06-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:42+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:23+00:00",
       "pe": 13.17762,
       "forwardPe": 13.271369,
       "peg": 3.42,
@@ -2227,7 +2227,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:42+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:23+00:00"
     },
     "TRP.TO": {
       "symbol": "TRP.TO",
@@ -2255,9 +2255,9 @@
       "price": 87.69000244140625,
       "change": 2.0000024414062523,
       "changePercent": 2.33,
-      "volume": 8671865,
+      "volume": 8672081,
       "marketCap": 91352541653.61621,
-      "quoteUpdatedAt": "2026-10-13T20:57:46+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:43:26+00:00",
       "revenue": 3957000000.0,
       "revenueGrowth": 5.6891,
       "roe": 11.826,
@@ -2265,7 +2265,7 @@
       "dividendYield": 3.9731,
       "reportDate": "2026-06-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:46+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:26+00:00",
       "pe": 24.982906,
       "forwardPe": 22.372353,
       "peg": 2.9725,
@@ -2282,7 +2282,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:46+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:26+00:00"
     },
     "PPL.TO": {
       "symbol": "PPL.TO",
@@ -2311,8 +2311,8 @@
       "change": 1.5899993896484403,
       "changePercent": 2.35,
       "volume": 2885005,
-      "marketCap": 40208712345.047,
-      "quoteUpdatedAt": "2026-10-13T20:57:49+00:00",
+      "marketCap": 40200415545.12024,
+      "quoteUpdatedAt": "2026-10-14T01:43:29+00:00",
       "revenue": 2152000000.0,
       "revenueGrowth": 20.0893,
       "roe": 10.469,
@@ -2320,9 +2320,9 @@
       "dividendYield": 4.1799,
       "reportDate": "2026-06-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:49+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:29+00:00",
       "pe": 24.345072,
-      "forwardPe": 21.599028,
+      "forwardPe": 21.59788,
       "peg": 1.6971,
       "profitMargin": 22.42,
       "operatingMargin": 33.97,
@@ -2337,7 +2337,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:49+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:29+00:00"
     },
     "CEG": {
       "symbol": "CEG",
@@ -2365,9 +2365,9 @@
       "price": 295.7900085449219,
       "change": 1.9,
       "changePercent": 0.65,
-      "volume": 2287331,
+      "volume": 2292400,
       "marketCap": 104800582661.93887,
-      "quoteUpdatedAt": "2026-10-13T20:57:53+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:43:32+00:00",
       "revenue": 7504000000.0,
       "revenueGrowth": 22.9962,
       "roe": 15.055,
@@ -2375,7 +2375,7 @@
       "dividendYield": 0.5643,
       "reportDate": "2026-06-30",
       "sector": "Utilities",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:53+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:32+00:00",
       "pe": 28.91398,
       "forwardPe": 22.20619,
       "peg": 3.74,
@@ -2392,7 +2392,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:53+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:32+00:00"
     },
     "NEE": {
       "symbol": "NEE",
@@ -2420,9 +2420,9 @@
       "price": 78.22000122070312,
       "change": -0.29,
       "changePercent": -0.37,
-      "volume": 9469725,
-      "marketCap": 163136053648.66498,
-      "quoteUpdatedAt": "2026-10-13T20:57:56+00:00",
+      "volume": 9491800,
+      "marketCap": 163165218054.34012,
+      "quoteUpdatedAt": "2026-10-14T01:43:35+00:00",
       "revenue": 7534000000.0,
       "revenueGrowth": 12.4478,
       "roe": 11.677,
@@ -2430,13 +2430,13 @@
       "dividendYield": 3.1143,
       "reportDate": "2026-06-30",
       "sector": "Utilities",
-      "fundamentalsUpdatedAt": "2026-10-13T20:57:56+00:00",
-      "pe": 17.817768,
-      "forwardPe": 17.873383,
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:35+00:00",
+      "pe": 17.57753,
+      "forwardPe": 17.878939,
       "peg": 1.5549,
       "profitMargin": 32.4,
       "operatingMargin": 31.52,
-      "eps": 4.39,
+      "eps": 4.45,
       "week52High": 98.75,
       "week52Low": 74.41,
       "week52PositionPercent": 15.7,
@@ -2447,7 +2447,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:57:56+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:35+00:00"
     },
     "TECK.B.TO": {
       "symbol": "TECK.B.TO",
@@ -2477,7 +2477,7 @@
       "changePercent": -1.69,
       "volume": 727360,
       "marketCap": 46832675550.842285,
-      "quoteUpdatedAt": "2026-10-13T20:58:03+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:43:42+00:00",
       "revenue": 3605000000.0,
       "revenueGrowth": 78.2007,
       "roe": 8.717,
@@ -2485,7 +2485,7 @@
       "dividendYield": 0.5238,
       "reportDate": "2026-06-30",
       "sector": "Basic Materials",
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:03+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:42+00:00",
       "pe": 18.75442,
       "forwardPe": 17.690521,
       "peg": 3.9812,
@@ -2502,7 +2502,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:03+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:42+00:00"
     },
     "FCX": {
       "symbol": "FCX",
@@ -2530,9 +2530,9 @@
       "price": 72.41999816894531,
       "change": -0.85,
       "changePercent": -1.16,
-      "volume": 7091719,
+      "volume": 7316500,
       "marketCap": 103996386386.23338,
-      "quoteUpdatedAt": "2026-10-13T20:58:06+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:43:44+00:00",
       "revenue": 7029000000.0,
       "revenueGrowth": -7.2936,
       "roe": 14.755,
@@ -2540,7 +2540,7 @@
       "dividendYield": 0.8285,
       "reportDate": "2026-06-30",
       "sector": "Basic Materials",
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:06+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:44+00:00",
       "pe": 35.674877,
       "forwardPe": 16.791603,
       "peg": 4.5363,
@@ -2557,7 +2557,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:06+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:44+00:00"
     },
     "NEM": {
       "symbol": "NEM",
@@ -2585,9 +2585,9 @@
       "price": 115.58999633789062,
       "change": -1.37,
       "changePercent": -1.17,
-      "volume": 4371066,
+      "volume": 4380200,
       "marketCap": 121796285746.15366,
-      "quoteUpdatedAt": "2026-10-13T20:58:10+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:43:47+00:00",
       "revenue": 6118000000.0,
       "revenueGrowth": 15.0649,
       "roe": 25.905,
@@ -2595,7 +2595,7 @@
       "dividendYield": 0.8911,
       "reportDate": "2026-06-30",
       "sector": "Basic Materials",
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:10+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:47+00:00",
       "pe": 14.576292,
       "forwardPe": 11.55818,
       "peg": 2.78,
@@ -2612,7 +2612,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:10+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:47+00:00"
     },
     "BNS.TO": {
       "symbol": "BNS.TO",
@@ -2640,9 +2640,9 @@
       "price": 128.33999633789062,
       "change": 2.309996337890624,
       "changePercent": 1.83,
-      "volume": 3500422,
-      "marketCap": 156164950737.72125,
-      "quoteUpdatedAt": "2026-10-13T20:58:13+00:00",
+      "volume": 3509922,
+      "marketCap": 156424637736.51123,
+      "quoteUpdatedAt": "2026-10-14T01:43:50+00:00",
       "revenue": 10313000000.0,
       "revenueGrowth": 10.5478,
       "roe": 11.459,
@@ -2650,7 +2650,7 @@
       "dividendYield": 3.4907,
       "reportDate": "2026-07-31",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:13+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:50+00:00",
       "pe": 16.77647,
       "forwardPe": 13.522725,
       "peg": 0.9968,
@@ -2667,7 +2667,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:13+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:50+00:00"
     },
     "BMO.TO": {
       "symbol": "BMO.TO",
@@ -2697,7 +2697,7 @@
       "changePercent": 1.33,
       "volume": 2524296,
       "marketCap": 163471787206.6524,
-      "quoteUpdatedAt": "2026-10-13T20:58:17+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:43:53+00:00",
       "revenue": 9908000000.0,
       "revenueGrowth": 10.7906,
       "roe": 10.574,
@@ -2705,7 +2705,7 @@
       "dividendYield": 2.8404,
       "reportDate": "2026-07-31",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:17+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:53+00:00",
       "pe": 19.167072,
       "forwardPe": 14.284716,
       "peg": 1.5176,
@@ -2722,7 +2722,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:17+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:53+00:00"
     },
     "CM.TO": {
       "symbol": "CM.TO",
@@ -2750,9 +2750,9 @@
       "price": 158.44000244140625,
       "change": 2.8100024414062545,
       "changePercent": 1.81,
-      "volume": 2453188,
+      "volume": 2444988,
       "marketCap": 143853292854.91925,
-      "quoteUpdatedAt": "2026-10-13T20:58:20+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:43:56+00:00",
       "revenue": 8330000000.0,
       "revenueGrowth": 15.2941,
       "roe": 15.578,
@@ -2760,7 +2760,7 @@
       "dividendYield": 2.7013,
       "reportDate": "2026-07-31",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:20+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:56+00:00",
       "pe": 15.205375,
       "forwardPe": 13.917169,
       "peg": 1.7125,
@@ -2777,7 +2777,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:20+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:56+00:00"
     },
     "JNJ": {
       "symbol": "JNJ",
@@ -2788,35 +2788,35 @@
       "news": [],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "强生当前股价下跌明显，日内跌幅近6%，市盈率与未来估值相对分位仍处于较高水平。基本面方面营收增速约6.6%、ROE约25.7%、股息率约2.12%，52周高低区间未明但处于中上位置。整体趋势需关注近期价格回调后的持续动能与行业及宏观环境变化对股价的影响。",
+        "summary": "强生当前股价下挫明显，日跌近6%，但基础面指标如营收增长、ROE及股息率尚在合理区间，52周位置处于中高区间。需关注市场情绪回暖与估值是否与盈利前景相符。",
         "trend": "偏空",
         "riskLevel": "中",
         "catalysts": [
-          "市场对医药行业估值与利率预期的变化",
-          "公司未来盈利增长与分红变动的指引",
-          "宏观经济环境及健康护理板块资金流向",
-          "潜在的监管政策或诉讼及产品线表现"
+          "日内/短期股价波动因素恢复市场情绪的迹象",
+          "中长期盈利增长与估值对比的变化（Forward PE 相对历史水平的改善或恶化）",
+          "分红稳定性及股息率对投资者回报的影响",
+          "宏观市场环境及利率变动对高估值行业的影响"
         ],
-        "note": "信息仅基于公开数据与新闻，未包含近期新闻事件时的新变量，存在不确定性。",
-        "generatedAt": "2026-10-13T21:00:21+00:00",
+        "note": "信息来源仅限公开披露数据与新闻，若后续有最新新闻需重新评估。",
+        "generatedAt": "2026-10-14T01:45:14+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
       "price": 248.61000061035156,
       "change": -15.69,
       "changePercent": -5.94,
-      "volume": 16588133,
+      "volume": 16620900,
       "marketCap": 599124891671.0554,
-      "quoteUpdatedAt": "2026-10-13T20:58:23+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:43:59+00:00",
       "revenue": 25310000000.0,
       "revenueGrowth": 6.5998,
       "grossMargin": 68.14,
       "dividendYield": 2.1238,
       "reportDate": "2026-06-30",
       "sector": "Healthcare",
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:23+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:59+00:00",
       "pe": 28.807648,
-      "forwardPe": 20.270617,
+      "forwardPe": 20.783314,
       "peg": 2.8229,
       "profitMargin": 21.48,
       "operatingMargin": 29.19,
@@ -2831,7 +2831,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:23+00:00",
+      "newsUpdatedAt": "2026-10-14T01:43:59+00:00",
       "roe": 25.742
     },
     "UNH": {
@@ -2860,9 +2860,9 @@
       "price": 377.760009765625,
       "change": -4.1625,
       "changePercent": -1.09,
-      "volume": 12477137,
+      "volume": 12639500,
       "marketCap": 339075438168.2947,
-      "quoteUpdatedAt": "2026-10-13T20:58:27+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:02+00:00",
       "revenue": 112032000000.0,
       "revenueGrowth": 0.3727,
       "roe": 14.153,
@@ -2870,9 +2870,9 @@
       "dividendYield": 2.3983,
       "reportDate": "2026-06-30",
       "sector": "Healthcare",
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:27+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:02+00:00",
       "pe": 24.293247,
-      "forwardPe": 16.598787,
+      "forwardPe": 16.530344,
       "peg": 1.0118,
       "profitMargin": 3.14,
       "operatingMargin": 7.13,
@@ -2887,7 +2887,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:27+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:02+00:00"
     },
     "MRK": {
       "symbol": "MRK",
@@ -2915,9 +2915,9 @@
       "price": 141.97999572753906,
       "change": -3.47,
       "changePercent": -2.39,
-      "volume": 8158912,
+      "volume": 8377800,
       "marketCap": 350289018622.3456,
-      "quoteUpdatedAt": "2026-10-13T20:58:30+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:05+00:00",
       "revenue": 16607000000.0,
       "revenueGrowth": 5.0677,
       "roe": 6.961,
@@ -2925,9 +2925,9 @@
       "dividendYield": 2.3947,
       "reportDate": "2026-06-30",
       "sector": "Healthcare",
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:30+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:05+00:00",
       "pe": 112.68254,
-      "forwardPe": 15.23505,
+      "forwardPe": 15.2939,
       "peg": 2.7047,
       "profitMargin": 4.77,
       "operatingMargin": -0.24,
@@ -2942,7 +2942,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:30+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:05+00:00"
     },
     "XQQ.TO": {
       "symbol": "XQQ.TO",
@@ -2972,9 +2972,9 @@
       "changePercent": -1.04,
       "volume": 212257,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-10-13T20:58:37+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:11+00:00",
       "dividendYield": 0.2089,
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:37+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:11+00:00",
       "pe": 28.484966,
       "week52High": 76.14,
       "week52Low": 56.0,
@@ -2986,7 +2986,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:37+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:11+00:00"
     },
     "SMH": {
       "symbol": "SMH",
@@ -3014,11 +3014,11 @@
       "price": 588.1199951171875,
       "change": -2.87,
       "changePercent": -0.49,
-      "volume": 7876153,
+      "volume": 8018900,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-10-13T20:58:40+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:14+00:00",
       "dividendYield": 0.1879,
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:40+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:14+00:00",
       "pe": 31.420013,
       "week52High": 671.83,
       "week52Low": 315.05,
@@ -3030,7 +3030,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:40+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:14+00:00"
     },
     "SPCX": {
       "symbol": "SPCX",
@@ -3115,12 +3115,12 @@
         "model": "gpt-5-nano"
       },
       "currency": "USD",
-      "price": 268.7250061035156,
-      "change": 2.865,
+      "price": 268.7300109863281,
+      "change": 2.87,
       "changePercent": 1.08,
-      "volume": 17872893,
-      "marketCap": 241504402613.68265,
-      "quoteUpdatedAt": "2026-10-13T20:58:47+00:00",
+      "volume": 18362200,
+      "marketCap": 241508900524.95377,
+      "quoteUpdatedAt": "2026-10-14T01:44:20+00:00",
       "revenue": 2739300000.0,
       "revenueGrowth": 36.5485,
       "roe": 16.523,
@@ -3128,13 +3128,13 @@
       "dividendYield": 0.0893,
       "reportDate": "2026-07-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:47+00:00",
-      "pe": 85.309525,
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:20+00:00",
+      "pe": 88.396385,
       "forwardPe": 36.898735,
       "peg": 1.3866,
       "profitMargin": 27.93,
       "operatingMargin": 16.68,
-      "eps": 3.15,
+      "eps": 3.04,
       "week52High": 329.88,
       "week52Low": 70.69,
       "week52PositionPercent": 76.4,
@@ -3145,7 +3145,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:47+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:20+00:00"
     },
     "COHR": {
       "symbol": "COHR",
@@ -3173,9 +3173,9 @@
       "price": 289.9800109863281,
       "change": 6.29,
       "changePercent": 2.22,
-      "volume": 6022927,
+      "volume": 6062200,
       "marketCap": 57106101680.23041,
-      "quoteUpdatedAt": "2026-10-13T20:58:50+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:23+00:00",
       "revenue": 2045533000.0,
       "revenueGrowth": 33.7443,
       "roe": 7.981,
@@ -3183,7 +3183,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-06-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:50+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:23+00:00",
       "pe": 70.3835,
       "forwardPe": 20.645685,
       "peg": 0.92,
@@ -3200,7 +3200,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:50+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:23+00:00"
     },
     "EQIX": {
       "symbol": "EQIX",
@@ -3228,9 +3228,9 @@
       "price": 1019.4000244140625,
       "change": -13.2,
       "changePercent": -1.28,
-      "volume": 396491,
+      "volume": 409200,
       "marketCap": 100585919117.37671,
-      "quoteUpdatedAt": "2026-10-13T20:58:53+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:25+00:00",
       "revenue": 2625000000.0,
       "revenueGrowth": 16.3564,
       "roe": 10.735,
@@ -3238,7 +3238,7 @@
       "dividendYield": 1.9786,
       "reportDate": "2026-06-30",
       "sector": "Real Estate",
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:53+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:25+00:00",
       "pe": 65.59846,
       "forwardPe": 55.020916,
       "peg": 2.9822,
@@ -3255,7 +3255,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:53+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:25+00:00"
     },
     "DLR": {
       "symbol": "DLR",
@@ -3283,9 +3283,9 @@
       "price": 178.13999938964844,
       "change": -2.02,
       "changePercent": -1.12,
-      "volume": 1297435,
+      "volume": 1302100,
       "marketCap": 66089713001.34035,
-      "quoteUpdatedAt": "2026-10-13T20:58:56+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:28+00:00",
       "revenue": 6757036032.0,
       "revenueGrowth": 29.9,
       "roe": 2.912,
@@ -3293,7 +3293,7 @@
       "dividendYield": 2.7394,
       "reportDate": "2026-06-30",
       "sector": "Real Estate",
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:56+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:28+00:00",
       "pe": 86.47573,
       "forwardPe": 64.49487,
       "peg": 11.7208,
@@ -3310,7 +3310,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:56+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:28+00:00"
     },
     "NOW": {
       "symbol": "NOW",
@@ -3338,9 +3338,9 @@
       "price": 138.61000061035156,
       "change": -0.94,
       "changePercent": -0.67,
-      "volume": 13128076,
+      "volume": 13191300,
       "marketCap": 143303612451.0193,
-      "quoteUpdatedAt": "2026-10-13T20:58:59+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:32+00:00",
       "revenue": 3987000000.0,
       "revenueGrowth": 24.0124,
       "roe": 14.244,
@@ -3348,13 +3348,13 @@
       "dividendYield": 0.0,
       "reportDate": "2026-06-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:59+00:00",
-      "pe": 86.09317,
-      "forwardPe": 27.691484,
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:32+00:00",
+      "pe": 86.63125,
+      "forwardPe": 27.656345,
       "peg": 1.0143,
       "profitMargin": 11.34,
       "operatingMargin": 4.06,
-      "eps": 1.61,
+      "eps": 1.6,
       "week52High": 192.966,
       "week52Low": 81.24,
       "week52PositionPercent": 51.3,
@@ -3365,7 +3365,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:59+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:32+00:00"
     },
     "SNOW": {
       "symbol": "SNOW",
@@ -3393,9 +3393,9 @@
       "price": 357.760009765625,
       "change": -2.61,
       "changePercent": -0.72,
-      "volume": 4103447,
+      "volume": 4111700,
       "marketCap": 126217731445.3125,
-      "quoteUpdatedAt": "2026-10-13T20:59:03+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:34+00:00",
       "revenue": 1546793000.0,
       "revenueGrowth": 35.0947,
       "roe": -48.063,
@@ -3403,7 +3403,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-07-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:59:03+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:34+00:00",
       "forwardPe": 119.04699,
       "peg": 8.4123,
       "profitMargin": -20.07,
@@ -3419,7 +3419,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:59:03+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:34+00:00"
     },
     "DDOG": {
       "symbol": "DDOG",
@@ -3447,9 +3447,9 @@
       "price": 283.3399963378906,
       "change": -3.95,
       "changePercent": -1.37,
-      "volume": 1904312,
+      "volume": 1907300,
       "marketCap": 101740315985.18799,
-      "quoteUpdatedAt": "2026-10-13T20:59:06+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:37+00:00",
       "revenue": 1121454000.0,
       "revenueGrowth": 35.6444,
       "roe": 4.696,
@@ -3457,13 +3457,13 @@
       "dividendYield": 0.0,
       "reportDate": "2026-06-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:59:06+00:00",
-      "pe": 555.5686,
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:37+00:00",
+      "pe": 566.68,
       "forwardPe": 95.25763,
       "peg": 1.2748,
       "profitMargin": 4.48,
       "operatingMargin": 0.67,
-      "eps": 0.51,
+      "eps": 0.5,
       "week52High": 300.68,
       "week52Low": 98.01,
       "week52PositionPercent": 91.4,
@@ -3474,7 +3474,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:59:06+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:37+00:00"
     },
     "AMAT": {
       "symbol": "AMAT",
@@ -3485,26 +3485,26 @@
       "news": [],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "应用材料股价近期下挫，日跌幅约6.69%，当前股价464美元，市盈前瞻约25x，近年收入增速约25%，ROE高达约41%。长期估值与高成长并存，但短期波动显著，需关注行业周期与外部需求变化。",
+        "summary": "应用材料当前股价下跌明显，日内跌幅接近-6.69%，60日及52周位置处于中位水平偏后段。基本面方面，营收增长接近25%，ROE约41%，Forward P/E约25，股息率较低。综合看，趋势存在短期波动风险，需关注行业周期与库存/供需变化对盈利的影响。",
         "trend": "偏空",
         "riskLevel": "中",
         "catalysts": [
-          "行业周期波动对半导体设备需求的影响",
-          "Forward PE 相对历史与同行的对比变化",
-          "全球半导体产能调整与设备投资节奏",
-          "公司高ROE与低股息率对投资者结构的影响"
+          "营收增长持续性与毛利率表现",
+          "存货周转与半导体设备周期性波动",
+          "宏观经济变化对半导体设备需求的影响",
+          "行业竞争与技术升级带来的市场需求变化"
         ],
-        "note": "信息不足以判断未来趋势，需关注市场情绪与宏观订货信号的变化。",
-        "generatedAt": "2026-10-13T20:59:58+00:00",
+        "note": "信息不足以判断未来方向，请结合后续披露与行业数据继续观察。",
+        "generatedAt": "2026-10-14T01:45:11+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
       "price": 464.239990234375,
       "change": -33.29,
       "changePercent": -6.69,
-      "volume": 10662840,
+      "volume": 10857900,
       "marketCap": 368419669188.345,
-      "quoteUpdatedAt": "2026-10-13T20:59:09+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:40+00:00",
       "revenue": 9115000000.0,
       "revenueGrowth": 24.8288,
       "roe": 41.068,
@@ -3512,7 +3512,7 @@
       "dividendYield": 0.4265,
       "reportDate": "2026-07-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-10-13T20:59:09+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:40+00:00",
       "pe": 40.055218,
       "forwardPe": 25.122654,
       "peg": 0.8297,
@@ -3529,7 +3529,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:59:09+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:40+00:00"
     },
     "VST": {
       "symbol": "VST",
@@ -3557,9 +3557,9 @@
       "price": 162.36000061035156,
       "change": 5.4403,
       "changePercent": 3.47,
-      "volume": 5245442,
+      "volume": 5267400,
       "marketCap": 54493730465.055466,
-      "quoteUpdatedAt": "2026-10-13T20:59:13+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:43+00:00",
       "revenue": 4017000000.0,
       "revenueGrowth": -5.4824,
       "roe": 42.962,
@@ -3567,7 +3567,7 @@
       "dividendYield": 0.5629,
       "reportDate": "2026-06-30",
       "sector": "Utilities",
-      "fundamentalsUpdatedAt": "2026-10-13T20:59:13+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:43+00:00",
       "pe": 27.379427,
       "forwardPe": 15.5870495,
       "peg": 0.3441,
@@ -3584,7 +3584,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:59:13+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:43+00:00"
     },
     "GEV": {
       "symbol": "GEV",
@@ -3612,9 +3612,9 @@
       "price": 1004.0399780273438,
       "change": 7.24,
       "changePercent": 0.73,
-      "volume": 1886076,
+      "volume": 1898500,
       "marketCap": 267409562815.18378,
-      "quoteUpdatedAt": "2026-10-13T20:59:16+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:46+00:00",
       "revenue": 11104000000.0,
       "revenueGrowth": 21.8747,
       "roe": 82.577,
@@ -3622,13 +3622,13 @@
       "dividendYield": 0.1743,
       "reportDate": "2026-06-30",
       "sector": "Industrials",
-      "fundamentalsUpdatedAt": "2026-10-13T20:59:16+00:00",
-      "pe": 28.556313,
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:46+00:00",
+      "pe": 28.78555,
       "forwardPe": 39.732018,
       "peg": 1.8622,
       "profitMargin": 23.04,
       "operatingMargin": 7.47,
-      "eps": 35.16,
+      "eps": 34.88,
       "week52High": 1195.94,
       "week52Low": 530.16,
       "week52PositionPercent": 71.2,
@@ -3639,7 +3639,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:59:16+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:46+00:00"
     },
     "ZNQ.TO": {
       "symbol": "ZNQ.TO",
@@ -3669,9 +3669,9 @@
       "changePercent": -1.32,
       "volume": 7920,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-10-13T20:59:22+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:52+00:00",
       "dividendYield": 0.1992,
-      "fundamentalsUpdatedAt": "2026-10-13T20:59:22+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:52+00:00",
       "week52High": 144.14,
       "week52Low": 102.84,
       "week52PositionPercent": 91.3,
@@ -3682,7 +3682,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:59:22+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:52+00:00"
     },
     "ZQQ.TO": {
       "symbol": "ZQQ.TO",
@@ -3712,9 +3712,9 @@
       "changePercent": -1.03,
       "volume": 19540,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-10-13T20:59:25+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:54+00:00",
       "dividendYield": 0.2232,
-      "fundamentalsUpdatedAt": "2026-10-13T20:59:25+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:54+00:00",
       "week52High": 211.42,
       "week52Low": 155.32,
       "week52PositionPercent": 90.5,
@@ -3725,7 +3725,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:59:25+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:54+00:00"
     },
     "TEC.TO": {
       "symbol": "TEC.TO",
@@ -3755,9 +3755,9 @@
       "changePercent": -0.81,
       "volume": 57278,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-10-13T20:59:28+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:44:57+00:00",
       "dividendYield": 0.0624,
-      "fundamentalsUpdatedAt": "2026-10-13T20:59:28+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:44:57+00:00",
       "pe": 28.469368,
       "week52High": 66.99,
       "week52Low": 46.13,
@@ -3769,7 +3769,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:59:28+00:00"
+      "newsUpdatedAt": "2026-10-14T01:44:57+00:00"
     },
     "XIT.TO": {
       "symbol": "XIT.TO",
@@ -3799,9 +3799,9 @@
       "changePercent": 1.69,
       "volume": 20215,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-10-13T20:59:31+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:45:00+00:00",
       "dividendYield": 0.0266,
-      "fundamentalsUpdatedAt": "2026-10-13T20:59:31+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:45:00+00:00",
       "pe": 34.97477,
       "week52High": 89.97,
       "week52Low": 58.78,
@@ -3813,7 +3813,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:59:31+00:00"
+      "newsUpdatedAt": "2026-10-14T01:45:00+00:00"
     },
     "XCHP.TO": {
       "symbol": "XCHP.TO",
@@ -3843,9 +3843,9 @@
       "changePercent": -3.17,
       "volume": 73634,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-10-13T20:59:34+00:00",
+      "quoteUpdatedAt": "2026-10-14T01:45:03+00:00",
       "dividendYield": 0.0514,
-      "fundamentalsUpdatedAt": "2026-10-13T20:59:34+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:45:03+00:00",
       "pe": 32.040306,
       "week52High": 161.33,
       "week52Low": 64.7,
@@ -3857,7 +3857,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:59:34+00:00"
+      "newsUpdatedAt": "2026-10-14T01:45:03+00:00"
     },
     "CCO.TO": {
       "symbol": "CCO.TO",
@@ -3887,15 +3887,15 @@
       "changePercent": -2.42,
       "volume": 941287,
       "marketCap": 53383277103.11588,
-      "quoteUpdatedAt": "2026-10-13T20:58:00+00:00",
-      "revenue": 3474621952.0,
-      "revenueGrowth": -7.2,
+      "quoteUpdatedAt": "2026-10-14T01:43:39+00:00",
+      "revenue": 813772000.0,
+      "revenueGrowth": -7.2113,
       "roe": 5.115,
       "grossMargin": 35.113,
       "dividendYield": 0.1958,
       "reportDate": "2026-06-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-10-13T20:58:00+00:00",
+      "fundamentalsUpdatedAt": "2026-10-14T01:43:39+00:00",
       "pe": 151.32098,
       "forwardPe": 47.34571,
       "peg": 1.92,
@@ -3912,7 +3912,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-10-13T20:58:00+00:00"
+      "newsUpdatedAt": "2026-10-14T01:43:39+00:00"
     }
   }
 }
