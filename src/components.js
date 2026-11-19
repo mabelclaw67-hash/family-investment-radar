@@ -282,7 +282,7 @@ export function StockRadarHomeEntry() {
 }
 
 export function DailyMarketBriefPanel(briefs = []) {
-  const opening = findBriefByType(briefs, "opening");
+  // Opening brief retired 2026-11-18 (no longer generated since 2026-08-15); only the closing brief is shown.
   const closing = findBriefByType(briefs, "closing");
 
   return `
@@ -291,7 +291,6 @@ export function DailyMarketBriefPanel(briefs = []) {
         <h2>${t("daily_brief_title")}</h2>
       </div>
       <div class="daily-brief-cards">
-        ${dailyBriefCard(t("daily_brief_opening"), opening)}
         ${dailyBriefCard(t("daily_brief_closing"), closing)}
       </div>
     </section>
