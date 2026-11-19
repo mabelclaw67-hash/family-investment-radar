@@ -357,6 +357,15 @@ async function fetchJson(url) {
   }
 
   const payload = await readJsonResponse(response, "Apps Script API");
+  if (payload.publicView && adminAuthHeaders().Authorization) {
+    // We sent an admin token but the server treated us as a visitor: the
+    // session is no longer valid. Clear it so the login gate appears.
+    try {
+      sessionStorage.removeItem("fir_admin_token_v1");
+      sessionStorage.removeItem("fir_auth_v2");
+    } catch {}
+    throw new Error("登录已过期，请重新输入管理员密码。 / Admin session expired — please log in again.");
+  }
   if (!payload.ok) {
     throw new Error(payload.error || "Apps Script API returned ok:false");
   }

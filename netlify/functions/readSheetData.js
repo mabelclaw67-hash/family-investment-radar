@@ -105,7 +105,7 @@ function redactForPublic(payload, action) {
   const data = { ...(payload.data || {}) };
   data.holdings = [];
   data.morningBrief = [];
-  return { ...payload, data };
+  return { ...payload, data, publicView: true };
 }
 
 function shouldBypassCache(params) {

@@ -67,7 +67,27 @@ let globalActionsBound = false;
 // ── Password Gate ─────────────────────────────────────────────────────────────
 
 function checkAuth() {
-  return sessionStorage.getItem(AUTH_KEY) === "ok";
+  if (sessionStorage.getItem(AUTH_KEY) !== "ok") return false;
+  // The server verifies the token; here we only drop sessions whose token is
+  // missing or past its expiry so the login gate shows instead of empty pages.
+  if (!isAdminTokenFresh(sessionStorage.getItem(ADMIN_TOKEN_KEY) || "")) {
+    sessionStorage.removeItem(AUTH_KEY);
+    sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+    return false;
+  }
+  return true;
+}
+
+function isAdminTokenFresh(token) {
+  const [payload, signature] = String(token).split(".");
+  if (!payload || !signature) return false;
+  try {
+    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    const data = JSON.parse(json);
+    return data.role === "admin" && Number(data.expiresAt) > Date.now() + 60 * 1000;
+  } catch {
+    return false;
+  }
 }
 
 function getAdminToken() {
