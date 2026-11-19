@@ -80,18 +80,18 @@ There is exactly **one** stock-data scheduler for this project:
 
 - **Name:** Family Investment Stock Refresh
 - **File:** `.github/workflows/stock-data-refresh.yml`
-- **When:** weekdays at **3:37 PM America/Vancouver** (after both the US and
-  Canadian markets close). One daily run — no intraday refresh.
+- **When:** weekdays, twice a day — **09:00** and **16:00 America/Vancouver**
+  (cron with the IANA `timezone` field). Note: GitHub queues scheduled runs, so
+  actual start times are often several hours late (observed Nov 2026: the
+  "09:00" run usually lands ~14:00–15:00, the "16:00" run ~20:00).
 - **Manual run:** GitHub → Actions → *Family Investment Stock Refresh* → *Run workflow*.
 - **Secrets required:**
   - `FAMILY_INVESTMENT_API_URL` (read-only Apps Script Web App `/exec` URL).
   - `OPENAI_API_KEY` (for AI analysis; if unset, AI is skipped and only news
     + market data update). Both values are never logged.
 
-GitHub Actions `schedule` is UTC-only and does not support a per-schedule
-timezone, so the workflow triggers at both `37 22` and `37 23` UTC (PDT + PST)
-and a guard step runs the real work only when it is the 15:xx hour in
-America/Vancouver — one true-local, DST-safe run per weekday.
+The workflow uses GitHub Actions' per-schedule `timezone: "America/Vancouver"`
+field, so the two runs are DST-safe without a UTC guard step.
 
 Data flow:
 
