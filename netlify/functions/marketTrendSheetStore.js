@@ -1,3 +1,4 @@
+import { withAccessKey } from "./adminAuth.js";
 const DEFAULT_APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbwxCyBuqCjc8vB4SHe6QtYPx3WgfAsaJN4dHpFqBjc22h3R9gScYzgSs9XlJNrRdSpyNQ/exec";
 const AI_MARKET_TREND_TAB = "13 AI Market Trend";
@@ -8,10 +9,10 @@ export async function appendMarketTrendRecord(payload) {
     headers: {
       "Content-Type": "text/plain;charset=utf-8",
     },
-    body: JSON.stringify({
+    body: JSON.stringify(withAccessKey({
       action: "appendAiMarketTrend",
       record: payload,
-    }),
+    })),
   });
 
   const result = await readJsonResponse(response, "append AI market trend");

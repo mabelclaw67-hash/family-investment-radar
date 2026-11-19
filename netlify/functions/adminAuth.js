@@ -34,3 +34,17 @@ function safeEqual(a, b) {
   if (left.length !== right.length) return false;
   return timingSafeEqual(left, right);
 }
+
+// ── Apps Script access key (added 2026-11-18) ──────────────────────────────
+// The Apps Script Web App rejects private reads and all writes unless the
+// request carries this server-side key. It lives only in the Netlify env var
+// APPS_SCRIPT_ACCESS_KEY and must never be sent to the browser.
+export function withAccessKey(target) {
+  const key = process.env.APPS_SCRIPT_ACCESS_KEY || "";
+  if (!key) return target;
+  if (target instanceof URL) {
+    target.searchParams.set("key", key);
+    return target;
+  }
+  return { ...(target || {}), key };
+}

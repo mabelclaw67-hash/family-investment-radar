@@ -1,4 +1,4 @@
-import { verifyAdminToken } from "./adminAuth.js";
+import { verifyAdminToken, withAccessKey } from "./adminAuth.js";
 
 const APPS_SCRIPT_URL =
   process.env.FAMILY_INVESTMENT_API_URL ||
@@ -32,6 +32,7 @@ export async function handler(event) {
     const url = new URL(APPS_SCRIPT_URL);
     url.searchParams.set("action", action);
     url.searchParams.set("_", String(Date.now()));
+    withAccessKey(url);
     if (action === "analyze_stocks") {
       url.searchParams.set("industry", "all");
       url.searchParams.set("max", String(Math.max(1, Math.min(Number(body.max || 5), 8))));

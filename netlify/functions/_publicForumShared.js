@@ -1,3 +1,4 @@
+import { withAccessKey } from "./adminAuth.js";
 // Shared helpers for the public forum ("大家在关注") Netlify functions.
 import { createHash } from "node:crypto";
 
@@ -106,6 +107,7 @@ export async function appsScriptGet(action, params = {}) {
   const url = new URL(APPS_SCRIPT_URL);
   url.searchParams.set("action", action);
   url.searchParams.set("_", String(Date.now()));
+  withAccessKey(url);
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null && v !== "") url.searchParams.set(k, String(v));
   });
@@ -122,7 +124,7 @@ export async function appsScriptPost(payload) {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     redirect: "follow",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(withAccessKey(payload)),
   });
   const text = await response.text();
   if (!response.ok) throw new Error(`Apps Script HTTP ${response.status}`);

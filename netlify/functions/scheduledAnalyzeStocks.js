@@ -1,3 +1,4 @@
+import { withAccessKey } from "./adminAuth.js";
 // Scheduled smart-batch refresh for "11 Stock Analysis".
 //
 // Calls the SAME Apps Script action (`analyze_stocks`) the manual "刷新股票分析"
@@ -40,6 +41,7 @@ export default async function scheduledAnalyzeStocks() {
     url.searchParams.set("industry", "all");
     url.searchParams.set("max", "5");
     url.searchParams.set("_", String(Date.now()));
+    withAccessKey(url);
 
     const response = await fetch(url, { method: "GET" });
     const text = await response.text();

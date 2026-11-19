@@ -1,4 +1,4 @@
-import { verifyAdminToken } from "./adminAuth.js";
+import { verifyAdminToken, withAccessKey } from "./adminAuth.js";
 
 // Enrichment pipeline for 07 Watchlist Intelligence:
 //   Watchlist rows  ->  Firecrawl news search  ->  OpenAI Chinese analysis
@@ -146,6 +146,7 @@ async function fetchWatchlist() {
   const url = new URL(APPS_SCRIPT_URL);
   url.searchParams.set("action", "dashboard");
   url.searchParams.set("_", String(Date.now()));
+  withAccessKey(url);
 
   const response = await fetch(url, { method: "GET", redirect: "follow" });
   const text = await response.text();
@@ -293,7 +294,7 @@ async function writeBack(rows) {
   const response = await fetch(APPS_SCRIPT_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ action: "updateWatchlistEnrichment", rows }),
+    body: JSON.stringify(withAccessKey({ action: "updateWatchlistEnrichment", rows })),
   });
 
   const text = await response.text();

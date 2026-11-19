@@ -300,6 +300,15 @@ export async function refreshStockAnalysis(adminToken = "") {
   return await parseBackendJson(response);
 }
 
+function adminAuthHeaders() {
+  try {
+    const token = sessionStorage.getItem("fir_admin_token_v1") || "";
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
+}
+
 function buildApiUrl(action, params = {}, options = {}) {
   if (typeof options === "string") {
     options = { apiUrl: options };
@@ -329,9 +338,18 @@ async function loadSheetTabWithOptions(sheetName, options = {}) {
 async function fetchJson(url) {
   let response;
   try {
-    response = await fetch(url.toString(), { cache: "no-store" });
+    response = await fetch(url.toString(), { cache: "no-store", headers: adminAuthHeaders() });
   } catch (error) {
     throw new Error(`Apps Script API request failed: ${error.message}`);
+  }
+
+  if (response.status === 401) {
+    // Admin session missing or expired: clear it so the login gate shows again.
+    try {
+      sessionStorage.removeItem("fir_admin_token_v1");
+      sessionStorage.removeItem("fir_auth_v2");
+    } catch {}
+    throw new Error("登录已过期，请重新输入管理员密码。 / Admin session expired — please log in again.");
   }
 
   if (!response.ok) {
