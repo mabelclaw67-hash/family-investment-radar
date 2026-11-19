@@ -173,10 +173,56 @@ const HOLDING_DIRECT_ALIASES = {
   'LAC.TO': ['LAC.TO', 'LAC', 'Lithium Americas'],
 };
 
+// ══════════════════════════════════════════════════════════════════════════════
+// Access control (added 2026-11-18)
+// The Web App URL is public, so only non-personal reads are open. Holdings,
+// decision log, research, morning brief, the full dashboard and every write or
+// refresh action require the server-side key stored in Script Properties as
+// API_ACCESS_KEY (Netlify sends it from env var APPS_SCRIPT_ACCESS_KEY).
+// ══════════════════════════════════════════════════════════════════════════════
+var PUBLIC_GET_ACTIONS_ = ['latestAiMarketTrend', 'listPublicTopics', 'listPublicReplies', 'getPublicStockCache'];
+var PUBLIC_TABS_ = [
+  '05 Market Radar',
+  '06 Daily News Intelligence',
+  '07 Watchlist Intelligence',
+  '08 Priority Alert Watch',
+  '11 Stock Analysis',
+  '13 AI Market Trend',
+  '16 Public Stock Cache',
+  '17 Stock Market Brief'
+];
+
+function isPublicGetRequest_(action, params) {
+  if (PUBLIC_GET_ACTIONS_.indexOf(String(action)) >= 0) return true;
+  if (String(action) === 'tab') {
+    return PUBLIC_TABS_.indexOf(String((params && params.name) || '').trim()) >= 0;
+  }
+  return false;
+}
+
+function hasValidAccessKey_(key) {
+  var expected = PropertiesService.getScriptProperties().getProperty('API_ACCESS_KEY');
+  if (!expected) return false;
+  var given = String(key || '');
+  if (given.length !== expected.length) return false;
+  var diff = 0;
+  for (var i = 0; i < given.length; i++) diff |= given.charCodeAt(i) ^ expected.charCodeAt(i);
+  return diff === 0;
+}
+
+function unauthorizedResponse_() {
+  return jsonResponse_({ ok: false, error: 'Unauthorized' });
+}
+
 function doGet(e) {
   try {
     const params = e && e.parameter ? e.parameter : {};
     const action = params.action || 'dashboard';
+
+    // Access control (2026-11-18): private reads and all writes need the key.
+    if (!isPublicGetRequest_(action, params) && !hasValidAccessKey_(params.key)) {
+      return unauthorizedResponse_();
+    }
 
     if (action === 'dashboard') {
       return jsonResponse_({
@@ -436,6 +482,10 @@ function doPost(e) {
     }
 
     var action = String(body.action || '').trim();
+    // Access control (2026-11-18): every POST action writes, so all need the key.
+    if (!hasValidAccessKey_(body.key)) {
+      return unauthorizedResponse_();
+    }
     if (action === 'appendAiMarketTrend') {
       var result = appendAiMarketTrend_(body.record || {});
       return jsonResponse_({
