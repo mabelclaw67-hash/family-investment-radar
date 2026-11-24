@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-24T02:46:59+00:00",
+  "generatedAt": "2026-11-24T06:54:18+00:00",
   "marketDate": "2026-11-24",
   "watchlistSource": "Google Sheet '11 Stock Analysis' via Apps Script (read-only)",
   "engine": "dsa-adapter (daily_stock_analysis vendored modules + yfinance)",
@@ -24,13 +24,13 @@
     "placeholder": 4
   },
   "rateLimitEvents": 0,
-  "runSeconds": 281.6,
+  "runSeconds": 257.0,
   "aiAnalyzed": 72,
   "newsCovered": 62,
   "thisRunAi": {
     "generated": 30,
     "failed": 0,
-    "skippedOverBudget": 42,
+    "skippedOverBudget": 36,
     "budget": 30
   },
   "stocks": {
@@ -42,54 +42,54 @@
       "theme": "AI / 算力 / 半导体",
       "news": [
         {
-          "title": "Jensen Huang is back: Does Washington have a seat in the boardroom?",
-          "summary": "As Nvidia reinstates Jensen Huang and investors add a trillion dollars to the stock, Deirdre Bosa dives into the White House's role in his return and asks General Catalyst's Madhu Namburi, who spent 25 years advising tech boards at J.P. Morgan, how boards, CEOs and dealmakers operate under the new rules.",
-          "source": "Yahoo Finance Video",
-          "publishedAt": "2026-11-23T22:12:14Z",
-          "url": "https://finance.yahoo.com/video/jensen-huang-is-back-does-washington-have-a-seat-in-the-boardroom-221214249.html"
+          "title": "Prediction: 1 \"Magnificent Seven\" Stock That Will Lag the Market in 2027",
+          "summary": "Tesla is building some of the most exciting technology on Earth, but I think its stock is set up to trail the market next year.",
+          "source": "Motley Fool",
+          "publishedAt": "2026-11-24T06:20:02Z",
+          "url": "https://www.fool.com/investing/2026/11/24/prediction-1-magnificent-seven-stock-that-will-lag-the-market-in-2027/"
         },
         {
-          "title": "Ex-Nvidia employee: 'Stability and accountability can coexist'",
-          "summary": "Amulya Vishwanath, Techable VC Founder and Managing Partner and a former Nvidia (NVDA) employee, joins Yahoo Finance's Deirdre Bosa to discuss how Jensen Huang's return as CEO is good for founders and the company's execution and who must own the question of accountability.",
-          "source": "Yahoo Finance Video",
-          "publishedAt": "2026-11-23T22:11:05Z",
-          "url": "https://finance.yahoo.com/video/ex-nvidia-employee-stability-and-accountability-can-coexist-221105947.html"
+          "title": "Asian stocks rally as Huang's return to Nvidia revives the AI trade",
+          "summary": "By Jiaxing Li HONG KONG, Nov 24 (Reuters) - Asian shares leapt on Tuesday following a spectacular Wall Street surge, as Jensen Huang's return as Nvidia CEO sparked a relief rally in the battered AI",
+          "source": "Reuters",
+          "publishedAt": "2026-11-24T06:17:26Z",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/asian-stocks-rally-huangs-nvidia-013042563.html"
         },
         {
-          "title": "Nvidia's stability is a systemic issue for the US now, this AI CEO says",
-          "summary": "Unconventional AI CEO Naveen Rao joins Deirdre Bosa for a discussion about his own company's relationship with Washington regulators, especially in the context of President Trump intervening to press the Nvidia (NVDA) board to reinstate Jensen Huang as CEO.",
-          "source": "Yahoo Finance Video",
-          "publishedAt": "2026-11-23T22:00:35Z",
-          "url": "https://finance.yahoo.com/video/nvidias-stability-is-a-systemic-issue-for-the-us-now-this-ai-ceo-says-220035003.html"
+          "title": "Stock Market: Will S&P 500 Open Up or Down Today?",
+          "summary": "U.S. stock futures are edging higher early Tuesday as Wall Street builds on a historic tech-led relief rally triggered by Jensen Huang’s stunning return as CEO of Nvidia Corp. (NASDAQ:NVDA), alongside a sharp rebound across Asian markets. The Polymarket traders,...",
+          "source": "Benzinga Prediction Markets",
+          "publishedAt": "2026-11-24T06:10:37Z",
+          "url": "https://www.benzinga.com/markets/prediction-markets/26/11/63568369/stock-market-will-sp-500-open-up-or-down-today-84?utm_source=yahooFinance&utm_campaign=partner_feed&utm_medium=referral"
         },
         {
-          "title": "It's not over for Jensen Huang",
-          "summary": "Nvidia's board voted unanimously to bring back Jensen Huang as CEO, 11 days after he was pushed out, and the US stock market added $3 trillion within the hour. Host Ejaaz Ahamadeen breaks down what changes now, from the \"bank of Nvidia\" and chips for China to a more careful Jensen and what his return means for open-source AI.",
-          "source": "Yahoo Finance Video",
-          "publishedAt": "2026-11-23T21:58:09Z",
-          "url": "https://finance.yahoo.com/video/its-not-over-for-jensen-huang-215809126.html"
+          "title": "Nvidia Stock Just Had Its Best Day in Over a Decade. I'd Still Buy It Now.",
+          "summary": "The AI chip giant's shares climbed around a third in one session. Is it still a bargain?",
+          "source": "Motley Fool",
+          "publishedAt": "2026-11-24T06:03:02Z",
+          "url": "https://www.fool.com/investing/2026/11/24/nvidia-stock-just-had-its-best-day-in-over-a-decade-i-d-still-buy-it-now/"
         },
         {
-          "title": "3 truths that Jensen Huang's return to Nvidia made clear",
-          "summary": "General Catalyst managing director Madhu Namburi sits down with Deirdre Bosa to share some of his thoughts about Jensen Huang's reinstatement as Nvidia (NVDA) CEO.",
-          "source": "Yahoo Finance Video",
-          "publishedAt": "2026-11-23T21:36:10Z",
-          "url": "https://finance.yahoo.com/video/3-truths-that-jensen-huangs-return-to-nvidia-made-clear-213610744.html"
+          "title": "Dollar perky as renewed AI euphoria fuels Fed hike bets",
+          "summary": "By Rae Wee SINGAPORE, Nov 24 (Reuters) - The dollar hovered near a 20-month high on Tuesday, after Jensen Huang's reinstatement as Nvidia's CEO breathed new life into the AI rally and stoked",
+          "source": "Reuters",
+          "publishedAt": "2026-11-24T05:56:48Z",
+          "url": "https://finance.yahoo.com/markets/currencies/articles/dollar-perky-renewed-ai-euphoria-055648131.html"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "英伟达在回归CEO事件后股价显著上涨，市场关注其在AI算力与对华策略、治理及合规方面的持续执行力；财务指标显示营收增长强劲、盈利能力高，但估值与前瞻性展望需结合监管环境与全球市场需求观察。",
+        "summary": "英伟达近期股价强劲上涨，核心驱动来自AI相关需求与管理层回归带来的市场情绪改善。当前估值与盈利增长显示强韧性，但市场对AI相关情绪的持续性与宏观因素仍存在不确定。",
         "trend": "偏多",
         "riskLevel": "中",
         "catalysts": [
-          "Jensen Huang回归CEO对公司治理与长期战略的影响",
-          "华府监管与行业合规变化对AI芯片公司路径的影响",
-          "AI需求与算力扩张带来的营收持续性",
-          "股价对市场情绪与全球市场波动的敏感性"
+          "黄仁勋回归及AI相关利好提振市场情绪",
+          "亚洲及全球股市的反弹带动科技股资金流入",
+          "Forward PE及营收增长显示盈利弹性，但高估值可能放大波动",
+          "宏观因素如美元走强与利率路径对高估值科技股的影响"
         ],
-        "note": "信息基于公开新闻与财务指标，未来政策与市场变量可能改变趋势，请关注监管动态与公司执行力的持续表现。",
-        "generatedAt": "2026-11-24T02:45:37+00:00",
+        "note": "信息基于公开新闻与数据，市场情绪波动可能带来快速反向风险。",
+        "generatedAt": "2026-11-24T06:53:08+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -98,7 +98,7 @@
       "changePercent": 27.56,
       "volume": 779184200,
       "marketCap": 3985462423690.796,
-      "quoteUpdatedAt": "2026-11-24T02:42:17+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:01+00:00",
       "revenue": 361808003072.0,
       "revenueGrowth": 103.2,
       "roe": 117.364,
@@ -106,7 +106,7 @@
       "dividendYield": 0.3151,
       "reportDate": "2026-10-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:17+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:01+00:00",
       "pe": 17.728249,
       "forwardPe": 9.93961,
       "peg": 0.1519,
@@ -123,7 +123,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:17+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:01+00:00"
     },
     "QQQ": {
       "symbol": "QQQ",
@@ -189,9 +189,9 @@
       "changePercent": 5.59,
       "volume": 84939600,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-11-24T02:44:50+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:24+00:00",
       "dividendYield": 0.4748,
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:50+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:24+00:00",
       "pe": 26.816046,
       "week52High": 762.86,
       "week52Low": 555.6,
@@ -203,7 +203,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:50+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:24+00:00"
     },
     "VFV.TO": {
       "symbol": "VFV.TO",
@@ -230,11 +230,11 @@
       "price": 184.72000122070312,
       "change": 8.430007934570312,
       "changePercent": 4.78,
-      "volume": 564399,
+      "volume": 564400,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-11-24T02:44:43+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:17+00:00",
       "dividendYield": 0.877,
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:43+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:17+00:00",
       "pe": 22.851986,
       "week52High": 197.83,
       "week52Low": 155.95,
@@ -246,7 +246,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:43+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:17+00:00"
     },
     "HXQ.TO": {
       "symbol": "HXQ.TO",
@@ -274,10 +274,10 @@
       "price": 110.70999908447266,
       "change": 7.30999755859375,
       "changePercent": 7.07,
-      "volume": 209784,
+      "volume": 209800,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-11-24T02:45:20+00:00",
-      "fundamentalsUpdatedAt": "2026-11-24T02:45:20+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:52+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:52+00:00",
       "week52High": 128.37,
       "week52Low": 91.48,
       "week52PositionPercent": 52.1,
@@ -288,7 +288,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:45:20+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:52+00:00"
     },
     "XIU.TO": {
       "symbol": "XIU.TO",
@@ -316,11 +316,11 @@
       "price": 51.599998474121094,
       "change": 1.279998779296875,
       "changePercent": 2.54,
-      "volume": 6276785,
+      "volume": 6276100,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-11-24T02:43:05+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:45+00:00",
       "dividendYield": 1.6202,
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:05+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:45+00:00",
       "pe": 17.967524,
       "week52High": 55.0,
       "week52Low": 44.8,
@@ -332,7 +332,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:05+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:45+00:00"
     },
     "TSLA": {
       "symbol": "TSLA",
@@ -342,54 +342,54 @@
       "theme": "AI / 电动车",
       "news": [
         {
-          "title": "Tesla's autonomy ambitions just got a Wall Street vote of confidence",
-          "summary": "Tesla just dropped a major update that is right up the alley of the bulls.",
-          "source": "Yahoo Finance",
-          "publishedAt": "2026-11-23T13:00:35Z",
-          "url": "https://finance.yahoo.com/markets/stocks/article/teslas-autonomy-ambitions-just-got-a-wall-street-vote-of-confidence-130035595.html"
+          "title": "SpaceX, Tesla directors negotiate potential $3.5 trillion merger, FT reports",
+          "summary": "Investing.com -- Space Exploration Technologies (NASDAQ:SPCX) and Tesla Inc (NASDAQ:TSLA) are working towards a potential $3.5 trillion merger, with five directors appointed to negotiate the terms of an all-stock combination that could create one of the world's largest corporate groups, the Financial Times reported on Tuesday.",
+          "source": "Investing.com",
+          "publishedAt": "2026-11-24T06:23:39Z",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/spacex-tesla-directors-negotiate-potential-062339987.html"
+        },
+        {
+          "title": "Prediction: 1 \"Magnificent Seven\" Stock That Will Lag the Market in 2027",
+          "summary": "Tesla is building some of the most exciting technology on Earth, but I think its stock is set up to trail the market next year.",
+          "source": "Motley Fool",
+          "publishedAt": "2026-11-24T06:20:02Z",
+          "url": "https://www.fool.com/investing/2026/11/24/prediction-1-magnificent-seven-stock-that-will-lag-the-market-in-2027/"
+        },
+        {
+          "title": "Europe new car registrations rise 3.4% in Oct as EV, hybrids maintain lead- ACEA",
+          "summary": "Investing.com-- European new car registrations rose in October amid strong demand for electric and hybrid vehicles, with Chinese entrants to the market seen gaining more market share.",
+          "source": "Investing.com",
+          "publishedAt": "2026-11-24T05:53:50Z",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/europe-car-registrations-rise-3-055350520.html"
         },
         {
           "title": "Dow Jones Futures: Tech Stocks, Nvidia Snap Back On Jensen Huang's Return; Elon Musk-Led SpaceX, Tesla Rally",
           "summary": "Dow Jones Futures: Tech stocks and Nvidia stock surged Monday on the return of Jensen Huang. Elon Musk-led SpaceX and Tesla rallied.",
           "source": "Investor's Business Daily",
-          "publishedAt": "2026-11-24T02:14:39Z",
+          "publishedAt": "2026-11-24T03:27:54Z",
           "url": "https://www.investors.com/market-trend/stock-market-today/dow-jones-futures-sp500-nasdaq-nvidia-jensen-huang-elon-musk-spacex-tesla/?src=A00220&yptr=yahoo"
         },
         {
-          "title": "TSLA And SPCX Rally As Musk Cheers Huang’s Return — Analyst Flags Nvidia’s Push To Send SpaceX More Chips",
-          "summary": "ARK’s Brett Winton believes Huang ultimately favored directing additional chip supply toward SpaceX rather than financing a broader group of smaller AI infrastructure developers still struggling to bring their projects online.",
-          "source": "Stocktwits",
-          "publishedAt": "2026-11-24T02:12:56Z",
-          "url": "https://stocktwits.com/news-articles/markets/equity/tsla-spcx-musk-cheers-huang-return-analyst-nvidia-spacex-more-chips/cNbrs1IR9jt"
-        },
-        {
-          "title": "Stock Market Today, Nov. 23: Markets Rebound From Correction on AI Relief Rally",
-          "summary": "On Nov. 23, 2026, buyers returned ahead of the holiday week as AI sentiment recovered and the S&P 500 climbed out of correction territory.",
+          "title": "How to Invest in Humanoid Robots: 3 Stocks to Watch",
+          "summary": "Humanoid robots are on the verge of becoming mainstream, and these three stocks are positioned to benefit.",
           "source": "Motley Fool",
-          "publishedAt": "2026-11-23T22:16:13Z",
-          "url": "https://www.fool.com/coverage/stock-market-today/2026/11/23/stock-market-today-nov-23-markets-rebound-from-correction-on-ai-relief-rally/"
-        },
-        {
-          "title": "Tesla (TSLA) Is Advancing Toward A $3.5 Trillion Merger",
-          "summary": "Tesla (NasdaqGS:TSLA) plans a wide release of its Full Self-Driving v15 software with the Tesla Reality View interface in the coming weeks. Company insiders describe Tesla Reality View as a rebuilt driving visualisation system designed to give drivers a richer real time view of the car's surroundings. People familiar with discussions say Tesla and SpaceX are exploring a potential merger that could value the combined group at about US$3.5 trillion. The planned FSD v15 rollout and the...",
-          "source": "Simply Wall St.",
-          "publishedAt": "2026-11-23T22:07:07Z",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/tesla-tsla-advancing-toward-3-220707866.html"
+          "publishedAt": "2026-11-24T02:51:02Z",
+          "url": "https://www.fool.com/investing/2026/11/23/how-to-invest-in-humanoid-robots-3-stocks-to-watch/"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "特斯拉近期股价大幅上涨，日涨幅达到约10%，市场对其自动驾驶及AI相关进展持乐观态度；叠加市场对高估值成长股的情绪修复，推动股价波动增大。关注其FSD v15及Reality View等升级对用户体验和潜在数据流的影响，同时关于可能的SpaceX与特斯拉合并传闻可能改变估值结构，但信息仍以公开报道为主，尚缺乏明确证据。",
-        "trend": "偏多",
+        "summary": "特斯拉近期股价强势反弹，日内涨幅显著，基本面指标如PE较高且盈利能力偏低，长期成长与盈利波动需关注；行业消息与潜在并购传闻提升市场关注度，但新闻多为传闻性质，需谨慎对待。",
+        "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "FSD v15及Reality View的正式推送及用户体验提升",
-          "SpaceX/特斯拉潜在合并传闻及估值提升预期",
-          "AI相关市场情绪回暖及科技股带动效应",
-          "对Autonomy相关更新的持续关注"
+          "高企的市盈率与Forward PE提示估值压力仍大",
+          "关于与SpaceX潜在3.5万亿美元并购的传闻影响市场情绪",
+          "全球电动车市场需求及欧洲新能源车销售增速带动关注度",
+          "科技股回暖及投资者对未来增长的再评估"
         ],
-        "note": "信息存在不确定性，合并传闻及高估值可能带来潜在回撤风险。",
-        "generatedAt": "2026-11-24T02:46:37+00:00",
+        "note": "信息为公开报道的传闻与市场情绪，缺乏可信的并购落地证据前，趋势的不确定性较高。",
+        "generatedAt": "2026-11-24T06:53:27+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -398,7 +398,7 @@
       "changePercent": 10.08,
       "volume": 46970000,
       "marketCap": 1523630044089.152,
-      "quoteUpdatedAt": "2026-11-24T02:42:21+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:04+00:00",
       "revenue": 28046000000.0,
       "revenueGrowth": -0.1744,
       "roe": 3.844,
@@ -406,7 +406,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-09-30",
       "sector": "Consumer Cyclical",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:21+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:04+00:00",
       "pe": 423.5824,
       "forwardPe": 178.51817,
       "peg": 4.0329,
@@ -423,7 +423,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:21+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:04+00:00"
     },
     "GOOGL": {
       "symbol": "GOOGL",
@@ -447,40 +447,40 @@
           "url": "https://finance.yahoo.com/video/jensen-huang-back-as-nvidia-ceo-after-12-days-shares-surge-30-161302539.html"
         },
         {
-          "title": "The Nasdaq Just Had Its Best Day Since April 2025. Anthropic Stock Fell Anyway.",
-          "summary": "Anthropic stock slipped on the Nasdaq Composite's best day since April 2025.",
+          "title": "Not Starlink. Not Starship. This SpaceX Business Could Be Worth $80 Billion on Its Own.",
+          "summary": "Space Exploration Technologies' fastest-growing business doesn't fly, orbit, or beam internet, and it might be worth $80 billion on its own.",
           "source": "Motley Fool",
-          "publishedAt": "2026-11-24T00:42:02Z",
-          "url": "https://www.fool.com/investing/2026/11/23/the-nasdaq-just-had-its-best-day-since-april-2025-anthropic-stock-fell-anyway/"
+          "publishedAt": "2026-11-24T05:50:02Z",
+          "url": "https://www.fool.com/investing/2026/11/24/not-starlink-not-starship-this-spacex-business-could-be-worth-usd80-billion-on-its-own/"
         },
         {
-          "title": "Is Amazon's Profit Riskier Than It Looks?",
+          "title": "1966 Or 1995: Which Way Does America's $2.1 Trillion Deficit Go?",
           "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
           "source": "Trefis",
-          "publishedAt": "2026-11-24T00:25:13Z",
-          "url": "https://www.trefis.com/stock/amzn/articles/627559/is-amazon-s-profit-riskier-than-it-looks/2026-11-23"
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627413/1966-or-1995-which-way-does-america-s-2-1-trillion-deficit-go/2026-11-23"
         },
         {
-          "title": "Steve Eisman Said AI Was “No Longer One Trade.” Huang Is Back, but Alphabet and CoreWeave Still Show the Split",
-          "summary": "Key TakeawaysNVIDIA, AMD, Broadcom and CoreWeave fell 12% to 14% on Friday, while Alphabet fell 2. 6%.",
-          "source": "TIKR",
-          "publishedAt": "2026-11-23T22:54:53Z",
-          "url": "https://www.tikr.com/blog/big-shorts-steve-eisman-without-nvidia-ai-is-no-longer-one-trade-alphabet-and-coreweave-show-the-split?ref=yahoofinance&tlnk=yf-261123-qrq8pv92"
+          "title": "The Inflation Math, Updated: The Fed Is Fighting Oil",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627433/the-inflation-math-updated-the-fed-is-fighting-oil/2026-11-23"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "谷歌母公司GOOGL最近股价下跌，市盈率处于低位区间，营收增长与ROE均显著，股息率较低。近期新闻聚焦于机构投资者态度及AI相关前景的不确定性，市场情绪波动可能影响短期表现。",
-        "trend": "中性",
+        "summary": "谷歌母公司GOOGL在最近交易日实现上涨，当前价格波动带来短期积极信号；公司在AI领域持续布局，Gemini 4 Neon等产品线受关注。长期估值相对合理，营收增长与ROE高位支撑基本面，但前景需关注AI竞争态势、监管与市场情绪波动。请注意新闻中的行业龙头波动可能传导性影响。不同信息源对AI生态的解读存在不确定性。",
+        "trend": "偏多",
         "riskLevel": "中",
         "catalysts": [
-          "机构投资者（如Morgan Stanley）对谷歌股票的关注度提升，可能影响短期情绪与资金流向",
-          "AI相关资本开支与盈利能力的市场再评估，影响科技股估值",
-          "宏观市场调整与市场回调情绪对科技股的短期波动性放大",
-          "谷歌的营收增长与高ROE为基本面支撑，但低股息率可能在风险偏好回落时承压"
+          "Gemini 4 Neon等AI产品线的开发者接受度与落地进展",
+          "半导体与AI硬件/软件生态竞争格局变化（如大型对手的策略调整）",
+          "宏观经济与监管环境对科技股估值的影响",
+          "市场对高增长AI股的情绪波动及资金流向"
         ],
-        "note": "信息来自公开新闻与财务数据，未来走向高度依赖宏观环境与AI投资盈利兑现情况，存在不确定性。",
-        "generatedAt": "2026-11-21T03:54:14+00:00",
+        "note": "信息源对AI竞争格局及市场情绪的解读存在不确定性，需关注后续官方公告与行业数据。",
+        "generatedAt": "2026-11-24T06:53:32+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -489,7 +489,7 @@
       "changePercent": 4.2,
       "volume": 44255200,
       "marketCap": 3468137475036.621,
-      "quoteUpdatedAt": "2026-11-24T02:42:24+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:07+00:00",
       "revenue": 127577000000.0,
       "revenueGrowth": 24.6526,
       "roe": 44.286,
@@ -497,7 +497,7 @@
       "dividendYield": 0.3049,
       "reportDate": "2026-09-30",
       "sector": "Communication Services",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:24+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:07+00:00",
       "pe": 14.731071,
       "forwardPe": 18.441067,
       "peg": 0.9371,
@@ -514,7 +514,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:24+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:07+00:00"
     },
     "MSFT": {
       "symbol": "MSFT",
@@ -538,40 +538,39 @@
           "url": "https://finance.yahoo.com/video/jensen-huangs-return-to-nvidia-long-or-short-accountability-185949254.html"
         },
         {
-          "title": "Is Amazon's Profit Riskier Than It Looks?",
+          "title": "The 10-Year Topped 5% For The First Time Since 2007. What Happened Next?",
           "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
           "source": "Trefis",
-          "publishedAt": "2026-11-24T00:25:13Z",
-          "url": "https://www.trefis.com/stock/amzn/articles/627559/is-amazon-s-profit-riskier-than-it-looks/2026-11-23"
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627401/the-10-year-topped-5-for-the-first-time-since-2007-what-happened-next/2026-11-23"
         },
         {
-          "title": "What Microsoft (MSFT)'s Enterprise AI Partnerships Mean For Shareholders",
-          "summary": "Recent announcements from partners such as Danaher, V2X, Audi and Intel show Microsoft products like Azure, Foundry, Fabric and EMIB-based Azure hardware being embedded deeper into mission operations, scientific instruments and workplace tools. These deals point to Microsoft quietly turning AI from headline demos into long-term, embedded workloads across defense, healthcare, autos and labs, which ties AI demand directly to everyday enterprise processes rather than one-off projects. We will...",
-          "source": "Simply Wall St.",
-          "publishedAt": "2026-11-24T00:17:43Z",
-          "url": "https://finance.yahoo.com/technology/ai/articles/microsoft-msft-enterprise-ai-partnerships-001743463.html"
+          "title": "Why Did Palo Alto Networks Stock Fall?",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/panw/articles/627845/why-is-palo-alto-networks-stock-falling/2026-11-23"
         },
         {
-          "title": "Chamath Says Microsoft “Clearly Is Going to Need to Have a Frontier Model.” Nadella Is Betting It Won’t",
-          "summary": "Key TakeawaysChamath Palihapitiya says Microsoft needs a frontier model, the week Anthropic debuted at about $1. 75 trillion fully diluted.",
-          "source": "TIKR",
-          "publishedAt": "2026-11-23T22:50:31Z",
-          "url": "https://www.tikr.com/blog/chamath-says-microsoft-clearly-is-going-to-need-to-have-a-frontier-model-nadella-is-betting-it-wont?ref=yahoofinance&tlnk=yf-261123-rjg9hgh9"
+          "title": "Stocks Opened Up, Then Fell 3% By The Close. What Happened The Last 45 Times?",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627441/stocks-opened-up-then-fell-3-by-the-close-what-happened-the-last-45-times/2026-11-23"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "微软当前股价回落，动能趋于谨慎。公司在营收增长与ROE等基本面稳健，估值在前瞻性AI投资背景下具有一定支撑，但外部对AI行业集中化与盈利可持续性的担忧可能对情绪产生影响。",
+        "summary": "微软当前股价492.5，日涨0.99%，PE约25.7，Forward PE约20.35，营收同比增长约18.8%，ROE高达34.2%，股息率0.75%。行业焦点集中在AI相关龙头与监管动向，短期波动受科技巨头及市场情绪影响较大。",
         "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "AI领域话题热度与微软在前沿模型竞争中的定位",
-          "Mercedes F1等行业大规模AI运算场景对算力需求的示范效应",
-          "市场对AI投资回报与盈利能力的再评估及行业资金情绪变化",
-          "关于少数科技巨头对AI生态的影响力讨论"
+          "AI相关行业龙头行情及资金流向变化",
+          "宏观风险与监管动向对科技股估值的潜在冲击",
+          "NVIDIA 等公司业绩与市场情绪对科技板块的跟随效应"
         ],
-        "note": "信息来源主要为公开新闻对AI行业与微软相关话题的讨论，尚缺乏直接的业绩驱动细节披露。",
-        "generatedAt": "2026-11-21T03:54:19+00:00",
+        "note": "信息不足以判断具体买卖策略，需关注行业周期与监管消息的持续影响。",
+        "generatedAt": "2026-11-24T06:54:02+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -580,7 +579,7 @@
       "changePercent": 0.99,
       "volume": 30347400,
       "marketCap": 3657400816860.0,
-      "quoteUpdatedAt": "2026-11-24T02:42:26+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:09+00:00",
       "revenue": 92279000000.0,
       "revenueGrowth": 18.8045,
       "roe": 34.221,
@@ -588,7 +587,7 @@
       "dividendYield": 0.7533,
       "reportDate": "2026-09-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:26+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:09+00:00",
       "pe": 25.704594,
       "forwardPe": 20.350533,
       "peg": 1.4334,
@@ -605,7 +604,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:26+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:09+00:00"
     },
     "AMZN": {
       "symbol": "AMZN",
@@ -629,40 +628,40 @@
           "url": "https://finance.yahoo.com/video/jensen-huang-back-at-nvidia-stock-soars-anthropic-slides-161339662.html"
         },
         {
-          "title": "Dow Jones Futures: Tech Stocks, Nvidia Snap Back On Jensen Huang's Return; Elon Musk-Led SpaceX, Tesla Rally",
-          "summary": "Dow Jones Futures: Tech stocks and Nvidia stock surged Monday on the return of Jensen Huang. Elon Musk-led SpaceX and Tesla rallied.",
-          "source": "Investor's Business Daily",
-          "publishedAt": "2026-11-24T02:14:39Z",
-          "url": "https://www.investors.com/market-trend/stock-market-today/dow-jones-futures-sp500-nasdaq-nvidia-jensen-huang-elon-musk-spacex-tesla/?src=A00220&yptr=yahoo"
+          "title": "Stocks Opened Up, Then Fell 3% By The Close. What Happened The Last 45 Times?",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627441/stocks-opened-up-then-fell-3-by-the-close-what-happened-the-last-45-times/2026-11-23"
         },
         {
-          "title": "Why Amazon’s Rival to Starlink Is Struggling to Catch Up With SpaceX",
-          "summary": "There is plenty of demand for a Starlink alternative, but Amazon’s satellite arm, known as Leo, is facing setbacks.",
-          "source": "The Wall Street Journal",
-          "publishedAt": "2026-11-24T01:00:00Z",
-          "url": "https://www.wsj.com/tech/amazon-leo-starlink-rival-5bb0e6a0?siteid=yhoof2&yptr=yahoo"
+          "title": "1966 Or 1995: Which Way Does America's $2.1 Trillion Deficit Go?",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627413/1966-or-1995-which-way-does-america-s-2-1-trillion-deficit-go/2026-11-23"
         },
         {
-          "title": "The Nasdaq Just Had Its Best Day Since April 2025. Anthropic Stock Fell Anyway.",
-          "summary": "Anthropic stock slipped on the Nasdaq Composite's best day since April 2025.",
-          "source": "Motley Fool",
-          "publishedAt": "2026-11-24T00:42:02Z",
-          "url": "https://www.fool.com/investing/2026/11/23/the-nasdaq-just-had-its-best-day-since-april-2025-anthropic-stock-fell-anyway/"
+          "title": "The Inflation Math, Updated: The Fed Is Fighting Oil",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627433/the-inflation-math-updated-the-fed-is-fighting-oil/2026-11-23"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "亚马逊当前股价小幅回落，市盈与未来PE均处于相对合理区间，营收增速仍有韧性。近期市场情绪受科技股与AI相关担忧影响，Re:Invent和云业务季度动向可能成为观察点，但需警惕行业高投入与利润兑现的不确定性。",
+        "summary": "亚马逊近期股价上涨，日增幅显著，市盈率在合理区间，营收同比增长稳定；行业焦点仍在AI与云计算相关股的宏观动向及监管态势，需关注市场情绪与科技股估值波动带来的不确定性。",
         "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "re:Invent 舆论与云计算/AI相关产品更新可能带来短期波动",
-          "AI行业整体资金情绪与估值回撤的延续风险",
-          "市场避险情绪与大盘波动可能拖累科技股表现",
-          "公司盈利与云业务增长节奏的兑现情况"
+          "AI/云计算相关股的市场情绪与资金流向变化",
+          "监管动向及潜在政策对科技股估值的影响",
+          "行业领头羊如 Nvidia 的动态对市场情绪的溢出效应",
+          "宏观经济因素对科技股估值的压力或缓解"
         ],
-        "note": "信息基于公开数据与新闻摘要，未来行情的驱动因素存在不确定性，需持续跟踪公司基本面与宏观情绪变化。",
-        "generatedAt": "2026-11-21T03:54:06+00:00",
+        "note": "所提供信息有限，无法排除行业周期与市场情绪对估值的快速波动风险。",
+        "generatedAt": "2026-11-24T06:53:36+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -671,7 +670,7 @@
       "changePercent": 2.57,
       "volume": 53166700,
       "marketCap": 2761567385369.524,
-      "quoteUpdatedAt": "2026-11-24T02:42:29+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:12+00:00",
       "revenue": 201944000000.0,
       "revenueGrowth": 12.0859,
       "roe": 27.416,
@@ -679,7 +678,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-09-30",
       "sector": "Consumer Cyclical",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:29+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:12+00:00",
       "pe": 20.645918,
       "forwardPe": 23.37435,
       "peg": 1.1455,
@@ -696,7 +695,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:29+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:12+00:00"
     },
     "HSAI": {
       "symbol": "HSAI",
@@ -762,7 +761,7 @@
       "changePercent": 5.42,
       "volume": 1693100,
       "marketCap": 1990533157.6562977,
-      "quoteUpdatedAt": "2026-11-24T02:42:32+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:14+00:00",
       "revenue": 1068293000.0,
       "revenueGrowth": 34.3097,
       "roe": 3.615,
@@ -770,7 +769,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-09-30",
       "sector": "Consumer Cyclical",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:32+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:14+00:00",
       "pe": 43.551727,
       "forwardPe": 16.922228,
       "peg": 0.7353,
@@ -787,7 +786,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:32+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:14+00:00"
     },
     "BABA": {
       "symbol": "BABA",
@@ -796,6 +795,27 @@
       "nameZh": "阿里巴巴",
       "theme": "中国科技 / 云 / 电商",
       "news": [
+        {
+          "title": "BABA Stock Drops Overnight: Alibaba Reportedly Refutes Chip Rerouting Claims After US Blacklists Subsidiary",
+          "summary": "The U.S. blacklisted Alibaba’s Singapore unit over alleged AI chip transfers to China.",
+          "source": "Stocktwits",
+          "publishedAt": "2026-11-24T06:01:35Z",
+          "url": "https://stocktwits.com/news-articles/markets/equity/baba-stock-drops-overnight-alibaba-reportedly-refutes-chip-rerouting-claims-after-us-blacklists-subsidiary/cNbryN9R9kc"
+        },
+        {
+          "title": "Huang returns as Nvidia CEO after Trump intervention in abrupt board reversal",
+          "summary": "Nov 23 (Reuters) - Nvidia reinstated Jensen Huang as CEO on Monday under pressure from US President Donald Trump, a stunning reversal following his resignation over revelations of extramarital affairs, drawing approval from Wall Street and opposition from US lawmakers. Huang's comeback caps a whirlwind week of events that roiled markets and tore through the AI ecosystem that has ‌relied on Nvidia for everything from supplying chips to bankrolling the industry's massive buildout.",
+          "source": "Reuters",
+          "publishedAt": "2026-11-24T04:40:43Z",
+          "url": "https://finance.yahoo.com/news/nvidia-reinstates-jensen-huang-ceo-135916841.html"
+        },
+        {
+          "title": "US Blacklists Alibaba-Owned Company in Setback to AI Ambitions",
+          "summary": "The Trump administration blacklisted a Singaporean subsidiary of Alibaba Group Holding Ltd. along with several entities affiliated with Megaspeed International, the firm at the heart of a scandal that briefly cost Jensen Huang his job as Nvidia Corp. chief executive officer.",
+          "source": "Bloomberg",
+          "publishedAt": "2026-11-24T01:45:36Z",
+          "url": "https://finance.yahoo.com/technology/ai/articles/us-blacklists-alibaba-owned-company-014536273.html"
+        },
         {
           "title": "Uber Or DiDi: Which Stock Keeps More Cash?",
           "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
@@ -809,42 +829,21 @@
           "source": "Trefis",
           "publishedAt": "2026-11-23T18:48:30Z",
           "url": "https://www.trefis.com/stock/ant/articles/627440/did-anthropic-stock-s-9-slide-make-it-cheap/2026-11-23"
-        },
-        {
-          "title": "Shareholders Are Suing Alibaba Over Its Ties to Megaspeed. What That Means for BABA Stock.",
-          "summary": "The shareholders accuse the company of unlawfully inflating its share price.",
-          "source": "Barchart",
-          "publishedAt": "2026-11-23T17:15:34Z",
-          "url": "https://www.barchart.com/story/news/8968617/shareholders-are-suining-alibaba-over-its-ties-to-megaspeed-what-that-means-for-baba-stock"
-        },
-        {
-          "title": "Alibaba Group Holding (BABA) Draws Class Action Over Alleged Smuggling And Espionage Ties",
-          "summary": "Alibaba Group Holding (NYSE:BABA) is the target of a new class action lawsuit alleging securities law violations tied to disclosure failures. Plaintiffs claim Alibaba did not reveal material adverse facts about links to an individual suspected of illegal hardware exports and espionage. The complaint argues these alleged omissions exposed shareholders to undisclosed reputational and regulatory exposure linked to that business relationship. This alleged failure to disclose ties to a suspected...",
-          "source": "Simply Wall St.",
-          "publishedAt": "2026-11-23T15:09:02Z",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/alibaba-group-holding-baba-draws-150902987.html"
-        },
-        {
-          "title": "Alibaba Group Holding Limited (BABA) Is a Trending Stock: Facts to Know Before Betting on It",
-          "summary": "Recently, Zacks.com users have been paying close attention to Alibaba (BABA). This makes it worthwhile to examine what the stock has in store.",
-          "source": "Zacks",
-          "publishedAt": "2026-11-23T13:00:06Z",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/alibaba-group-holding-limited-baba-130006745.html"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "阿里巴巴当前股价波动较大，近端涨幅显著，但基本面指标如营收增速、ROE及估值水平仍具备一定韧性；市场聚焦于诉讼及信息披露相关风险，需关注监管与诉讼进展对情绪与风险溢价的影响。",
+        "summary": "阿里巴巴近日报价显著上涨，当前市盈率与盈利增长水平较为谨慎。受美方对AI芯片相关实体的制裁及美国市场动态影响，外部环境存在不确定性。公司营收增速仍有支撑，但涉及被列入黑名单的风险事件可能带来波动。",
         "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "关于诉讼及信息披露相关的集体诉讼进展及对公司声誉的影响",
-          "监管调查与潜在合规风险对股价情绪的短期冲击",
-          "市场对阿里巴巴盈利能力与增长前景的再评估",
-          "宏观及行业环境变化对中国互联网巨头的资金与投资者偏好"
+          "美国对相关实体的制裁及监管动向对供应链和业务的潜在影响",
+          "公司对AI芯片相关业务的应对策略及合规进展",
+          "宏观科技股市场情绪及美股监管环境的变化",
+          "财报披露的营收结构与毛利率变化"
         ],
-        "note": "信息披露与诉讼进展具有不确定性，短期对情绪及波动可能产生影响。",
-        "generatedAt": "2026-11-24T02:45:40+00:00",
+        "note": "信息来源存在外部政策风险，不确定性来自监管措施的持续性与执行力度。",
+        "generatedAt": "2026-11-24T06:54:06+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -853,7 +852,7 @@
       "changePercent": 5.25,
       "volume": 16862300,
       "marketCap": 214045576829.1585,
-      "quoteUpdatedAt": "2026-11-24T02:42:34+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:16+00:00",
       "revenue": 271519000000.0,
       "revenueGrowth": 9.574,
       "roe": 9.7,
@@ -861,13 +860,13 @@
       "dividendYield": 1.2204,
       "reportDate": "2026-09-30",
       "sector": "Consumer Cyclical",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:34+00:00",
-      "pe": 12.784547,
-      "forwardPe": 9.414487,
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:16+00:00",
+      "pe": 12.050421,
+      "forwardPe": 9.429164,
       "peg": 0.3734,
       "profitMargin": 10.96,
       "operatingMargin": 6.68,
-      "eps": 6.73,
+      "eps": 7.14,
       "week52High": 181.1,
       "week52Low": 80.96,
       "week52PositionPercent": 5.1,
@@ -878,7 +877,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:34+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:16+00:00"
     },
     "CVE.TO": {
       "symbol": "CVE.TO",
@@ -942,9 +941,9 @@
       "price": 38.06999969482422,
       "change": -0.779998779296875,
       "changePercent": -2.01,
-      "volume": 6865751,
+      "volume": 6876300,
       "marketCap": 68804754802.97903,
-      "quoteUpdatedAt": "2026-11-24T02:42:37+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:19+00:00",
       "revenue": 15984000000.0,
       "revenueGrowth": 21.1368,
       "roe": 27.44,
@@ -952,7 +951,7 @@
       "dividendYield": 2.2065,
       "reportDate": "2026-09-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:37+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:19+00:00",
       "pe": 8.1,
       "forwardPe": 7.6634445,
       "peg": 15.91,
@@ -969,7 +968,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:37+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:19+00:00"
     },
     "SU.TO": {
       "symbol": "SU.TO",
@@ -978,6 +977,13 @@
       "nameZh": "森科尔能源",
       "theme": "能源",
       "news": [
+        {
+          "title": "Suncor Energy (TSX:SU) Stock Still Looks Reasonable On Earnings",
+          "summary": "Suncor Energy has delivered a powerful run over the past few years, yet a sharp pullback in recent weeks now puts a fresh spotlight on whether the current share price lines up with what its earnings can support. With investors weighing upbeat long term production ambitions against near term volatility, the valuation question has moved to the foreground. Over the past 5 years, Suncor Energy has returned about 249.5%, which raises the stakes on whether the earnings profile has evolved enough...",
+          "source": "Simply Wall St.",
+          "publishedAt": "2026-11-24T05:17:31Z",
+          "url": "https://finance.yahoo.com/energy/articles/suncor-energy-tsx-su-stock-051731671.html"
+        },
         {
           "title": "Suncor Names Enbridge Veteran Max Chan CFO Ahead of CEO Transition",
           "summary": "Suncor Energy appoints an experienced Enbridge executive as chief financial officer ahead of a planned leadership transition in 2027.",
@@ -1005,37 +1011,30 @@
           "source": "Zacks",
           "publishedAt": "2026-11-23T12:38:00Z",
           "url": "https://finance.yahoo.com/markets/stocks/articles/suncors-record-q3-cash-flow-123800940.html"
-        },
-        {
-          "title": "3 Canadian Oil Sands Stocks Backed By Alberta Royalty Changes",
-          "summary": "Canada is trying to sell more of its energy to the world, not just to the U.S., at the same time Alberta is offering a 2% starting royalty on new or expanded oil sands projects. That mix of new export routes and friendlier terms can reshape how investors think about certain Canadian oil sands producers. This article explains how the news affects the sector and outlines 3 stocks that screens identify as potential candidates for further research. The three stocks below are just a sample, and...",
-          "source": "Simply Wall St.",
-          "publishedAt": "2026-11-20T08:12:17Z",
-          "url": "https://finance.yahoo.com/energy/articles/3-canadian-oil-sands-stocks-081217609.html"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "森科尔能源近期股价下跌，PE与ForwardPE均处于相对较低水平，营收增长强劲且ROE高；受行业政策调整及在井下开发进度的潜在提速影响，市场对其在油砂项目的扩张路径存在分歧，需关注在 situ 项目推进的不确定性及宏观油价波动。",
+        "summary": "森科尔能源最近股价回撤，但长期盈利能力与现金流表现强劲，估值相对较低，股息率居稳。短期波动受市场情绪与价格回落影响，需关注盈利增速与宏观能源市场因素的持续性。",
         "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "阿尔伯塔省油砂扩产计划及政策变动可能推动在situ项目推进节奏",
-          "在 situ 项目加速带来的产量与成本结构变化",
-          "行业对比中，Suncor与Cenovus的产量增长与盈利展望差异",
-          "油价波动及汇率波动对股息与盈利的影响"
+          "前瞻性现金流与分红增长推动的长期投资者信心",
+          "管理层变动及2027年前后CEO过渡的执行效果",
+          "近期价格回撤与相对估值改善对比同业的再评估",
+          "油气行业周期波动及宏观能源需求变化"
         ],
-        "note": "信息基于公开报道，若政策或市场环境发生实质性变化，趋势判断需重新评估。",
-        "generatedAt": "2026-11-18T22:51:29+00:00",
+        "note": "信息源主要来自公开报道与财务指标，尚需更多实际盈利对比与行业周期数据以确认趋势。",
+        "generatedAt": "2026-11-24T06:53:55+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "CAD",
       "price": 90.4800033569336,
       "change": -1.1199951171875,
       "changePercent": -1.22,
-      "volume": 7305018,
+      "volume": 7316600,
       "marketCap": 104162772375.9433,
-      "quoteUpdatedAt": "2026-11-24T02:42:40+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:22+00:00",
       "revenue": 20817000000.0,
       "revenueGrowth": 53.4611,
       "roe": 23.455,
@@ -1043,13 +1042,13 @@
       "dividendYield": 2.6525,
       "reportDate": "2026-09-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:40+00:00",
-      "pe": 9.615303,
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:22+00:00",
+      "pe": 9.504202,
       "forwardPe": 9.289804,
       "peg": 11.41,
       "profitMargin": 17.68,
       "operatingMargin": 24.04,
-      "eps": 9.41,
+      "eps": 9.52,
       "week52High": 112.8,
       "week52Low": 57.95,
       "week52PositionPercent": 59.3,
@@ -1060,7 +1059,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:40+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:22+00:00"
     },
     "XOM": {
       "symbol": "XOM",
@@ -1069,6 +1068,20 @@
       "nameZh": "埃克森美孚",
       "theme": "能源",
       "news": [
+        {
+          "title": "1966 Or 1995: Which Way Does America's $2.1 Trillion Deficit Go?",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627413/1966-or-1995-which-way-does-america-s-2-1-trillion-deficit-go/2026-11-23"
+        },
+        {
+          "title": "The Inflation Math, Updated: The Fed Is Fighting Oil",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627433/the-inflation-math-updated-the-fed-is-fighting-oil/2026-11-23"
+        },
         {
           "title": "Should You Swap Tech For Johnson & Johnson Stock?",
           "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
@@ -1089,35 +1102,21 @@
           "source": "24/7 Wall St.",
           "publishedAt": "2026-11-23T20:17:16Z",
           "url": "https://247wallst.com/investing/2026/11/23/5-blue-chip-dividend-stocks-built-to-keep-paying-through-tough-markets/"
-        },
-        {
-          "title": "How Much You Really Need Invested to Generate $50,000 a Year in Retirement",
-          "summary": "Safe blue chips have rallied so hard that their yields now trail Treasuries, while the highest payers promise to slash the capital you need. Before you chase either, see what each shortcut quietly puts at risk in year ten.",
-          "source": "24/7 Wall St.",
-          "publishedAt": "2026-11-23T19:17:21Z",
-          "url": "https://247wallst.com/investing/2026/11/23/how-much-you-really-need-invested-to-generate-50000-a-year-in-retirement/"
-        },
-        {
-          "title": "Venture Global Owes More Than Its Stock Is Worth",
-          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
-          "source": "Trefis",
-          "publishedAt": "2026-11-23T19:13:00Z",
-          "url": "https://www.trefis.com/stock/vg/articles/627660/venture-global-owes-more-than-its-stock-is-worth/2026-11-23"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "埃克森美孚当前股价回落，市盈相对历史及同行估值仍具吸引力；公司在Rovuma LNG等项目推进以及前期勘探扩张的潜在长期收益存在不确定性，短期市场受油价波动影响较大。",
+        "summary": "埃克森美孚近来股价承压，日跌超2%，市盈率合理，Forward PE较低，股息率稳定；近期新闻聚焦能源需求与通胀、以及美联储可能影响能源股表现的情形，但行业龙头具备较好现金流与分红能力，需关注宏观利率与油价波动对趋势的影响。",
         "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "Rovuma LNG项目的最终投资决策可能带来长期产能与现金流改善的潜在机会",
-          "在圍绕Guyana前沿油气勘探的高风险高回报投资热度持续",
-          "全球原油价格波动及供需变化对公司盈利与股息率的影响",
-          "前瞻性指标如Forward PE与ROE保持相对稳健，但受周期性油价影响显著"
+          "油价波动对能源股盈利及现金流影响",
+          "美联储利率路径及通胀数据对能源股估值与资金流向的影响",
+          "公司现金流与分红覆盖率在市场波动中的稳定性",
+          "宏观政策变化与SEC相关调查等不确定性"
         ],
-        "note": "信息基于公开新闻与财务数据，观察需关注油价与全球供应链变化带来的不确定性。",
-        "generatedAt": "2026-11-20T03:59:30+00:00",
+        "note": "信息不足以判定短期买卖方向，应关注基本面与宏观因素的变化。",
+        "generatedAt": "2026-11-24T06:53:38+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -1126,7 +1125,7 @@
       "changePercent": -2.15,
       "volume": 14676200,
       "marketCap": 640029976566.0021,
-      "quoteUpdatedAt": "2026-11-24T02:42:42+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:24+00:00",
       "revenue": 110503000000.0,
       "revenueGrowth": 32.6073,
       "roe": 15.528,
@@ -1134,13 +1133,13 @@
       "dividendYield": 2.6514,
       "reportDate": "2026-09-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:42+00:00",
-      "pe": 16.141973,
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:24+00:00",
+      "pe": 16.463799,
       "forwardPe": 12.566838,
       "peg": 1.2599,
       "profitMargin": 10.46,
       "operatingMargin": 12.88,
-      "eps": 9.72,
+      "eps": 9.53,
       "week52High": 188.5,
       "week52Low": 114.19,
       "week52PositionPercent": 57.5,
@@ -1151,7 +1150,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:42+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:24+00:00"
     },
     "CVX": {
       "symbol": "CVX",
@@ -1160,6 +1159,13 @@
       "nameZh": "雪佛龙",
       "theme": "能源",
       "news": [
+        {
+          "title": "The Inflation Math, Updated: The Fed Is Fighting Oil",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627433/the-inflation-math-updated-the-fed-is-fighting-oil/2026-11-23"
+        },
         {
           "title": "Venture Global Owes More Than Its Stock Is Worth",
           "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
@@ -1187,28 +1193,21 @@
           "source": "Zacks",
           "publishedAt": "2026-11-23T15:18:00Z",
           "url": "https://finance.yahoo.com/energy/articles/chevron-expands-greek-offshore-exploration-151800754.html"
-        },
-        {
-          "title": "Texas Pacific Land to Buy EagleRock, Expanding Permian Land and Water Footprint",
-          "summary": "Texas Pacific Land (NYSE:TPL) said it will acquire EagleRock Land in an all-stock transaction that would expand its land and water business in the Permian Basin, particularly in New Mexico and the Midland Basin. Executives said the combined company would own about 1 million surface acres and have a",
-          "source": "MarketBeat",
-          "publishedAt": "2026-11-23T15:13:36Z",
-          "url": "https://www.marketbeat.com/instant-alerts/event-texas-pacific-land-to-buy-eaglerock-expanding-permian-land-and-water-footprint-2026-11-23/?utm_source=yahoofinance&utm_medium=yahoofinance"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "雪佛龙近日日涨势温和，市盈率与股息率处于相对舒适区，营收增长与ROE表现稳健；外部消息聚焦在全球能源价格和离岸勘探扩张的潜在影响，需关注宏观能源供需与地缘因素对股价的波动。",
+        "summary": "雪佛龙近月股价回落，市盈率选择性偏低，ForwardPE约12.5，股息率约3.45%。营收增速仍有韧性，但市场对油气行业的宏观与监管风险关注度上升。公司在全球资产布局与海上勘探有扩张迹象，盈利弹性可能来自整合裕度，但跨区域投资与价格波动带来不确定性。",
         "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "油价及全球能源需求走向对CVX现金流和股息的潜在支撑",
-          "希腊离岸勘探项目的进展及其对CVX长期资产组合的影响",
-          "供应紧张或价格波动带来的短期波动风险",
-          "全球宏观经济不确定性对能源板块的影响"
+          "全球油价与炼油利润率波动对利润的直接影响",
+          "Greek offshore勘探与长期增长潜力释放",
+          "金融市场对能源股的估值与波动性改变",
+          "潜在的监管与市场环境变化对油气行业的影响"
         ],
-        "note": "信息来源于公开新闻与财务数据，若能源价格或地缘事件发生重大变化，趋势判断可能迅速调整。",
-        "generatedAt": "2026-11-21T03:54:33+00:00",
+        "note": "信息来源包含关于SEC调查和新闻汇总，需关注宏观油价与监管动态对股票情绪的潜在冲击。",
+        "generatedAt": "2026-11-24T06:53:49+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -1217,7 +1216,7 @@
       "changePercent": -1.35,
       "volume": 8861100,
       "marketCap": 402289968869.7678,
-      "quoteUpdatedAt": "2026-11-24T02:42:46+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:27+00:00",
       "revenue": 65237000000.0,
       "revenueGrowth": 35.4336,
       "roe": 13.853,
@@ -1225,7 +1224,7 @@
       "dividendYield": 3.4535,
       "reportDate": "2026-09-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:46+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:27+00:00",
       "pe": 15.137298,
       "forwardPe": 12.47967,
       "peg": 0.785,
@@ -1242,7 +1241,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:46+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:27+00:00"
     },
     "REI": {
       "symbol": "REI",
@@ -1280,7 +1279,7 @@
       "changePercent": -1.92,
       "volume": 2778900,
       "marketCap": 265750394.17060137,
-      "quoteUpdatedAt": "2026-11-24T02:42:48+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:30+00:00",
       "revenue": 102343662.0,
       "revenueGrowth": 30.206,
       "roe": -23.345,
@@ -1288,7 +1287,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-09-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:48+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:30+00:00",
       "forwardPe": 3.1546717,
       "profitMargin": -55.94,
       "operatingMargin": 9.84,
@@ -1303,7 +1302,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:48+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:30+00:00"
     },
     "RY.TO": {
       "symbol": "RY.TO",
@@ -1346,9 +1345,9 @@
       "price": 270.2900085449219,
       "change": 7.02001953125,
       "changePercent": 2.67,
-      "volume": 4834822,
+      "volume": 4845600,
       "marketCap": 374197542201.55444,
-      "quoteUpdatedAt": "2026-11-24T02:42:51+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:32+00:00",
       "revenue": 18511000000.0,
       "revenueGrowth": 9.145,
       "roe": 16.209,
@@ -1356,7 +1355,7 @@
       "dividendYield": 2.5158,
       "reportDate": "2026-07-31",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:51+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:32+00:00",
       "pe": 17.042246,
       "forwardPe": 15.138481,
       "peg": 1.7573,
@@ -1373,7 +1372,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:51+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:32+00:00"
     },
     "TD.TO": {
       "symbol": "TD.TO",
@@ -1422,9 +1421,9 @@
       "price": 166.2100067138672,
       "change": 4.1500091552734375,
       "changePercent": 2.56,
-      "volume": 2259867,
+      "volume": 2287400,
       "marketCap": 271423720992.3174,
-      "quoteUpdatedAt": "2026-11-24T02:42:54+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:35+00:00",
       "revenue": 16777000000.0,
       "revenueGrowth": 8.3646,
       "roe": 12.828,
@@ -1432,13 +1431,13 @@
       "dividendYield": 2.6473,
       "reportDate": "2026-07-31",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:54+00:00",
-      "pe": 17.795504,
-      "forwardPe": 14.840709,
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:35+00:00",
+      "pe": 18.244787,
+      "forwardPe": 14.879038,
       "peg": 0.91,
       "profitMargin": 26.62,
       "operatingMargin": 35.14,
-      "eps": 9.34,
+      "eps": 9.11,
       "week52High": 179.8,
       "week52Low": 115.36,
       "week52PositionPercent": 78.9,
@@ -1449,7 +1448,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:54+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:35+00:00"
     },
     "SHOP.TO": {
       "symbol": "SHOP.TO",
@@ -1513,9 +1512,9 @@
       "price": 192.9600067138672,
       "change": 15.650009155273438,
       "changePercent": 8.83,
-      "volume": 2102638,
+      "volume": 2112500,
       "marketCap": 248247296073.05792,
-      "quoteUpdatedAt": "2026-11-24T02:42:57+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:38+00:00",
       "revenue": 3742000000.0,
       "revenueGrowth": 31.5752,
       "roe": 16.833,
@@ -1523,13 +1522,13 @@
       "dividendYield": 0.0,
       "reportDate": "2026-09-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:57+00:00",
-      "pe": 85.38053,
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:38+00:00",
+      "pe": 92.76923,
       "forwardPe": 55.903038,
       "peg": 1.45,
       "profitMargin": 15.01,
       "operatingMargin": 18.07,
-      "eps": 2.26,
+      "eps": 2.08,
       "week52High": 255.95,
       "week52Low": 129.01,
       "week52PositionPercent": 50.4,
@@ -1540,7 +1539,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:57+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:38+00:00"
     },
     "ENB.TO": {
       "symbol": "ENB.TO",
@@ -1604,9 +1603,9 @@
       "price": 65.22000122070312,
       "change": -0.3600006103515625,
       "changePercent": -0.55,
-      "volume": 11393425,
+      "volume": 11418300,
       "marketCap": 145368083820.17065,
-      "quoteUpdatedAt": "2026-11-24T02:42:59+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:40+00:00",
       "revenue": 21077000000.0,
       "revenueGrowth": 43.9784,
       "roe": 9.849,
@@ -1614,13 +1613,13 @@
       "dividendYield": 5.9491,
       "reportDate": "2026-09-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-11-24T02:42:59+00:00",
-      "pe": 22.645832,
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:40+00:00",
+      "pe": 22.567474,
       "forwardPe": 20.910683,
       "peg": 4.7662,
       "profitMargin": 7.49,
       "operatingMargin": 12.82,
-      "eps": 2.88,
+      "eps": 2.89,
       "week52High": 80.65,
       "week52Low": 62.42,
       "week52PositionPercent": 15.4,
@@ -1631,7 +1630,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:42:59+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:40+00:00"
     },
     "XIC.TO": {
       "symbol": "XIC.TO",
@@ -1658,11 +1657,11 @@
       "price": 54.5,
       "change": 1.3499984741210938,
       "changePercent": 2.54,
-      "volume": 896408,
+      "volume": 896400,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-11-24T02:43:02+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:43+00:00",
       "dividendYield": 2.0716,
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:02+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:43+00:00",
       "pe": 18.01792,
       "week52High": 59.29,
       "week52Low": 48.2,
@@ -1674,7 +1673,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:02+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:43+00:00"
     },
     "AAPL": {
       "symbol": "AAPL",
@@ -1698,40 +1697,40 @@
           "url": "https://finance.yahoo.com/video/jensen-huang-back-as-nvidia-ceo-after-12-days-shares-surge-30-161302539.html"
         },
         {
-          "title": "QQQ Paid a $300,000 Holder $1,524 in Dividends Over the Past Year While VYM Paid $7,164",
-          "summary": "A retiree who counts on a portfolio to cover groceries and utilities faces a quiet choice between two popular ETFs. One sends cash on its own, while the other forces you to sell shares, even in a month when prices are tumbling.",
-          "source": "24/7 Wall St.",
-          "publishedAt": "2026-11-24T02:03:39Z",
-          "url": "https://247wallst.com/investing/etf/2026/11/23/qqq-paid-a-300000-holder-1524-in-dividends-over-the-past-year-while-vym-paid-7164/"
+          "title": "The 10-Year Topped 5% For The First Time Since 2007. What Happened Next?",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627401/the-10-year-topped-5-for-the-first-time-since-2007-what-happened-next/2026-11-23"
+        },
+        {
+          "title": "1966 Or 1995: Which Way Does America's $2.1 Trillion Deficit Go?",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627413/1966-or-1995-which-way-does-america-s-2-1-trillion-deficit-go/2026-11-23"
         },
         {
           "title": "Huang returns as Nvidia CEO after Trump intervention in abrupt board reversal",
-          "summary": "Nov 23 (Reuters) - Nvidia reinstated Jensen Huang as CEO on Monday under pressure from US President Donald Trump, a stunning reversal following his resignation over revelations of extramarital affairs, drawing approval from Wall Street and opposition from US lawmakers. Huang's comeback caps a whirlwind week of events that roiled markets and tore through the AI ecosystem that has relied ‌on Nvidia for everything from supplying chips to bankrolling the industry's massive buildout.",
+          "summary": "Nov 23 (Reuters) - Nvidia reinstated Jensen Huang as CEO on Monday under pressure from US President Donald Trump, a stunning reversal following his resignation over revelations of extramarital affairs, drawing approval from Wall Street and opposition from US lawmakers. Huang's comeback caps a whirlwind week of events that roiled markets and tore through the AI ecosystem that has ‌relied on Nvidia for everything from supplying chips to bankrolling the industry's massive buildout.",
           "source": "Reuters",
-          "publishedAt": "2026-11-24T01:14:56Z",
+          "publishedAt": "2026-11-24T04:40:43Z",
           "url": "https://finance.yahoo.com/news/nvidia-reinstates-jensen-huang-ceo-135916841.html"
-        },
-        {
-          "title": "Own HP Stock? Memory Costs Are The Risk",
-          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
-          "source": "Trefis",
-          "publishedAt": "2026-11-23T23:58:29Z",
-          "url": "https://www.trefis.com/stock/hpq/articles/627662/own-hp-stock-memory-costs-are-the-risk/2026-11-23"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "苹果当前股价小幅下跌，市盈率较高，2024年度营收增速仍有正向驱动，但AI投入与行业情绪波动可能影响短期情绪，需关注AI进展对估值与盈利前景的兑现情况。",
+        "summary": "苹果股票当前价格小幅上涨，市盈率偏高且ROE显著高，但需结合央行与科技股情绪波动及AI相关龙头公司动向的潜在影响来观察趋势与风险。",
         "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "AI领域投入与产品/代理人进展的实际商业化路径",
-          "市场对AI相关支出与盈利能力的再评估",
-          "全球股市情绪与对科技股估值的波动",
-          "苹果在企业AI市场的竞争地位及潜在新收入来源"
+          "行业龙头对比：Nvidia等AI相关公司消息对科技股情绪的传导效应",
+          "苹果的增长动力与AI/服务业务对营收增长的持续性",
+          "宏观风险与估值压力（高PE水平及利率环境变化）",
+          "市场对科技股更多短期情绪波动的敏感度提升"
         ],
-        "note": "当前信息不足以确认明确趋势，请持续关注AI投入的实际盈利兑现与市场情绪变化。",
-        "generatedAt": "2026-11-21T03:54:21+00:00",
+        "note": "信息不足以确定明确方向，请关注后续业绩与市场宏观因素变化。",
+        "generatedAt": "2026-11-24T06:53:53+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -1740,7 +1739,7 @@
       "changePercent": 1.3,
       "volume": 58538400,
       "marketCap": 5072893897425.721,
-      "quoteUpdatedAt": "2026-11-24T02:43:08+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:47+00:00",
       "revenue": 114477000000.0,
       "revenueGrowth": 11.7219,
       "roe": 142.257,
@@ -1748,13 +1747,13 @@
       "dividendYield": 0.3065,
       "reportDate": "2026-09-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:08+00:00",
-      "pe": 38.87305,
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:47+00:00",
+      "pe": 38.15082,
       "forwardPe": 33.017014,
       "peg": 2.7662,
       "profitMargin": 27.6,
       "operatingMargin": 33.01,
-      "eps": 8.98,
+      "eps": 9.15,
       "week52High": 360.83,
       "week52Low": 243.42,
       "week52PositionPercent": 90.0,
@@ -1765,7 +1764,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:08+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:47+00:00"
     },
     "V": {
       "symbol": "V",
@@ -1831,7 +1830,7 @@
       "changePercent": 1.06,
       "volume": 8676200,
       "marketCap": 763858529900.8602,
-      "quoteUpdatedAt": "2026-11-24T02:43:10+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:50+00:00",
       "revenue": 12139000000.0,
       "revenueGrowth": 13.1947,
       "roe": 63.507,
@@ -1839,7 +1838,7 @@
       "dividendYield": 0.6815,
       "reportDate": "2026-09-30",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:10+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:50+00:00",
       "pe": 33.23052,
       "forwardPe": 23.88509,
       "peg": 1.8189,
@@ -1856,7 +1855,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:10+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:50+00:00"
     },
     "MA": {
       "symbol": "MA",
@@ -1922,7 +1921,7 @@
       "changePercent": 1.53,
       "volume": 3605300,
       "marketCap": 553614979909.5615,
-      "quoteUpdatedAt": "2026-11-24T02:43:13+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:53+00:00",
       "revenue": 9807000000.0,
       "revenueGrowth": 14.0084,
       "roe": 231.366,
@@ -1930,7 +1929,7 @@
       "dividendYield": 0.5476,
       "reportDate": "2026-09-30",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:13+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:53+00:00",
       "pe": 33.25379,
       "forwardPe": 27.437561,
       "peg": 1.6292,
@@ -1947,7 +1946,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:13+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:53+00:00"
     },
     "LLY": {
       "symbol": "LLY",
@@ -1956,6 +1955,13 @@
       "nameZh": "礼来",
       "theme": "医药 / 制药",
       "news": [
+        {
+          "title": "Biotech Loses Ground In November’s Market Slide — These 5 Stocks Bucked The Selloff As Lilly, AbbVie And Amgen Fell",
+          "summary": "BBIO gained 6% through Monday. Shares were already up about 4% that day when trading halted ahead of FDA approval for Welgemda, the first U.S. treatment for limb-girdle muscular dystrophy.",
+          "source": "Stocktwits",
+          "publishedAt": "2026-11-24T06:41:55Z",
+          "url": "https://stocktwits.com/news-articles/markets/equity/biotech-loses-ground-november-5-stocks-bucked-selloff-lilly-abb-vie-amgen-fell/cNbrzF5R9kd"
+        },
         {
           "title": "Should You Swap Tech For Johnson & Johnson Stock?",
           "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
@@ -1983,28 +1989,21 @@
           "source": "BioPharma Dive",
           "publishedAt": "2026-11-23T16:17:09Z",
           "url": "https://www.biopharmadive.com/news/lilly-loqus-huntingtons-drug-acquisition-deal/875448/"
-        },
-        {
-          "title": "Eli Lilly vs. Vertex Pharmaceuticals: Which Healthcare Stock Is a Better Buy for 2027?",
-          "summary": "Eli Lilly's obesity and diabetes sales have surged, while Vertex's cystic fibrosis franchise follows a very different growth path; the valuation gap may settle the debate.",
-          "source": "Motley Fool",
-          "publishedAt": "2026-11-23T16:01:02Z",
-          "url": "https://www.fool.com/coverage/better-buy/2026/11/23/eli-lilly-vs-vertex-pharmaceuticals-which-healthcare-stock-is-a-better-buy-for-2027/"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "礼来近期业绩与前景展现强劲的增长动能，尤其在减重药物与糖尿病领域的管线推动收入增速；但估值较高、前景受全球宏观与药品监管等因素影响，需关注潜在盈利波动与市场情绪变化。",
-        "trend": "偏多",
+        "summary": "礼来（LLY）当前股价略有上涨，市盈率较高且前瞻性盈利增速强势，但股息率低于行业平均。公司正加强癌症领域增长布局并完成对LoQus23等资产的并购，显示多元化增长路径。近期行业波动与对药物审批、定价等因素的敏感性仍需关注。信息指示公司在肿瘤领域潜在放量，但尚未有明确业绩兑现时间表。",
+        "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "Barclays将目标价上调至1550美元，维持增持，短期股价受提振的可能性较高",
-          "减重药物及相关组合产品的临床数据和路径依赖性强，若后续数据积极将推动估值提升",
-          "市场对GLP-1类药物的长期盈利能力与扩展前景的再评估可能影响股价",
-          "潜在数据泄露事件对公司声誉与投资者信心的短期冲击风险"
+          "在研/获批肿瘤治疗药物的商业化潜在催化",
+          "对LoQus23等新药的并购落地及整合效果",
+          "营收增长强劲但需关注估值、利润率与资金成本",
+          "行业市场波动及监管动态对药企估值的影响"
         ],
-        "note": "信息来自公开报道，未来业绩与股价受多重变量影响，分析需结合后续公告与临床结果。",
-        "generatedAt": "2026-11-18T04:08:30+00:00",
+        "note": "如需投资相关决策，请结合更全面的财务数据和市场环境进行独立评估。",
+        "generatedAt": "2026-11-24T06:53:51+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -2013,7 +2012,7 @@
       "changePercent": 1.31,
       "volume": 2930600,
       "marketCap": 1215510647555.895,
-      "quoteUpdatedAt": "2026-11-24T02:43:16+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:55+00:00",
       "revenue": 24397000000.0,
       "revenueGrowth": 38.6114,
       "roe": 86.024,
@@ -2021,7 +2020,7 @@
       "dividendYield": 0.5071,
       "reportDate": "2026-09-30",
       "sector": "Healthcare",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:16+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:55+00:00",
       "pe": 44.290813,
       "forwardPe": 26.825014,
       "peg": 1.245,
@@ -2038,7 +2037,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:16+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:55+00:00"
     },
     "JPM": {
       "symbol": "JPM",
@@ -2053,6 +2052,13 @@
           "source": "Yahoo Finance Video",
           "publishedAt": "2026-11-23T22:12:14Z",
           "url": "https://finance.yahoo.com/video/jensen-huang-is-back-does-washington-have-a-seat-in-the-boardroom-221214249.html"
+        },
+        {
+          "title": "The 10-Year Topped 5% For The First Time Since 2007. What Happened Next?",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627401/the-10-year-topped-5-for-the-first-time-since-2007-what-happened-next/2026-11-23"
         },
         {
           "title": "Forget JPMorgan: Upstart Has More to Lose From a 10% Card Rate Cap",
@@ -2074,28 +2080,21 @@
           "source": "Barrons.com",
           "publishedAt": "2026-11-23T21:00:00Z",
           "url": "https://www.barrons.com/articles/jensen-huang-ceo-return-36b5d5ac?siteid=yhoof2&yptr=yahoo"
-        },
-        {
-          "title": "Fidelity steps in where JPMorgan retreated",
-          "summary": "Fidelity Investments enters a territory that JPMorgan has withdrawn from.",
-          "source": "TheStreet",
-          "publishedAt": "2026-11-23T20:56:55Z",
-          "url": "https://www.thestreet.com/crypto/markets/fidelity-steps-in-where-jpmorgan-retreated"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "摩根大通当前股价下跌，市盈约13.4，ROE较高，营收增长稳健；近期披露第三方厂商攻击导致部分客户数据暴露，市场对银行业信息安全与防护能力的担忧有所抬升，需关注数据安全事件对声誉与合规成本的持续影响。",
+        "summary": "摩根大通现价波动偏温和，市盈率与盈利增长支撑基本面，但外部治理与大盘情绪因素仍存在不确定性，需关注监管和行业利率环境变化对盈利弹性的潜在影响。",
         "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "对冲击银行客户数据安全事件的持续舆情关注",
-          "前瞻性数据安全投入与合规成本变化",
-          "营收增长保持与股息率水平的稳定性",
-          "行业监管与安全事件的后续披露"
+          "利润增长与ROE水平维持支撑估值",
+          "资金利率与信用卡监管政策变动的潜在影响",
+          "市场对大盘回升的持续性及银行股估值的再评价",
+          "治理与董事会动态对市场情绪的短期冲击"
         ],
-        "note": "信息披露涉及数据泄露事件，后续影响及披露细节不确定，需关注公司对安全事件的整改进展。",
-        "generatedAt": "2026-11-20T03:59:22+00:00",
+        "note": "信息来自公开报道与新闻摘要，存在对治理、监管与宏观环境的不确定性，需结合后续披露再评估。",
+        "generatedAt": "2026-11-24T06:54:00+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -2104,7 +2103,7 @@
       "changePercent": 1.13,
       "volume": 8710800,
       "marketCap": 840925316845.0725,
-      "quoteUpdatedAt": "2026-11-24T02:43:19+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:50:58+00:00",
       "revenue": 50172000000.0,
       "revenueGrowth": 8.0594,
       "roe": 18.013,
@@ -2112,7 +2111,7 @@
       "dividendYield": 1.9421,
       "reportDate": "2026-09-30",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:19+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:50:58+00:00",
       "pe": 13.282719,
       "forwardPe": 12.382563,
       "peg": 1.32,
@@ -2129,7 +2128,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:19+00:00"
+      "newsUpdatedAt": "2026-11-24T06:50:58+00:00"
     },
     "AMD": {
       "symbol": "AMD",
@@ -2195,7 +2194,7 @@
       "changePercent": 3.9,
       "volume": 53837500,
       "marketCap": 750506020590.174,
-      "quoteUpdatedAt": "2026-11-24T02:43:22+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:00+00:00",
       "revenue": 13377000000.0,
       "revenueGrowth": 44.6788,
       "roe": 11.96,
@@ -2203,7 +2202,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-09-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:22+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:00+00:00",
       "pe": 96.893166,
       "forwardPe": 25.708899,
       "peg": 0.3797,
@@ -2220,7 +2219,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:22+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:00+00:00"
     },
     "AVGO": {
       "symbol": "AVGO",
@@ -2258,26 +2257,26 @@
           "url": "https://finance.yahoo.com/video/jensen-huang-back-as-nvidia-ceo-after-12-days-shares-surge-30-161302539.html"
         },
         {
-          "title": "AMD Stock Rallies Nearly 8% as a Bernstein Analyst Remains Bullish Despite the Hunterbrook Short Report",
-          "summary": "Advanced Micro Devices (AMD) stock rebounded 7.79% on Monday after the chipmaker’s shares experienced a rough couple of days last week. The rally of AMD stock came alongside praise from one of Wall Street’s top analysts. Five-star Bernstein analyst Mark Newman reiterated a Buy rating and a $650 price target for AMD stock, implying a possible 43.74% upside. Newman came out to support AMD after the company was targeted in a short report last week. Hunterbrook was behind this report and claimed tha",
-          "source": "TipRanks",
-          "publishedAt": "2026-11-23T23:58:32Z",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/amd-stock-rallies-nearly-8-235832362.html"
+          "title": "Watch these chip stocks for bargain buys after Nvidia’s post-reinstatement rally",
+          "summary": "Investing.com -- Jensen Huang was reinstated as Nvidia CEO on Nov 23, 2026, 11 days after he resigned, sparking a broad-based rally across battered chipmaking and artificial intelligence names on Monday.",
+          "source": "Investing.com",
+          "publishedAt": "2026-11-24T04:02:18Z",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/watch-chip-stocks-bargain-buys-040218865.html"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "博通最近股价下挫，日内跌幅显著，市场情绪受AI相关股普遍回撤影响。公司基本面高成长、ROE高、Forward PE相对较低，但行业景气波动和AI相关投资情绪变化可能带来波动风险。",
-        "trend": "偏空",
+        "summary": "博通当前价位约313.55美元，日涨1.37%，市盈率40.04，ForwardPE约16.17，营收增速高达85.5%，ROE约44.25%，股息率0.83%，52周高低分位约11.6%。行业新闻聚焦AI芯片产业链及龙头企业的治理信号，短期对半导体相关板块情绪存在提振，但博通自身数据需结合行业周期与估值水平谨慎解读。",
+        "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "AI相关板块整体承压，半导体股普遍回落，博通股价可能继续受市场情绪影响",
-          "Forward P/E 约15.7显示潜在估值弹性，但短期情绪波动可能压低股价",
-          "数据中心AI芯片市场竞争格局变化及订单波动",
-          "行业动态与宏观风险如科技股资本支出意愿改变"
+          "AI与数据中心相关需求持续放量带动半导体供应链情绪回暖",
+          "行业龙头公司治理与高层变动对市场情绪的边际影响",
+          "Forward估值相对更乐观的情形下，需关注宏观与行业周期回落风险",
+          "博通高营收增速与ROE亮点需经受市场对估值和增速可持续性的检验"
         ],
-        "note": "信息基于公开新闻与行情数据，存在市场情绪波动与行业周期性不确定性，请关注后续财报及行业数据更新。",
-        "generatedAt": "2026-11-21T03:53:41+00:00",
+        "note": "信息基于公开报道与财务指标，存在行业周期与市场情绪波动的不确定性，请关注后续业绩与市场动态。",
+        "generatedAt": "2026-11-24T06:53:46+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -2286,7 +2285,7 @@
       "changePercent": 1.37,
       "volume": 41009300,
       "marketCap": 1496771585898.9011,
-      "quoteUpdatedAt": "2026-11-24T02:43:24+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:03+00:00",
       "revenue": 29591000000.0,
       "revenueGrowth": 85.5003,
       "roe": 44.245,
@@ -2294,7 +2293,7 @@
       "dividendYield": 0.8292,
       "reportDate": "2026-07-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:24+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:03+00:00",
       "pe": 40.044697,
       "forwardPe": 16.174044,
       "peg": 0.3008,
@@ -2311,7 +2310,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:24+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:03+00:00"
     },
     "TSM": {
       "symbol": "TSM",
@@ -2328,47 +2327,47 @@
           "url": "https://finance.yahoo.com/video/jensen-huang-back-as-nvidia-ceo-after-12-days-shares-surge-30-161302539.html"
         },
         {
+          "title": "Asian stocks rally as Huang's return to Nvidia revives the AI trade",
+          "summary": "By Jiaxing Li HONG KONG, Nov 24 (Reuters) - Asian shares leapt on Tuesday following a spectacular Wall Street surge, as Jensen Huang's return as Nvidia CEO sparked a relief rally in the battered AI",
+          "source": "Reuters",
+          "publishedAt": "2026-11-24T06:17:26Z",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/asian-stocks-rally-huangs-nvidia-013042563.html"
+        },
+        {
+          "title": "Asian stocks rally after Wall Street rebound as Jensen Huang returns as Nvidia’s CEO",
+          "summary": "HONG KONG (AP) — Asian stocks advanced after a rally on Wall Street as Jensen Huang returned as Nvidia’s CEO, while U. futures edged higher and oil prices fell.",
+          "source": "Associated Press",
+          "publishedAt": "2026-11-24T03:31:25Z",
+          "url": "https://finance.yahoo.com/markets/world-indices/articles/asian-stocks-rally-wall-street-033125464.html"
+        },
+        {
+          "title": "Taiwan Stocks Jump 9%, Beating Korea and Japan on Huang's Nvidia Return",
+          "summary": "Taiwan stocks jumped about 9% after Nvidia reinstated Jensen Huang, beating the KOSPI and Nikkei as TSMC hit its limit.",
+          "source": "BeInCrypto",
+          "publishedAt": "2026-11-24T02:54:12Z",
+          "url": "https://beincrypto.com/taiwan-stocks-jump-huang-nvidia-return/"
+        },
+        {
           "title": "Asia chipmaking stocks soar tracking Nvidia rally; S.Korea, Taiwan lead",
           "summary": "Investing.com-- Asian chipmaking and tech stocks rose sharply on Tuesday, with South Korea and Taiwan in the lead after Jensen Huang’s reinstatement as Nvidia’s CEO helped restore confidence in the battered artificial intelligence trade.",
           "source": "Investing.com",
           "publishedAt": "2026-11-24T02:15:20Z",
           "url": "https://finance.yahoo.com/technology/ai/articles/asia-chipmaking-stocks-soar-tracking-021520376.html"
-        },
-        {
-          "title": "Crypto traders saw Anthropic's 34% debut pop coming",
-          "summary": "Weeks before bankers priced Anthropic’s IPO, a 24/7 crypto market was already trading the shares much higher. The debut showed how close it got.",
-          "source": "TheStreet",
-          "publishedAt": "2026-11-23T22:47:15Z",
-          "url": "https://www.thestreet.com/crypto/markets/crypto-traders-saw-anthropics-34-debut-pop-coming-"
-        },
-        {
-          "title": "EEM Now Moves Like A Chip Fund",
-          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
-          "source": "Trefis",
-          "publishedAt": "2026-11-23T22:43:10Z",
-          "url": "https://www.trefis.com/stock/eem/articles/627624/eem-near-54-now-moves-like-a-chip-fund/2026-11-23"
-        },
-        {
-          "title": "It's not over for Jensen Huang",
-          "summary": "Nvidia's board voted unanimously to bring back Jensen Huang as CEO, 11 days after he was pushed out, and the US stock market added $3 trillion within the hour. Host Ejaaz Ahamadeen breaks down what changes now, from the \"bank of Nvidia\" and chips for China to a more careful Jensen and what his return means for open-source AI.",
-          "source": "Yahoo Finance Video",
-          "publishedAt": "2026-11-23T21:58:09Z",
-          "url": "https://finance.yahoo.com/video/its-not-over-for-jensen-huang-215809126.html"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "台积电当前价格提升显著，日内涨幅较大，财报指标显示较高成长与利润水平，行业受AI热潮和晶圆需求提振。短期股价可能受科技股情绪与半导体行业动态影响波动。",
+        "summary": "台积电(TSM)近期股价显著上涨，日涨幅接近+11%，估值与盈利指标呈现积极信号，行业受Nvidia复任CEO提振的AI交易情绪带动，同时受区域股市普遍上涨影响，叠加营收与ROE表现强劲，但Forward PE仍低于近年水平，需关注市场情绪反弹的持续性与半导体周期性波动。",
         "trend": "偏多",
         "riskLevel": "中",
         "catalysts": [
-          "全球AI相关晶圆需求增长对代工与自有产线的拉动",
-          "Nvidia高层动荡后及行业资金回流对科技股的提振",
-          "区域半导体股上涨带动相关供应链企业情绪回暖",
-          "对台积电估值及成长性的新一轮市场解读"
+          "Nvidia CEO回归提振AI板块情绪，可能带动半导体相关股轮动",
+          "台湾及亚洲芯片股集体走强，TSMC受益于行业情绪改善",
+          "TSM的高ROE与营收增速支撑基本面预期",
+          "市场对AI与云端计算需求的持续性预期"
         ],
-        "note": "信息来源包含个别股票及行业新闻的情绪性推动，实际业绩与产能扩张数据需结合后续披露验证。",
-        "generatedAt": "2026-11-24T02:46:27+00:00",
+        "note": "信息来自公开新闻与行情，短期波动风险仍存在，需关注全球科技贸易政策与供给链变化。",
+        "generatedAt": "2026-11-24T06:53:21+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -2377,7 +2376,7 @@
       "changePercent": 10.95,
       "volume": 31579400,
       "marketCap": 1885801612274.119,
-      "quoteUpdatedAt": "2026-11-24T02:43:27+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:05+00:00",
       "revenue": 1494243284000.0,
       "revenueGrowth": 50.9461,
       "roe": 41.86,
@@ -2385,7 +2384,7 @@
       "dividendYield": 1.0597,
       "reportDate": "2026-09-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:27+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:05+00:00",
       "pe": 23.564486,
       "forwardPe": 15.548236,
       "peg": 0.5772,
@@ -2402,7 +2401,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:27+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:05+00:00"
     },
     "META": {
       "symbol": "META",
@@ -2426,40 +2425,40 @@
           "url": "https://finance.yahoo.com/video/jensen-huang-back-at-nvidia-stock-soars-anthropic-slides-161339662.html"
         },
         {
-          "title": "How Taylor Sheridan still makes a profit from high-budget TV",
-          "summary": "Emmy-nominated creator of Yellowstone, 1883, Landman and Lioness Taylor Sheridan explains to Yahoo Finance Executive Editor Brian Sozzi at Yahoo Finance Invest why a low-budget show is worth less to the studio, and why his new NBCUniversal deal comes with no output minimums.",
-          "source": "Yahoo Finance Video",
-          "publishedAt": "2026-11-23T11:00:00Z",
-          "url": "https://finance.yahoo.com/video/taylor-sheridan-still-makes-profit-110000407.html"
+          "title": "1966 Or 1995: Which Way Does America's $2.1 Trillion Deficit Go?",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627413/1966-or-1995-which-way-does-america-s-2-1-trillion-deficit-go/2026-11-23"
         },
         {
-          "title": "'He's Not Quite a God': Palmer Luckey Opens Up About Facebook Firing, Explains Why He'd Still Make a Deal With Mark Zuckerberg",
-          "summary": "Anduril Industries Founder Palmer Luckey says former Oculus executives, rather than Meta Platforms, Inc. CEO Mark Zuckerberg, were responsible for his 2017 departure from Facebook. However, he remains open to partnering with Meta for U.S. military applications. Palmer Luckey Says...",
-          "source": "Benzinga",
-          "publishedAt": "2026-11-24T01:30:07Z",
-          "url": "https://finance.yahoo.com/technology/articles/hes-not-quite-god-palmer-013007219.html"
+          "title": "The Inflation Math, Updated: The Fed Is Fighting Oil",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627433/the-inflation-math-updated-the-fed-is-fighting-oil/2026-11-23"
         },
         {
-          "title": "The Nasdaq Just Had Its Best Day Since April 2025. Anthropic Stock Fell Anyway.",
-          "summary": "Anthropic stock slipped on the Nasdaq Composite's best day since April 2025.",
-          "source": "Motley Fool",
-          "publishedAt": "2026-11-24T00:42:02Z",
-          "url": "https://www.fool.com/investing/2026/11/23/the-nasdaq-just-had-its-best-day-since-april-2025-anthropic-stock-fell-anyway/"
+          "title": "AMD Stock Dips Overnight After Nvidia-Triggered Rally: AMD Registers 337M Shares For Resale Tied To OpenAI, Meta Warrants",
+          "summary": "AMD is not selling the shares itself and will not receive any proceeds from potential sales.",
+          "source": "Stocktwits",
+          "publishedAt": "2026-11-24T03:47:48Z",
+          "url": "https://stocktwits.com/news-articles/markets/equity/amd-stock-dips-overnight-after-nvidia-triggered-rally-amd-registers-337-m-shares-for-resale-tied-to-open-ai-meta-warrants/cNbru6MR9jU"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "Meta 当前股价下跌，日内跌幅显著，市盈率和未来市盈率处于相对可观区间，营收增速仍具韧性，ROE较高；受AI与大盘情绪波动影响，短期可能受利好/利空消息影响波动。",
+        "summary": "META当日股价上涨，日内波动显著，估值与盈利数据相对稳健，市场关注AI相关板块情绪与宏观不确定性可能带来的行业轮动。",
         "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "机构与大户持续调仓及公开交易员的新增头寸变化",
-          "AI相关资本开支与盈利改善是否兑现的市场验证",
-          "宏观情绪及科技股估值修复节奏",
-          "IPO/大盘资金流向对科技股的短期冲击"
+          "AI相关需求与大盘情绪波动对科技股估值的影响",
+          "META的营收增长与ROE水平可能推动估值波动",
+          "市场对AI龙头企业以及行业监管动向的关注度变化",
+          "行业资金流向与对Nvidia等龙头的叙事影响"
         ],
-        "note": "信息来源包含个人投资者仓位变动与行业情绪，存在不确定性，请关注后续财报与市场行情更新。",
-        "generatedAt": "2026-11-21T03:54:04+00:00",
+        "note": "信息基于公开新闻与数据，未包含交易建议，存在对AI板块情绪与宏观因素的双向不确定性。",
+        "generatedAt": "2026-11-24T06:53:23+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -2468,7 +2467,7 @@
       "changePercent": 5.46,
       "volume": 19051700,
       "marketCap": 1527609710384.5664,
-      "quoteUpdatedAt": "2026-11-24T02:43:30+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:09+00:00",
       "revenue": 64601000000.0,
       "revenueGrowth": 26.0704,
       "roe": 32.264,
@@ -2476,7 +2475,7 @@
       "dividendYield": 0.3514,
       "reportDate": "2026-09-30",
       "sector": "Communication Services",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:30+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:09+00:00",
       "pe": 20.388945,
       "forwardPe": 16.75115,
       "peg": 0.729,
@@ -2493,7 +2492,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:30+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:09+00:00"
     },
     "ORCL": {
       "symbol": "ORCL",
@@ -2559,7 +2558,7 @@
       "changePercent": 10.8,
       "volume": 40488200,
       "marketCap": 354421051620.729,
-      "quoteUpdatedAt": "2026-11-24T02:43:32+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:11+00:00",
       "revenue": 19345000000.0,
       "revenueGrowth": 29.6061,
       "roe": 41.192,
@@ -2567,7 +2566,7 @@
       "dividendYield": 1.7593,
       "reportDate": "2026-08-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:32+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:11+00:00",
       "pe": 17.818182,
       "forwardPe": 10.279587,
       "peg": 0.5498,
@@ -2584,7 +2583,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:32+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:11+00:00"
     },
     "CRM": {
       "symbol": "CRM",
@@ -2615,33 +2614,33 @@
           "url": "https://finance.yahoo.com/markets/stocks/articles/zoom-communications-zm-q3-earnings-212503128.html"
         },
         {
+          "title": "Citi Just Slashed Its Price Target on Salesforce Stock. Here's Why",
+          "summary": "Citi analyst Tyler Radke's research note on Salesforce cautioned investors about softening demand. These are the key reasons for the lowered price target.",
+          "source": "Barchart",
+          "publishedAt": "2026-11-23T21:15:08Z",
+          "url": "https://www.barchart.com/story/news/8971926/citi-just-slashed-its-price-target-on-salesforce-stock-here-s-why"
+        },
+        {
           "title": "Palantir Rips 10% to Lead Software Stocks. Cloudflare and ServiceNow Also Join ‘Jensen Rally’",
           "summary": "Eric Bleeker, Chief Investment Officer at 24/7 Wall St., says Jensen Huang's return to NVIDIA is lifting technology stocks on Monday. The NASDAQ was up more than 7% as of 1:30 p.m. Eastern, after opening with a 3% pre-market gain following Friday's sell-off. Chip stocks as a group rose more than 13%.\n\nSoftware is also higher, but the gains are uneven. Microsoft (NASDAQ: MSFT) and Salesforce (NYSE: CRM) are each up about 3%, while the IGV software ETF is up 4%. The biggest winners are companies that benefit from sovereign AI and a strong open-weight ecosystem. Palantir (NASDAQ: PLTR) leads at 10%, and Palantir has been one of the loudest backers of sovereign AI. Cloudflare (NYSE: NET) is up roughly 7%, and ServiceNow (NYSE: NOW) is up 5%, helped by its control tower software that guides customers between models and agentic workloads. Anthropic is lagging, since Huang has pushed open-weight models that pressure leading labs like Anthropic and OpenAI.\n\nBleeker's takeaway: if Huang keeps backing open weight model makers, Palantir, Cloudflare and ServiceNow, up 5% to 10%, should keep outperforming the 2% to 3% gains in the rest of software.",
           "source": "24/7 Wall St.",
           "publishedAt": "2026-11-23T20:08:09Z",
           "url": "https://247wallst.com/videos/palantir-rips-10-to-lead-software-stocks-cloudflare-and-servicenow-also-join-jensen-rally/"
-        },
-        {
-          "title": "Salesforce Ex-CEO's AI Startup Sierra Hits $30 Billion Valuation. It Doubled In Just Six Months.",
-          "summary": "Sierra says it raised $1.75 billion at a $30 billion valuation, roughly doubling its value in six months as demand for enterprise AI agents grows.",
-          "source": "International Business Times",
-          "publishedAt": "2026-11-23T18:55:02Z",
-          "url": "https://www.ibtimes.com/sierra-30-billion-valuation-ai-funding-round-3810100"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "赛富时（CRM）当前股价小幅下跌，估值较低且前瞻性PE较低，营收增速尚可、ROE较高，股息率低位。近期新闻显示市场对CRM前景有分歧，机构加仓与裁员消息并存，需关注盈利驱动与市场情绪波动对股价的影响。",
+        "summary": "赛富时（CRM）当前股价185.46，近1日上涨1.62%，市盈16.97、Forward PE约11.58，ROE较高，股息率0.94%。营收同比增长约10.83%，52周位置约31.9%。新闻面多关注AI相关巨头与云软件龙头的行情轮动，市场对软件行业估值与需求存在分化，个股需关注需求放缓与AI投资热度变动的潜在压力。",
         "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "32周内机构增持信号（Coatue大举买入）可能带来价格支撑",
-          "前瞻性PE下降与收入增长对估值的潜在提振",
-          "行业对CRM与同业的比较与趋势（与ServiceNow等对比）",
-          "潜在裁员对短期市场情绪与利润结构的影响"
+          "AI/云生态相关的大型模型与开放权重模型的市场情绪变化",
+          "行业龙头如微软、Salesforce等在AI投资与云服务领域的表现及盈利展望",
+          "市场对Salesforce需求放缓的担忧可能传导至估值调整",
+          "板块轮动带动的科技股整体强势或回落对CRM的影响"
         ],
-        "note": "信息来自公开新闻与财务数据，缺乏更多季度细节时效性，存在盈利与情绪波动的不确定性。",
-        "generatedAt": "2026-11-21T03:54:47+00:00",
+        "note": "信息来源于公开新闻与财报数据，需警惕需求放缓与估值波动的不确定性。",
+        "generatedAt": "2026-11-24T06:53:44+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -2650,7 +2649,7 @@
       "changePercent": 1.62,
       "volume": 6103700,
       "marketCap": 152633585525.5127,
-      "quoteUpdatedAt": "2026-11-24T02:43:35+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:14+00:00",
       "revenue": 11345000000.0,
       "revenueGrowth": 10.8343,
       "roe": 19.381,
@@ -2658,7 +2657,7 @@
       "dividendYield": 0.9361,
       "reportDate": "2026-07-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:35+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:14+00:00",
       "pe": 16.967978,
       "forwardPe": 11.584733,
       "peg": 0.6448,
@@ -2675,7 +2674,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:35+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:14+00:00"
     },
     "PLTR": {
       "symbol": "PLTR",
@@ -2741,7 +2740,7 @@
       "changePercent": 9.42,
       "volume": 32010800,
       "marketCap": 383977518927.2805,
-      "quoteUpdatedAt": "2026-11-24T02:43:38+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:16+00:00",
       "revenue": 2313411000.0,
       "revenueGrowth": 95.8705,
       "roe": 40.907,
@@ -2749,7 +2748,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-09-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:38+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:16+00:00",
       "pe": 112.22536,
       "forwardPe": 62.770554,
       "peg": 1.1346,
@@ -2766,7 +2765,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:38+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:16+00:00"
     },
     "ARM": {
       "symbol": "ARM",
@@ -2790,6 +2789,13 @@
           "url": "https://finance.yahoo.com/video/jensen-huang-back-as-nvidia-ceo-after-12-days-shares-surge-30-161302539.html"
         },
         {
+          "title": "Nvidia’s Board Had Other Options: Robert Maciejko",
+          "summary": "By Robert Maciejko Jensen Huang is back at Nvidia Corp. (Nasdaq: NVDA). The stock jumped more than 30% on the news, after losing about a third of its value in two weeks. I understand why. What interests me more than the last decision is what the board could have done in the eleven days before […] The post Nvidia’s Board Had Other Options: Robert Maciejko appeared first on CorpGov.",
+          "source": "CorpGov.com",
+          "publishedAt": "2026-11-23T22:22:13Z",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/nvidia-board-had-other-options-222213836.html"
+        },
+        {
           "title": "Nvidia, Dell, Micron, Anthropic, CrowdStrike, UnitedHealth, and More Stocks That Explain Today’s Market",
           "summary": "Nvidia surges after saying it will reinstate Jensen Huang as CEO.",
           "source": "Barrons.com",
@@ -2802,28 +2808,21 @@
           "source": "Yahoo Finance",
           "publishedAt": "2026-11-23T13:31:09Z",
           "url": "https://finance.yahoo.com/markets/article/nvidia-soars-25-as-board-reinstates-jensen-huang-as-ceo-chip-stocks-jump-142353537.html"
-        },
-        {
-          "title": "Why Is Arm Holdings (ARM) Locking In Rene Haas Through 2033?",
-          "summary": "Arm Holdings (NasdaqGS:ARM) CEO Rene Haas has extended his contract, which now runs through 2033. Haas has also been appointed Vice Chairman of SoftBank Group, Arm's controlling shareholder. SoftBank's expanded role for Haas follows prior market attention on his profile after reported Nvidia succession interest. The extension of Rene Haas's contract and his new Vice Chairman role should not be your only focus as an investor. We have also flagged 1 warning sign for Arm Holdings. For a wider...",
-          "source": "Simply Wall St.",
-          "publishedAt": "2026-11-23T21:14:11Z",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/why-arm-holdings-arm-locking-211411739.html"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "安谋（ARM）现价显著上涨，日涨幅显著；高PE与Forward PE分化明显，营收增速尚可但股息为0，近52周位置处于较低区间。近期AI相关情绪与大厂动向可能影响市场对ARM的关注度，但信息不足以判断长期趋势。",
+        "summary": "安谋ARM当前股价小幅波动，日内涨幅显著，市盈率偏高且 ForwardPE也居高位，营收增长良好但股息为0。结合对AI芯片与生态系统相关新闻的外部动态，市场情绪可能对相关板块产生带动效应，但个股估值与行业轮动风险并存。",
         "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "行业对AI相关芯片与架构的关注度波动",
-          "Arm与SoftBank的治理与人事动向，如高管续任或战略调整",
-          "主要市场对估值水平的重新定价及资本市场情绪变化",
-          "与Nvidia等龙头公司相关的行业轮动及资金流向"
+          "AI相关龙头企业回归高管稳定性带来的市场信心可能波及相关股票板块",
+          "行业轮动导致科技股情绪波动，估值弹性受宏观与行业利空/利好消息影响",
+          "ARM的营收增速良好，但高PE水平可能承压在市场情绪波动时",
+          "新闻中对AI生态和半导体相关股的关注度提升可能短期带来阶段性波动"
         ],
-        "note": "信息有限，尚缺乏明确的盈利趋向与实际业务驱动证据，需关注后续披露的业绩与运营细节。",
-        "generatedAt": "2026-11-24T02:46:06+00:00",
+        "note": "信息仅基于公开数据与相关新闻，缺乏对公司基本面的完整披露，存在不确定性。",
+        "generatedAt": "2026-11-24T06:53:15+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -2832,7 +2831,7 @@
       "changePercent": 13.18,
       "volume": 8058700,
       "marketCap": 189036898040.77148,
-      "quoteUpdatedAt": "2026-11-24T02:43:40+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:19+00:00",
       "revenue": 1443000000.0,
       "revenueGrowth": 27.1366,
       "roe": 11.349,
@@ -2840,7 +2839,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-09-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:40+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:19+00:00",
       "pe": 203.06897,
       "forwardPe": 57.232174,
       "peg": 1.2402,
@@ -2857,7 +2856,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:40+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:19+00:00"
     },
     "ASML": {
       "symbol": "ASML",
@@ -2866,6 +2865,13 @@
       "nameZh": "阿斯麦",
       "theme": "AI / 半导体设备",
       "news": [
+        {
+          "title": "Jensen Huang is back at Nvidia. What does it mean for Europe's AI stocks?",
+          "summary": "Europe's chip stocks rallied after Nvidia reinstated Jensen Huang as CEO, with Donald Trump cheering the board's decision. But Nokia, ASML and other AI names have only recovered part of what they lost during his absence.View on euronews",
+          "source": "Euronews",
+          "publishedAt": "2026-11-24T05:52:50Z",
+          "url": "https://www.euronews.com/2026/11/24/jensen-huang-is-back-at-nvidia-what-does-it-mean-for-europes-ai-stocks"
+        },
         {
           "title": "Why ASML Stock Popped Today",
           "summary": "The AI sector soared as Jensen Huang returned to Nvidia.",
@@ -2893,28 +2899,21 @@
           "source": "TIKR",
           "publishedAt": "2026-11-23T19:43:24Z",
           "url": "https://www.tikr.com/blog/smoke-and-mirrors-microns-president-slammed-rival-dram-designs-well-know-soon-if-hes-right?ref=yahoofinance&tlnk=yf-261123-78qhh9qx"
-        },
-        {
-          "title": "Who's Buying And Who's Selling AI? The Full List, Next To 2000",
-          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
-          "source": "Trefis",
-          "publishedAt": "2026-11-23T18:36:07Z",
-          "url": "https://www.trefis.com/stock/nvda/articles/627430/who-s-buying-and-who-s-selling-ai-the-full-list-next-to-2000/2026-11-23"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "阿斯麦近期股价大幅上涨，日涨近7%，反映AI需求与产能紧张带来乐观情绪。公司Q3业绩强劲、未来产能供给仍未完全满足需求，但市场对AI周期持续性及外部监管环境存在不确定性。当前估值与成长性匹配度需结合宏观与行业动态审慎解读。",
-        "trend": "偏多",
+        "summary": "ASML近期股价上涨，日涨幅显著，市盈率与未来增长对比仍具吸引力；但行业景气与区域政治因素带来不确定性，需关注全球AI芯片供需与监管环境对其订单与盈利的潜在影响。",
+        "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "ASML 2026Q3/2027–2028产能与需求展望乐观，供需紧张持续",
-          "全球AI硬件投资热度及对先进光刻设备需求延续性",
-          "关键市场监管与供应链限制的政策风险",
-          "半导体行业周期波动与其他厂商（如Nvidia、Micron等）的行业动向"
+          "Nvidia高层变动引发AI板块情绪回升，相关供应商股价波动可能持续",
+          "ASML 2026年Q3业绩与2027-2028年产能规划提振前景，但市场对AI需求周期的持续性存疑",
+          "全球半导体出口与美中监管政策对先进光刻设备需求的潜在影响",
+          "客户需求供给缺口与产能扩充对未来收入的支撑程度"
         ],
-        "note": "信息来源包含证券分析观点与新闻报道，尚无完整披露的公司内部数据，趋势判断可能随市场与监管动态改变。",
-        "generatedAt": "2026-11-24T02:46:15+00:00",
+        "note": "信息来源为公开新闻要点，市场情绪与监管因素可能对股价产生较大短期波动，需谨慎关注。",
+        "generatedAt": "2026-11-24T06:53:41+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -2923,7 +2922,7 @@
       "changePercent": 6.94,
       "volume": 2182400,
       "marketCap": 533333374316.2954,
-      "quoteUpdatedAt": "2026-11-24T02:43:42+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:21+00:00",
       "revenue": 11662000000.0,
       "revenueGrowth": 55.1623,
       "roe": 65.636,
@@ -2931,7 +2930,7 @@
       "dividendYield": 0.6716,
       "reportDate": "2026-09-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:42+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:21+00:00",
       "pe": 34.049706,
       "forwardPe": 21.82643,
       "peg": 0.676,
@@ -2948,7 +2947,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:42+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:21+00:00"
     },
     "SMCI": {
       "symbol": "SMCI",
@@ -3014,7 +3013,7 @@
       "changePercent": 10.5,
       "volume": 62407300,
       "marketCap": 16170847765.16551,
-      "quoteUpdatedAt": "2026-11-24T02:43:46+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:24+00:00",
       "revenue": 19945832000.0,
       "revenueGrowth": 297.5023,
       "roe": 32.368,
@@ -3022,7 +3021,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-09-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:46+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:24+00:00",
       "pe": 5.175106,
       "forwardPe": 3.5320072,
       "peg": 0.91,
@@ -3039,7 +3038,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:46+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:24+00:00"
     },
     "MU": {
       "symbol": "MU",
@@ -3070,33 +3069,33 @@
           "url": "https://finance.yahoo.com/video/jensen-huang-back-as-nvidia-ceo-after-12-days-shares-surge-30-161302539.html"
         },
         {
+          "title": "Watch these chip stocks for bargain buys after Nvidia’s post-reinstatement rally",
+          "summary": "Investing.com -- Jensen Huang was reinstated as Nvidia CEO on Nov 23, 2026, 11 days after he resigned, sparking a broad-based rally across battered chipmaking and artificial intelligence names on Monday.",
+          "source": "Investing.com",
+          "publishedAt": "2026-11-24T04:02:18Z",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/watch-chip-stocks-bargain-buys-040218865.html"
+        },
+        {
           "title": "Dow, Nasdaq and Bitcoin Jump on Huang's Return, but Why Did Bitcoin Reverse?",
           "summary": "Nasdaq held a 6.5% gain on Huang's return, but a Bitcoin reversal faded the spike. Here is what likely drove it.",
           "source": "BeInCrypto",
           "publishedAt": "2026-11-24T02:00:00Z",
           "url": "https://beincrypto.com/bitcoin-reversal-huang-return-nasdaq/"
-        },
-        {
-          "title": "The Nasdaq Just Had Its Best Day Since April 2025. Anthropic Stock Fell Anyway.",
-          "summary": "Anthropic stock slipped on the Nasdaq Composite's best day since April 2025.",
-          "source": "Motley Fool",
-          "publishedAt": "2026-11-24T00:42:02Z",
-          "url": "https://www.fool.com/investing/2026/11/23/the-nasdaq-just-had-its-best-day-since-april-2025-anthropic-stock-fell-anyway/"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "美光科技近期股价大幅上涨，日涨幅显著，PE与Forward PE均处于相对较低区间，营收增长与ROE表现亮眼；但新闻聚焦AI芯片相关议题，行业情绪波动可能对半导体板块产生短期影响，需关注苹果和AI资金流向对估值的影响。",
+        "summary": "美光科技当前股价大幅反弹，日涨幅超16%，市盈低但Forward PE显著偏低，营收与ROE数据亮眼，可能受AI相关行业行情带动的情绪性推动。需关注行业周期性与半导体市场供需变化，以及公司基本面是否因异常盈利增长而可持续。",
         "trend": "偏多",
         "riskLevel": "中",
         "catalysts": [
-          "美光在存储芯片领域的营收增长与ROE维持高水平可能支撑估值",
-          "AI相关资本支出与数据中心需求的波动对晶圆产能与价格的影响",
-          "行业新闻对AI硬件股的情绪性影响及资金流向变化",
-          "Forward PE显著低于历史水平，存在业绩可持续性的不确定性"
+          "AI芯片与数据中心需求回暖带动半导体龙头股情绪及估值修复",
+          "Nvidia等龙头公司事件驱动叠加，可能带动相关芯片股资金流入",
+          "公司的高ROE与低Forward PE可能吸引关注，但需警惕盈利来源可持续性",
+          "宏观与政策因素对AI投资热度的持续性影响"
         ],
-        "note": "信息基于公开新闻与财务数据，趋势可能随AI市场与宏观环境变化而快速改变，需持续关注相关动态。",
-        "generatedAt": "2026-11-24T02:45:48+00:00",
+        "note": "信息来源主要为公开新闻与公司数据，若行业景气度回落或盈利质量下降，股价波动风险上升。",
+        "generatedAt": "2026-11-24T06:53:13+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -3105,7 +3104,7 @@
       "changePercent": 16.49,
       "volume": 49614800,
       "marketCap": 800708220943.7185,
-      "quoteUpdatedAt": "2026-11-24T02:43:48+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:26+00:00",
       "revenue": 54229000000.0,
       "revenueGrowth": 379.2665,
       "roe": 88.26,
@@ -3113,7 +3112,7 @@
       "dividendYield": 0.0798,
       "reportDate": "2026-08-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:48+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:26+00:00",
       "pe": 9.521054,
       "forwardPe": 3.4246724,
       "peg": 0.16,
@@ -3130,7 +3129,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:48+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:26+00:00"
     },
     "ANET": {
       "symbol": "ANET",
@@ -3139,6 +3138,13 @@
       "nameZh": "Arista Networks",
       "theme": "AI / 网络 / 数据中心",
       "news": [
+        {
+          "title": "Can Cisco Stock Hit $120?",
+          "summary": "For questions about this article or underlying research, email help@trefis.com.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/csco/articles/627586/can-cisco-stock-hit-120/2026-11-23"
+        },
         {
           "title": "Own HP Stock? Memory Costs Are The Risk",
           "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
@@ -3166,28 +3172,21 @@
           "source": "Trefis",
           "publishedAt": "2026-11-23T11:05:21Z",
           "url": "https://www.trefis.com/stock/anet/articles/627774/what-moved-arista-networks-stock/2026-11-23"
-        },
-        {
-          "title": "Ken Fisher and 13 Other Big Funds Bought Arista Networks Last Quarter, While 10 Sold. Who’s Right?",
-          "summary": "Key TakeawaysOf the 460 big funds that have filed 13Fs for the quarter ended Sept. 30, 14 bought Arista Networks, Ken Fisher’s Fisher Investments among them, and 10 sold.",
-          "source": "TIKR",
-          "publishedAt": "2026-11-22T19:50:24Z",
-          "url": "https://www.tikr.com/blog/ken-fisher-and-13-other-big-funds-bought-arista-networks-last-quarter-while-10-sold-whos-right?ref=yahoofinance&tlnk=yf-261122-96cgvpf5"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "ANET近期股价明显下挫，基本面指标如营收增长与ROE尚可，但市盈率偏高且前瞻性估值与AI相关需求波动存在不确定性，趋势偏向谨慎观察。",
-        "trend": "偏空",
+        "summary": "Arista Networks 当前股价小幅上涨，近期多项估值与营收指标显示成长性，但存在对行业玩家如NVIDIA、Meta等的外部依赖与监管/市场情绪波动风险。当前市盈率较高，Forward PE 较低于历史水平，需关注云/数据中心需求与竞争格局变动。",
+        "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "AI相关市场需求波动及行业周期",
-          "前瞻市盈率与实际盈利能力的对比变化",
-          "公司在女性主导企业等主题投资热度的持续性",
-          "市场对AI资本开支放缓的潜在冲击"
+          "云计算/数据中心对网络设备的持续需求",
+          "供应商生态对关键客户（如Meta、AMD、NVIDIA等）的支出变化",
+          "行业监管动向及安全事件对科技股情绪的影响",
+          "Goldman Sachs等机构对通信科技龙头的最新排名与资金流向"
         ],
-        "note": "信息来源多为公开新闻与财务指标，若后续披露数据或行业环境出现显著变化，趋势判断需重新评估。",
-        "generatedAt": "2026-11-21T03:54:35+00:00",
+        "note": "信息来源中含有对SEC调查、定价及对手公司的潜在影响，需关注后续官方披露与市场消息的明确性。",
+        "generatedAt": "2026-11-24T06:53:30+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -3196,7 +3195,7 @@
       "changePercent": 4.74,
       "volume": 9791000,
       "marketCap": 225277267269.37164,
-      "quoteUpdatedAt": "2026-11-24T02:43:51+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:29+00:00",
       "revenue": 3657600000.0,
       "revenueGrowth": 58.4543,
       "roe": 33.519,
@@ -3204,7 +3203,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-09-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:51+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:29+00:00",
       "pe": 47.804287,
       "forwardPe": 29.536192,
       "peg": 1.2166,
@@ -3221,7 +3220,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:51+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:29+00:00"
     },
     "VRT": {
       "symbol": "VRT",
@@ -3230,6 +3229,13 @@
       "nameZh": "Vertiv",
       "theme": "AI / 数据中心 / 电力",
       "news": [
+        {
+          "title": "POET Technologies Is Just One Of 3 Top Growth Stocks",
+          "summary": "Jensen Huang’s sudden return as Nvidia CEO has pulled attention back to fast growing businesses that investors believe can still justify their price tags. AI excitement is reminding the market that strong earnings expansion and solid balance sheets are a powerful combination, not a luxury. This article focuses on three US listed companies that analysts expect to grow earnings quickly while keeping finances in check. The three stocks highlighted here offer a compelling starting point if you...",
+          "source": "Simply Wall St.",
+          "publishedAt": "2026-11-24T03:15:09Z",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/poet-technologies-just-one-3-031509221.html"
+        },
         {
           "title": "Top Stock Picks for Week of November 23, 2026",
           "summary": "A Global Leader in Visual Computing Technologies and a Global IT Services Stock are Spotlighted.",
@@ -3257,28 +3263,21 @@
           "source": "GuruFocus.com",
           "publishedAt": "2026-11-23T18:30:49Z",
           "url": "https://finance.yahoo.com/markets/stocks/articles/why-nvent-nvt-stock-today-183049742.html"
-        },
-        {
-          "title": "Advanced Energy (AEIS) Stock Is Up 11.8% Today Without Company News",
-          "summary": "On Monday, Nov. 23, the stock rose 11.8% without company-specific news as the broader market rallied.",
-          "source": "GuruFocus.com",
-          "publishedAt": "2026-11-23T18:30:32Z",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/advanced-energy-aeis-stock-11-183032783.html"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "Vertiv 当前股价大涨，日涨幅显著，估值与成长性存在提升空间，但近期投资者情绪与分析师观点分化，需关注其AI数据中心需求与外部同行评议影响。公开数据中，公司高ROE和营收强劲增长支撑基本面，但前景受资本市场情绪与行业估值波动影响。",
-        "trend": "中性",
+        "summary": "Vertiv（VRT）近来股价涨幅显著，日内上涨超10%，市盈率较低前景下仍具成长性但受同行业AI数据中心行情和外部评级影响明显，需警惕短期波动及估值回落风险。",
+        "trend": "偏多",
         "riskLevel": "中",
         "catalysts": [
-          "AI数据中心需求变化及行业投资者情绪波动",
-          "分析师评级与目标价调整（如Baird降级）对股价的短期冲击",
-          "Forward PE 与成长率对比的市场重新定价压力",
-          "大盘与科技股轮动对行情的影响"
+          "行业对AI数据中心需求的持续关注与扩张",
+          "Forward PE 指标低于历史水平，若盈利持续增长可能带来估值提升",
+          "分析机构对 Vertiv 的观感变化（如降级或目标价调整）可能引发价格波动",
+          "行业对 AI 相关硬件和服务厂商的资金情绪波动"
         ],
-        "note": "信息来源仅限公开新闻与披露数据，存在对未来盈利与估值的不确定性。",
-        "generatedAt": "2026-11-24T02:45:58+00:00",
+        "note": "信息来自公开报道，存在市场情绪与个别机构评估差异，未来走向受宏观及行业因素影响较大。",
+        "generatedAt": "2026-11-24T06:53:25+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -3287,7 +3286,7 @@
       "changePercent": 10.17,
       "volume": 9701600,
       "marketCap": 71756011803.5723,
-      "quoteUpdatedAt": "2026-11-24T02:43:54+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:31+00:00",
       "revenue": 4312800000.0,
       "revenueGrowth": 61.178,
       "roe": 46.567,
@@ -3295,7 +3294,7 @@
       "dividendYield": 0.1352,
       "reportDate": "2026-09-30",
       "sector": "Industrials",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:54+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:31+00:00",
       "pe": 34.831776,
       "forwardPe": 18.873047,
       "peg": 0.4906,
@@ -3312,7 +3311,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:54+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:31+00:00"
     },
     "DELL": {
       "symbol": "DELL",
@@ -3321,6 +3320,27 @@
       "nameZh": "戴尔",
       "theme": "AI / 服务器 / 硬件",
       "news": [
+        {
+          "title": "Can Cisco Stock Hit $120?",
+          "summary": "For questions about this article or underlying research, email help@trefis.com.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/csco/articles/627586/can-cisco-stock-hit-120/2026-11-23"
+        },
+        {
+          "title": "Stocks Opened Up, Then Fell 3% By The Close. What Happened The Last 45 Times?",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/spy/articles/627441/stocks-opened-up-then-fell-3-by-the-close-what-happened-the-last-45-times/2026-11-23"
+        },
+        {
+          "title": "Dell Technologies (DELL) Roars Back, Gets 2 Major Catalysts Working in Its Favor",
+          "summary": "Dell Technologies Inc. (NYSE:DELL) is one of the 10 Stocks With Eye-Popping Gains. Dell Technologies bounced back from three days of losses on Monday, surging 20.46 percent to close at $334.91 apiece amid renewed optimism for the overall AI industry, while investors positioned portfolios ahead of its earnings announcement shortly after the closing bell. The […]",
+          "source": "Insider Monkey",
+          "publishedAt": "2026-11-24T03:09:39Z",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/dell-technologies-dell-roars-back-030939608.html"
+        },
         {
           "title": "Own HP Stock? Memory Costs Are The Risk",
           "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
@@ -3334,42 +3354,21 @@
           "source": "Zacks",
           "publishedAt": "2026-11-23T23:27:00Z",
           "url": "https://finance.yahoo.com/markets/stocks/articles/5-retail-tech-earnings-charts-232700654.html"
-        },
-        {
-          "title": "Nvidia Adds Nearly $1 Trillion in Value as Trump Hails Huang as a “National Treasure.” It’s Still Cheaper Than Walmart",
-          "summary": "Key TakeawaysNVIDIA shares jumped 31% today after its board reinstated Jensen Huang as CEO, adding nearly $1 trillion of market value. The November selloff priced in a leadership crisis while analysts kept raising NVIDIA’s earnings estimates.",
-          "source": "TIKR",
-          "publishedAt": "2026-11-23T22:13:00Z",
-          "url": "https://www.tikr.com/blog/nvidia-adds-nearly-1-trillion-in-value-as-trump-hails-huang-as-a-national-treasure-its-still-cheaper-than-walmart?ref=yahoofinance&tlnk=yf-261123-v5m7h4gg"
-        },
-        {
-          "title": "Stock Market Today: Dow, Nasdaq Surge As Jensen Huang Makes This Nvidia Promise; Anthropic Falls",
-          "summary": "Stock Market Today: The Dow Jones index surges Monday. President Trump claims a big role in Jensen Huang's return. Boeing stock takes off.",
-          "source": "Investor's Business Daily",
-          "publishedAt": "2026-11-23T21:56:22Z",
-          "url": "https://www.investors.com/market-trend/stock-market-today/dow-jones-sp500-nasdaq-nvidia-nvda-crowdstrike-zscaler/?src=A00220&yptr=yahoo"
-        },
-        {
-          "title": "From Resignation to Reinstatement: Huang's Market Impact",
-          "summary": "Jensen Huang's sudden exit and swift reinstatement underscore how closely the global AI trade, infrastructure supply chains, and major equity benchmarks are tied to his leadership at Nvidia.",
-          "source": "Zacks",
-          "publishedAt": "2026-11-23T21:56:00Z",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/resignation-reinstatement-huangs-market-impact-215600680.html"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "戴尔近期股价大幅上涨，日涨幅达18.04%，市盈率相对较低且未来PE约10.93，营收同比显著增长约57.75%，股息率0.72%。新闻聚焦AI相关巨头动态与科技及零售行情，行业波动与成本结构对相关公司情绪产生影响，但需关注市场对公开信息的解读差异。请以公开信息为基础进行趋势观察，谨慎评估风险。",
-        "trend": "中性",
+        "summary": "戴尔股价近期大幅上涨，日涨幅显著，营收同比高增长，PE适中且ForwardPE较低，显示短期估值有弹性，但公开信息未披露ROE等核心盈利质量指标，需关注AI相关需求放大与市场情绪波动对股价的影响。",
+        "trend": "偏多",
         "riskLevel": "中",
         "catalysts": [
-          "行业整体AI与半导体相关股票波动对大盘情绪影响",
-          "零售与科技企业季报及成本结构（包括内存/制造成本）变化",
-          "评估NVIDIA等龙头股消息对市场情绪的传导效应",
-          "市场对高成长行业估值调整的潜在压力"
+          "AI行业乐观情绪及相关需求回升带动股价反弹",
+          "前瞻性盈利与营收增长强劲的潜在驱动",
+          "市场对行业消息与并购/资本开支的反应",
+          "临近财报公布期的投资者情绪波动"
         ],
-        "note": "信息来源仅限公开新闻与财务数据，未包含具体交易建议，存在未確定性，需结合更多信息进行综合判断。",
-        "generatedAt": "2026-11-24T02:45:43+00:00",
+        "note": "信息披露中缺少ROE等盈利质量数据，未来盈利可持续性存在不确定性。",
+        "generatedAt": "2026-11-24T06:53:10+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -3378,14 +3377,14 @@
       "changePercent": 18.04,
       "volume": 16103000,
       "marketCap": 212940050430.91583,
-      "quoteUpdatedAt": "2026-11-24T02:43:56+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:34+00:00",
       "revenue": 46971000000.0,
       "revenueGrowth": 57.7479,
       "grossMargin": 19.911,
       "dividendYield": 0.7211,
       "reportDate": "2026-07-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:56+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:34+00:00",
       "pe": 19.471512,
       "forwardPe": 10.9285965,
       "peg": 0.2803,
@@ -3402,7 +3401,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:56+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:34+00:00"
     },
     "CNQ.TO": {
       "symbol": "CNQ.TO",
@@ -3466,9 +3465,9 @@
       "price": 62.93000030517578,
       "change": -0.8100013732910156,
       "changePercent": -1.27,
-      "volume": 22999906,
+      "volume": 23000600,
       "marketCap": 128070731521.07239,
-      "quoteUpdatedAt": "2026-11-24T02:43:59+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:36+00:00",
       "revenue": 15643000000.0,
       "revenueGrowth": 41.3098,
       "roe": 32.385,
@@ -3476,13 +3475,13 @@
       "dividendYield": 3.9139,
       "reportDate": "2026-09-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-11-24T02:43:59+00:00",
-      "pe": 9.281711,
-      "forwardPe": 10.543564,
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:36+00:00",
+      "pe": 9.160116,
+      "forwardPe": 10.609333,
       "peg": 3.42,
       "profitMargin": 29.51,
       "operatingMargin": 30.67,
-      "eps": 6.78,
+      "eps": 6.87,
       "week52High": 78.6,
       "week52Low": 41.68,
       "week52PositionPercent": 57.6,
@@ -3493,7 +3492,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:43:59+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:36+00:00"
     },
     "TRP.TO": {
       "symbol": "TRP.TO",
@@ -3557,9 +3556,9 @@
       "price": 88.69999694824219,
       "change": -0.470001220703125,
       "changePercent": -0.53,
-      "volume": 3445520,
+      "volume": 3469500,
       "marketCap": 92404720495.97974,
-      "quoteUpdatedAt": "2026-11-24T02:44:02+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:39+00:00",
       "revenue": 4030000000.0,
       "revenueGrowth": 8.8013,
       "roe": 12.145,
@@ -3567,13 +3566,13 @@
       "dividendYield": 3.9278,
       "reportDate": "2026-09-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:02+00:00",
-      "pe": 23.908354,
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:39+00:00",
+      "pe": 23.780159,
       "forwardPe": 22.417953,
       "peg": 2.2439,
       "profitMargin": 25.05,
       "operatingMargin": 45.03,
-      "eps": 3.71,
+      "eps": 3.73,
       "week52High": 100.18,
       "week52Low": 72.97,
       "week52PositionPercent": 57.8,
@@ -3584,7 +3583,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:02+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:39+00:00"
     },
     "PPL.TO": {
       "symbol": "PPL.TO",
@@ -3634,9 +3633,9 @@
       "price": 68.06999969482422,
       "change": -1.0,
       "changePercent": -1.45,
-      "volume": 1829336,
+      "volume": 1846900,
       "marketCap": 39588763052.51312,
-      "quoteUpdatedAt": "2026-11-24T02:44:05+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:41+00:00",
       "revenue": 2179000000.0,
       "revenueGrowth": 21.6639,
       "roe": 12.102,
@@ -3644,7 +3643,7 @@
       "dividendYield": 4.2456,
       "reportDate": "2026-09-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:05+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:41+00:00",
       "pe": 20.139053,
       "forwardPe": 21.364275,
       "peg": 1.6993,
@@ -3661,7 +3660,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:05+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:41+00:00"
     },
     "CEG": {
       "symbol": "CEG",
@@ -3727,7 +3726,7 @@
       "changePercent": 4.3,
       "volume": 5199200,
       "marketCap": 88506893056.0896,
-      "quoteUpdatedAt": "2026-11-24T02:44:08+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:44+00:00",
       "revenue": 9550000000.0,
       "revenueGrowth": 45.3577,
       "roe": 18.344,
@@ -3735,7 +3734,7 @@
       "dividendYield": 0.6785,
       "reportDate": "2026-09-30",
       "sector": "Utilities",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:08+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:44+00:00",
       "pe": 20.234728,
       "forwardPe": 18.80208,
       "peg": 0.8193,
@@ -3752,7 +3751,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:08+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:44+00:00"
     },
     "NEE": {
       "symbol": "NEE",
@@ -3818,7 +3817,7 @@
       "changePercent": 0.48,
       "volume": 12400300,
       "marketCap": 176110791494.71805,
-      "quoteUpdatedAt": "2026-11-24T02:44:11+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:47+00:00",
       "revenue": 8090000000.0,
       "revenueGrowth": 1.5566,
       "roe": 14.064,
@@ -3826,7 +3825,7 @@
       "dividendYield": 2.2258,
       "reportDate": "2026-09-30",
       "sector": "Utilities",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:11+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:47+00:00",
       "pe": 15.129729,
       "forwardPe": 19.18433,
       "peg": 1.7024,
@@ -3843,7 +3842,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:11+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:47+00:00"
     },
     "TECK.B.TO": {
       "symbol": "TECK.B.TO",
@@ -3904,12 +3903,12 @@
         "model": "gpt-5-nano"
       },
       "currency": "CAD",
-      "price": 75.0999984741211,
-      "change": 5.659996032714844,
+      "price": 75.1,
+      "change": 5.659997558593744,
       "changePercent": 8.15,
       "volume": 1892674,
-      "marketCap": 36874064103.99417,
-      "quoteUpdatedAt": "2026-11-24T02:44:17+00:00",
+      "marketCap": 36874064853.2,
+      "quoteUpdatedAt": "2026-11-24T06:51:52+00:00",
       "revenue": 4517000000.0,
       "revenueGrowth": 33.4417,
       "roe": 13.577,
@@ -3917,13 +3916,13 @@
       "dividendYield": 0.6658,
       "reportDate": "2026-09-30",
       "sector": "Basic Materials",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:17+00:00",
-      "pe": 9.690322,
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:52+00:00",
+      "pe": 10.488827,
       "forwardPe": 13.244238,
       "peg": 2.3072,
       "profitMargin": 25.19,
       "operatingMargin": 37.07,
-      "eps": 7.75,
+      "eps": 7.16,
       "week52High": 99.91,
       "week52Low": 55.72,
       "week52PositionPercent": 43.9,
@@ -3934,7 +3933,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:17+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:52+00:00"
     },
     "FCX": {
       "symbol": "FCX",
@@ -4000,7 +3999,7 @@
       "changePercent": 6.22,
       "volume": 22410000,
       "marketCap": 71330668936.41682,
-      "quoteUpdatedAt": "2026-11-24T02:44:20+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:55+00:00",
       "revenue": 7546000000.0,
       "revenueGrowth": 8.2329,
       "roe": 15.719,
@@ -4008,13 +4007,13 @@
       "dividendYield": 1.207,
       "reportDate": "2026-09-30",
       "sector": "Basic Materials",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:20+00:00",
-      "pe": 20.886553,
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:55+00:00",
+      "pe": 19.342413,
       "forwardPe": 11.780737,
       "peg": 2.5704,
       "profitMargin": 13.03,
       "operatingMargin": 28.6,
-      "eps": 2.38,
+      "eps": 2.57,
       "week52High": 80.24,
       "week52Low": 39.9,
       "week52PositionPercent": 24.3,
@@ -4025,7 +4024,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:20+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:55+00:00"
     },
     "NEM": {
       "symbol": "NEM",
@@ -4034,6 +4033,13 @@
       "nameZh": "纽蒙特",
       "theme": "矿产 / 黄金",
       "news": [
+        {
+          "title": "Can Agnico Eagle Stock Bounce Off $151 Again?",
+          "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
+          "source": "Trefis",
+          "publishedAt": "2026-11-24T05:06:42Z",
+          "url": "https://www.trefis.com/stock/aem/articles/627858/can-agnico-eagle-stock-bounce-off-151-again/2026-11-23"
+        },
         {
           "title": "Can Newmont Stock Climb Back To $130?",
           "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
@@ -4061,28 +4067,21 @@
           "source": "24/7 Wall St.",
           "publishedAt": "2026-11-21T21:07:17Z",
           "url": "https://247wallst.com/investing/2026/11/21/tim-seymour-says-this-is-the-time-to-buy-gold-not-sell-it/"
-        },
-        {
-          "title": "Gold miners near yearly lows as bullion slides below $3,600",
-          "summary": "Investing.com -- Gold keeps falling, and the miners are falling with it. Gold Futures (GC) traded at $3,545.95, down 3.79%, as of Nov 20, 10:21 AM EST. That is below the $3,700–$3,800 level one strategist cited when saying miners still generate \"tons of cash flow\". The same pressures are at work: the 10-year yield is at 4.962%, the Dollar Index is at 103.675, and the Fed is expected to hike in December.",
-          "source": "Investing.com",
-          "publishedAt": "2026-11-20T15:52:20Z",
-          "url": "https://finance.yahoo.com/markets/commodities/articles/gold-miners-near-yearly-lows-155220307.html"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "纽蒙特现价回升至约100.73美元，日涨超4%，但整体受金价波动、金矿股普遍承压以及市场对金价与利率路径的不确定性影响，短期或波动性偏高。",
+        "summary": "纽蒙特当前股价小幅走高，日涨幅约4%，PE与Forward PE相对同行具备一定估值魅力，营收增长与ROE表现良好；但市场情绪因多项新闻事件与对贵金属相关基金的担忧而波动。需关注潜在的市场情绪波动及监管新闻对贵金属板块的影响。",
         "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "金价走向及贵金属行业周期对矿企盈利的影响",
-          "美债收益率与美元走强对金矿股的压力",
-          "市场对高PE及Forward PE水平的解读与估值修正风险",
-          "新闻报道中的外部事件与监管信息对情绪的影响"
+          "金价与贵金属相关资金流向的波动",
+          "SEC调查及相关新闻对大盘情绪的影响",
+          "Agnico Eagle、Teck Resources 等同业动态带来的行业情绪变化",
+          "宏观利率与美元走向对黄金及矿业股的影响"
         ],
-        "note": "基于公开信息，缺乏关于公司基本面变化的明确新驱动时，趋势判断应保持谨慎，关注金价与宏观因素的联动。",
-        "generatedAt": "2026-11-24T02:46:49+00:00",
+        "note": "信息来源有限，新闻存在不确定性，实际走势需结合后续公开披露的监管动向与市场资金流向综合评估。",
+        "generatedAt": "2026-11-24T06:54:09+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -4091,7 +4090,7 @@
       "changePercent": 4.22,
       "volume": 8778900,
       "marketCap": 104677933013.55252,
-      "quoteUpdatedAt": "2026-11-24T02:44:23+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:57+00:00",
       "revenue": 6363000000.0,
       "revenueGrowth": 15.1883,
       "roe": 27.259,
@@ -4099,7 +4098,7 @@
       "dividendYield": 1.0225,
       "reportDate": "2026-09-30",
       "sector": "Basic Materials",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:23+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:57+00:00",
       "pe": 11.685616,
       "forwardPe": 10.136016,
       "peg": 2.78,
@@ -4116,7 +4115,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:23+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:57+00:00"
     },
     "BNS.TO": {
       "symbol": "BNS.TO",
@@ -4179,9 +4178,9 @@
       "price": 122.7300033569336,
       "change": 2.6700057983398438,
       "changePercent": 2.22,
-      "volume": 2874454,
+      "volume": 2883000,
       "marketCap": 149587009991.53137,
-      "quoteUpdatedAt": "2026-11-24T02:44:25+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:00+00:00",
       "revenue": 10313000000.0,
       "revenueGrowth": 10.5478,
       "roe": 11.459,
@@ -4189,13 +4188,13 @@
       "dividendYield": 3.6503,
       "reportDate": "2026-07-31",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:25+00:00",
-      "pe": 16.043137,
-      "forwardPe": 12.913754,
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:00+00:00",
+      "pe": 16.42972,
+      "forwardPe": 12.927629,
       "peg": 0.9369,
       "profitMargin": 28.43,
       "operatingMargin": 37.96,
-      "eps": 7.65,
+      "eps": 7.47,
       "week52High": 135.4,
       "week52Low": 92.85,
       "week52PositionPercent": 70.2,
@@ -4206,7 +4205,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:25+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:00+00:00"
     },
     "BMO.TO": {
       "symbol": "BMO.TO",
@@ -4270,9 +4269,9 @@
       "price": 230.5,
       "change": 6.2100067138671875,
       "changePercent": 2.77,
-      "volume": 1703878,
+      "volume": 1724900,
       "marketCap": 160218760628.5,
-      "quoteUpdatedAt": "2026-11-24T02:44:28+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:03+00:00",
       "revenue": 9908000000.0,
       "revenueGrowth": 10.7906,
       "roe": 10.574,
@@ -4280,13 +4279,13 @@
       "dividendYield": 2.9328,
       "reportDate": "2026-07-31",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:28+00:00",
-      "pe": 18.785656,
-      "forwardPe": 13.936798,
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:03+00:00",
+      "pe": 19.288704,
+      "forwardPe": 13.968977,
       "peg": 1.4502,
       "profitMargin": 25.66,
       "operatingMargin": 37.94,
-      "eps": 12.27,
+      "eps": 11.95,
       "week52High": 259.2,
       "week52Low": 170.23,
       "week52PositionPercent": 67.7,
@@ -4297,7 +4296,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:28+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:03+00:00"
     },
     "CM.TO": {
       "symbol": "CM.TO",
@@ -4361,9 +4360,9 @@
       "price": 151.47999572753906,
       "change": 3.7599945068359375,
       "changePercent": 2.55,
-      "volume": 1705445,
+      "volume": 1836000,
       "marketCap": 137534056117.6413,
-      "quoteUpdatedAt": "2026-11-24T02:44:31+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:06+00:00",
       "revenue": 8330000000.0,
       "revenueGrowth": 15.2941,
       "roe": 15.578,
@@ -4371,7 +4370,7 @@
       "dividendYield": 2.8255,
       "reportDate": "2026-07-31",
       "sector": "Financial Services",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:31+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:06+00:00",
       "pe": 14.537428,
       "forwardPe": 13.325216,
       "peg": 1.5382,
@@ -4388,7 +4387,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:31+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:06+00:00"
     },
     "JNJ": {
       "symbol": "JNJ",
@@ -4454,14 +4453,14 @@
       "changePercent": -0.28,
       "volume": 9914600,
       "marketCap": 650094107947.1884,
-      "quoteUpdatedAt": "2026-11-24T02:44:34+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:08+00:00",
       "revenue": 25399000000.0,
       "revenueGrowth": 5.86,
       "grossMargin": 67.775,
       "dividendYield": 1.9552,
       "reportDate": "2026-09-30",
       "sector": "Healthcare",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:34+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:08+00:00",
       "pe": 40.978752,
       "forwardPe": 23.256193,
       "peg": 3.0433,
@@ -4478,7 +4477,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:34+00:00",
+      "newsUpdatedAt": "2026-11-24T06:52:08+00:00",
       "roe": 20.018
     },
     "UNH": {
@@ -4545,7 +4544,7 @@
       "changePercent": 0.23,
       "volume": 12929900,
       "marketCap": 301135267073.3264,
-      "quoteUpdatedAt": "2026-11-24T02:44:37+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:11+00:00",
       "revenue": 112694000000.0,
       "revenueGrowth": -0.4127,
       "roe": 15.773,
@@ -4553,7 +4552,7 @@
       "dividendYield": 2.6958,
       "reportDate": "2026-09-30",
       "sector": "Healthcare",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:37+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:11+00:00",
       "pe": 19.182648,
       "forwardPe": 14.317324,
       "peg": 0.8638,
@@ -4570,7 +4569,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:37+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:11+00:00"
     },
     "MRK": {
       "symbol": "MRK",
@@ -4579,6 +4578,13 @@
       "nameZh": "默沙东",
       "theme": "医药 / 制药",
       "news": [
+        {
+          "title": "This Healthcare Stock Just Raised Its Dividend by 3.5%",
+          "summary": "Merck raised its quarterly dividend by 3.5% to $0.88 per share, extending 15 consecutive years of increases.",
+          "source": "Barchart",
+          "publishedAt": "2026-11-24T00:30:02Z",
+          "url": "https://www.barchart.com/story/news/8975533/this-healthcare-stock-just-raised-its-dividend-by-3-5"
+        },
         {
           "title": "Should You Swap Tech For Johnson & Johnson Stock?",
           "summary": "Today's big story: Reported SEC Probe: Could Nvidia Stock Fall To $92.",
@@ -4606,28 +4612,21 @@
           "source": "GuruFocus.com",
           "publishedAt": "2026-11-23T15:42:14Z",
           "url": "https://finance.yahoo.com/markets/stocks/articles/intel-leads-list-stocks-winning-154214710.html"
-        },
-        {
-          "title": "Is Regeneron Stock Priced Right Against Its Rivals?",
-          "summary": "For questions about this article or underlying research, email help@trefis.com.",
-          "source": "Trefis",
-          "publishedAt": "2026-11-23T15:09:12Z",
-          "url": "https://www.trefis.com/stock/regn/articles/627555/is-regeneron-stock-priced-right-against-its-rivals/2026-11-22"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "默沙东当前价位区间受市场医疗板块回落影响，短期或出现压制，盈利与股息仍具一定吸引力但估值与行业环境需谨慎评估。",
+        "summary": "默沙东近期通过提高股息并维持分红增速显现稳健的现金分配能力；AI协作与新药发现项目可能带来中长期管线潜力，但当前估值高企（ForwardPE约15x在一定水平，ROE偏低）。短期关注点包括分红持续性、AI合作对未来 pipelines 的实际落地，以及市场对高PE医药股的情绪变化。",
         "trend": "中性",
         "riskLevel": "中",
         "catalysts": [
-          "Forward PE 约14.8，估值相对历史与行业具有一定支撑，但高PE结构需关注盈利增速与分红稳定性",
-          "行业背景：Healthcare板块整体走弱，对药企股价存在压力",
-          "公司盈利与ROE相对较低，需关注营收增长可持续性与成本控制",
-          "外部新闻中的潜在诉讼与竞争格局变动可能带来不确定性"
+          "季度/年度分红增速延续与稳定性",
+          "与Isomorphic Labs的AI驱动新药发现合作落地进展",
+          "管线中新药候选物的临床进展与监管路径",
+          "市场对高PE医药股的估值调整与情绪波动"
         ],
-        "note": "信息源为公开新闻与数据，未来盈利和诉讼进展可能改变投资者对风险与趋势的判断。",
-        "generatedAt": "2026-11-19T22:55:21+00:00",
+        "note": "信息来自公开新闻与财报相关数据，尚缺乏对新合作实际产出与管线转化的明确时间表，存在不确定性。",
+        "generatedAt": "2026-11-24T06:53:57+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -4636,7 +4635,7 @@
       "changePercent": 1.19,
       "volume": 9462200,
       "marketCap": 333966836362.6931,
-      "quoteUpdatedAt": "2026-11-24T02:44:39+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:14+00:00",
       "revenue": 18085000000.0,
       "revenueGrowth": 4.6828,
       "roe": 5.057,
@@ -4644,7 +4643,7 @@
       "dividendYield": 2.5098,
       "reportDate": "2026-09-30",
       "sector": "Healthcare",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:39+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:14+00:00",
       "pe": 136.83838,
       "forwardPe": 15.111038,
       "peg": 3.2367,
@@ -4661,7 +4660,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:39+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:14+00:00"
     },
     "XQQ.TO": {
       "symbol": "XQQ.TO",
@@ -4689,11 +4688,11 @@
       "price": 64.55000305175781,
       "change": 4.030002593994141,
       "changePercent": 6.66,
-      "volume": 783361,
+      "volume": 783400,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-11-24T02:44:45+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:19+00:00",
       "dividendYield": 0.2401,
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:45+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:19+00:00",
       "pe": 26.664501,
       "week52High": 76.14,
       "week52Low": 56.0,
@@ -4705,7 +4704,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:45+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:19+00:00"
     },
     "SMH": {
       "symbol": "SMH",
@@ -4714,6 +4713,13 @@
       "nameZh": "VanEck 半导体ETF",
       "theme": "ETF / 半导体",
       "news": [
+        {
+          "title": "Michael Burry Bought Nvidia Calls, Cut His Semiconductor Shorts Before The Rally – But He’s Not Done Questioning Jensen Huang",
+          "summary": "Before Monday’s rally, Burry bought Nvidia calls and sold three-quarters of his puts, keeping some protection against another decline.",
+          "source": "Stocktwits",
+          "publishedAt": "2026-11-24T03:23:55Z",
+          "url": "https://stocktwits.com/news-articles/markets/equity/michael-burry-bought-nvidia-calls-cut-semiconductor-shorts-before-rally-not-done-questioning-jensen-huang/cNbrugeR9jD"
+        },
         {
           "title": "S&P 500, Nasdaq End Best Session Since April Last Year On Optimism Led By Jensen Huang’s Reinstatement — NVDA, NASA, TTWO, AMZN In Focus",
           "summary": "Nvidia’s board reinstated Jensen Huang as Nvidia’s CEO following pressure from President Donald Trump.",
@@ -4741,28 +4747,21 @@
           "source": "Trefis",
           "publishedAt": "2026-11-23T14:45:18Z",
           "url": "https://www.trefis.com/stock/amat/articles/627792/what-triggered-the-fall-in-applied-materials-stock/2026-11-23"
-        },
-        {
-          "title": "TSMC Falls Less, But Nvidia Comes Back First",
-          "summary": "Update, Nov 23: On Nov 22, Nvidia's board reinstated Jensen Huang as chief executive, Nvidia said on Monday. In Monday morning trading, Nvidia rose more than 30%, TSMC about 16% and the SMH fund about 15%. The record below is unchanged, and its figures are at Friday's close unless marked as Monday.",
-          "source": "Trefis",
-          "publishedAt": "2026-11-23T12:14:23Z",
-          "url": "https://www.trefis.com/stock/tsm/articles/627560/tsmc-falls-less-but-nvidia-comes-back-first/2026-11-23"
         }
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "针对SMH，近期受半导体板块回暖与NVIDIA事件影响，指数级“芯片股”整体情绪改善，但高估风险与周期性波动仍存，需关注市场对利率与 elections 的情绪变动。",
+        "summary": "SMH当前价格显著上涨，日涨幅14%左右，近期半导体板块受NVDA等事件提振，市场对芯片相关龙头的情绪偏乐观，但行业估值与周期性风险仍需关注，信息对未来走势存在不确定性。",
         "trend": "偏多",
         "riskLevel": "中",
         "catalysts": [
-          "NVIDIA 管理层变动及高成长叙事提振相关芯片生态股信心",
-          "Semiconductor 相关股票群体联动上涨，SMH 受益于板块轮动",
-          "市场对科技股盈利与利率预期的再评估可能带来波动",
-          "宏观因素如利率、选举周期对科技股估值压力的持续性"
+          "NVDA董事会重新任命黄仁勋等关键变动带来的行业信心回升",
+          "半导体板块普遍上涨及相关生态系统利好情绪扩散",
+          "市场对芯片股估值与利率、大选等宏观因素的持续关注",
+          "SMH成分股轮动可能导致短期波动，需关注个股与板块间的相对表现"
         ],
-        "note": "信息基于公开新闻与行情数据，存在政策与市场情绪导致的短期波动风险，趋势需结合后续数据确认。",
-        "generatedAt": "2026-11-24T02:45:45+00:00",
+        "note": "信息来自公开报道，市场环境与监管因素可能带来不确定性，无法据此给出买卖建议。",
+        "generatedAt": "2026-11-24T06:53:18+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -4771,9 +4770,9 @@
       "changePercent": 12.1,
       "volume": 18995900,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-11-24T02:44:48+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:22+00:00",
       "dividendYield": 0.2401,
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:48+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:22+00:00",
       "pe": 24.845871,
       "week52High": 671.83,
       "week52Low": 327.35,
@@ -4785,7 +4784,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:48+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:22+00:00"
     },
     "SPCX": {
       "symbol": "SPCX",
@@ -4892,17 +4891,17 @@
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "迈威尔当前股价上涨显著，近3年涨幅较大，市场对其盈利和AI/数据中心相关需求的关注度提升。当前市值与实际盈利匹配存在不确定性，需关注短期情绪波动与行业定价压力。",
-        "trend": "中性",
+        "summary": "迈威尔MRVL近来股价大幅上涨，日涨超15%，3年上涨显著但当前市值对盈利的可持续性需关注。前瞻性仍需关注AI硬件和数据中心相关需求对盈利的验证，以及市盈率与实际盈利之间的匹配情况。",
+        "trend": "偏多",
         "riskLevel": "中",
         "catalysts": [
-          "与AI硬件/数据中心需求相关的盈利可持续性",
-          "市场情绪对估值的影响及估值与Forward PE的关系",
-          "主要业务伙伴动向及行业竞争格局变化",
-          "技术生态与客户集中度对未来营收的影响"
+          "AI芯片与数据中心需求走势对盈利的放大效应",
+          "前瞻PE与实际盈利增速之间的关系是否匹配",
+          "关键客户与合作伙伴关系的持续性及盈利驱动因素",
+          "市场对科技股估值的波动与情绪变化"
         ],
-        "note": "信息来源多为市场情绪与历史回顾，未来盈利波动可能对估值产生显著影响，需关注实际盈利增速与成本结构变动。",
-        "generatedAt": "2026-11-24T02:45:53+00:00",
+        "note": "信息源为公开新闻与财务指标，未来盈利波动与估值调整存在不确定性。",
+        "generatedAt": "2026-11-24T06:54:04+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -4911,7 +4910,7 @@
       "changePercent": 15.7,
       "volume": 36775000,
       "marketCap": 130232118703.24161,
-      "quoteUpdatedAt": "2026-11-24T02:44:53+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:27+00:00",
       "revenue": 2739300000.0,
       "revenueGrowth": 36.5485,
       "roe": 16.523,
@@ -4919,7 +4918,7 @@
       "dividendYield": 0.1658,
       "reportDate": "2026-07-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:53+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:27+00:00",
       "pe": 47.611843,
       "forwardPe": 19.636173,
       "peg": 0.3007,
@@ -4936,7 +4935,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:53+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:27+00:00"
     },
     "COHR": {
       "symbol": "COHR",
@@ -4983,17 +4982,17 @@
       ],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "相干(COH R)近期股价显著上涨，受AI相关需求和行业整合预期影响，Forward PE较低但业绩增长与ROE尚可。需关注AI光通信领域波动、行业整合与大客户依赖带来的不确定性。",
+        "summary": "相干（COHR）近期股价显著反弹，日涨幅达到约12.8%，市场对AI光学相关需求与行业情绪有所修复，但估值相对较高，前瞻性盈利仍受行业波动与大客户依赖影响。",
         "trend": "偏多",
         "riskLevel": "中",
         "catalysts": [
-          "NVIDIA对AI光通信供应链的需求持续增长及大客户关系稳定性",
-          "与NVIDIA相关的管理层动荡对行业情绪的短期波动可能减弱",
-          "22Q到12月区间的新产品/解决方案落地节奏及商用化进展",
-          "AI光学组件相关供应链与竞争对手动态变化"
+          "Nvidia 重启董事会并任命 Jensen Huang 后，相关AI 光学供应链公司情绪回暖",
+          "Coherent 与 Nvidia 的合作、光学封装及相关产能放量的潜在销售时间点（2026年12季度起步）",
+          "AI 相关云端与AI 基础设施需求回暖，同行股价对科技股行情的轮动效应",
+          "行业内并购与资金流向对光学/光电子子行业的提振效应"
         ],
-        "note": "信息基于公开新闻与公开财报数据，核心驱动因素存在不确定性，需关注后续披露的业绩与客户依赖情况。",
-        "generatedAt": "2026-11-24T02:46:12+00:00",
+        "note": "信息基于公开新闻与财务数据，市场情绪波动与单一大客户依赖风险需持续关注。",
+        "generatedAt": "2026-11-24T06:54:13+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "USD",
@@ -5002,7 +5001,7 @@
       "changePercent": 12.79,
       "volume": 11588300,
       "marketCap": 42505649876.033875,
-      "quoteUpdatedAt": "2026-11-24T02:44:55+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:29+00:00",
       "revenue": 2370324000.0,
       "revenueGrowth": 49.8898,
       "roe": 9.271,
@@ -5010,7 +5009,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-09-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:55+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:29+00:00",
       "pe": 44.68116,
       "forwardPe": 13.67677,
       "peg": 0.3912,
@@ -5027,7 +5026,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:55+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:29+00:00"
     },
     "EQIX": {
       "symbol": "EQIX",
@@ -5093,7 +5092,7 @@
       "changePercent": 3.22,
       "volume": 659400,
       "marketCap": 98928927425.90698,
-      "quoteUpdatedAt": "2026-11-24T02:44:58+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:31+00:00",
       "revenue": 2571000000.0,
       "revenueGrowth": 11.0104,
       "roe": 11.45,
@@ -5101,7 +5100,7 @@
       "dividendYield": 2.0652,
       "reportDate": "2026-09-30",
       "sector": "Real Estate",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:58+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:31+00:00",
       "pe": 60.024025,
       "forwardPe": 48.29186,
       "peg": 2.873,
@@ -5118,7 +5117,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:58+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:31+00:00"
     },
     "DLR": {
       "symbol": "DLR",
@@ -5184,7 +5183,7 @@
       "changePercent": 3.85,
       "volume": 3051800,
       "marketCap": 63335537625.91077,
-      "quoteUpdatedAt": "2026-11-24T02:45:01+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:34+00:00",
       "revenue": 1902418000.0,
       "revenueGrowth": 20.6174,
       "roe": 3.339,
@@ -5192,13 +5191,13 @@
       "dividendYield": 2.915,
       "reportDate": "2026-09-30",
       "sector": "Real Estate",
-      "fundamentalsUpdatedAt": "2026-11-24T02:45:01+00:00",
-      "pe": 70.63714,
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:34+00:00",
+      "pe": 68.61066,
       "forwardPe": 57.87547,
       "peg": 13.0805,
       "profitMargin": 13.09,
       "operatingMargin": 18.85,
-      "eps": 2.37,
+      "eps": 2.44,
       "week52High": 208.14,
       "week52Low": 146.23,
       "week52PositionPercent": 34.2,
@@ -5209,7 +5208,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:45:01+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:34+00:00"
     },
     "NOW": {
       "symbol": "NOW",
@@ -5275,7 +5274,7 @@
       "changePercent": 3.17,
       "volume": 15640600,
       "marketCap": 95197748506.98853,
-      "quoteUpdatedAt": "2026-11-24T02:45:03+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:37+00:00",
       "revenue": 4106000000.0,
       "revenueGrowth": 20.5166,
       "roe": 11.846,
@@ -5283,7 +5282,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-09-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:45:03+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:37+00:00",
       "pe": 65.98561,
       "forwardPe": 19.099182,
       "peg": 0.6914,
@@ -5300,7 +5299,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:45:03+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:37+00:00"
     },
     "SNOW": {
       "symbol": "SNOW",
@@ -5366,7 +5365,7 @@
       "changePercent": 4.74,
       "volume": 4321000,
       "marketCap": 95704052124.02344,
-      "quoteUpdatedAt": "2026-11-24T02:45:06+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:39+00:00",
       "revenue": 1546793000.0,
       "revenueGrowth": 35.0947,
       "roe": -48.063,
@@ -5374,8 +5373,8 @@
       "dividendYield": 0.0,
       "reportDate": "2026-07-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:45:06+00:00",
-      "forwardPe": 88.23051,
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:39+00:00",
+      "forwardPe": 88.16456,
       "peg": 4.5667,
       "profitMargin": -20.07,
       "operatingMargin": -22.43,
@@ -5390,7 +5389,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:45:06+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:39+00:00"
     },
     "DDOG": {
       "symbol": "DDOG",
@@ -5456,7 +5455,7 @@
       "changePercent": 5.26,
       "volume": 4691800,
       "marketCap": 61023412498.44017,
-      "quoteUpdatedAt": "2026-11-24T02:45:09+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:42+00:00",
       "revenue": 1197090000.0,
       "revenueGrowth": 35.165,
       "roe": 6.426,
@@ -5464,7 +5463,7 @@
       "dividendYield": 0.0,
       "reportDate": "2026-09-30",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:45:09+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:42+00:00",
       "pe": 234.75,
       "forwardPe": 53.10252,
       "peg": 0.7625,
@@ -5481,7 +5480,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:45:09+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:42+00:00"
     },
     "AMAT": {
       "symbol": "AMAT",
@@ -5547,7 +5546,7 @@
       "changePercent": 11.46,
       "volume": 12428500,
       "marketCap": 275275141178.4225,
-      "quoteUpdatedAt": "2026-11-24T02:45:12+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:44+00:00",
       "revenue": 34446000128.0,
       "revenueGrowth": 53.1,
       "roe": 43.37,
@@ -5555,13 +5554,13 @@
       "dividendYield": 0.591,
       "reportDate": "2026-10-31",
       "sector": "Technology",
-      "fundamentalsUpdatedAt": "2026-11-24T02:45:12+00:00",
-      "pe": 23.988243,
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:44+00:00",
+      "pe": 27.485737,
       "forwardPe": 14.085885,
       "peg": 0.6382,
       "profitMargin": 29.29,
       "operatingMargin": 32.94,
-      "eps": 14.46,
+      "eps": 12.62,
       "week52High": 739.67,
       "week52Low": 222.86,
       "week52PositionPercent": 24.0,
@@ -5572,7 +5571,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:45:12+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:44+00:00"
     },
     "VST": {
       "symbol": "VST",
@@ -5638,7 +5637,7 @@
       "changePercent": 5.87,
       "volume": 5664100,
       "marketCap": 42040820315.38534,
-      "quoteUpdatedAt": "2026-11-24T02:45:15+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:47+00:00",
       "revenue": 6347000000.0,
       "revenueGrowth": 27.6805,
       "roe": 46.329,
@@ -5646,7 +5645,7 @@
       "dividendYield": 0.7379,
       "reportDate": "2026-09-30",
       "sector": "Utilities",
-      "fundamentalsUpdatedAt": "2026-11-24T02:45:15+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:47+00:00",
       "pe": 16.73919,
       "forwardPe": 12.697921,
       "peg": 0.3255,
@@ -5663,7 +5662,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:45:15+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:47+00:00"
     },
     "GEV": {
       "symbol": "GEV",
@@ -5729,7 +5728,7 @@
       "changePercent": 6.73,
       "volume": 4240500,
       "marketCap": 200283788428.5182,
-      "quoteUpdatedAt": "2026-11-24T02:45:17+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:50+00:00",
       "revenue": 12642000000.0,
       "revenueGrowth": 26.8131,
       "roe": 93.035,
@@ -5737,7 +5736,7 @@
       "dividendYield": 0.2643,
       "reportDate": "2026-09-30",
       "sector": "Industrials",
-      "fundamentalsUpdatedAt": "2026-11-24T02:45:17+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:50+00:00",
       "pe": 19.86637,
       "forwardPe": 28.840828,
       "peg": 1.291,
@@ -5754,7 +5753,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:45:17+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:50+00:00"
     },
     "ZNQ.TO": {
       "symbol": "ZNQ.TO",
@@ -5765,28 +5764,28 @@
       "news": [],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "BMO 纳斯达克100 ETF（ZNQ.TO）当前价格下跌显著，日跌幅约5.68%，52周内处于低位区间的中段偏后位置。缺乏盈利、估值等基本面公开数据支撑，股息率约0.24%。近期暂无新闻驱动，需关注宏观及美股科技股板块的波动传导风险。",
-        "trend": "偏空",
+        "summary": "BMO 纳斯达克100 ETF（ZNQ.TO）现价约124.28，日涨幅显著，52周位置中位偏上。当前缺乏盈利与估值基础信息，需关注外部市场波动对科技股与高贝塔股票的影响，以及汇率与利率环境变化带来的潜在影响。",
+        "trend": "偏多",
         "riskLevel": "中",
         "catalysts": [
-          "美股科技龙头股表现回暖或承压",
-          "全球宏观经济数据及加息路径变化",
-          "相关指数基金成分变化或 ETFs 资金流向",
-          "美元指数与利率环境对纳斯达克相关股票的影响"
+          "日内涨幅显著，可能存在短期情绪驱动",
+          "科技股与纳斯达克相关指数的波动性变化",
+          "外部利率与货币政策消息对估值的潜在影响",
+          "全球资本市场资金流向对相关ETF的影响"
         ],
-        "note": "信息披露不足，缺乏公司层面盈利与增长数据，趋势判断存在不确定性。",
-        "generatedAt": "2026-11-21T03:54:40+00:00",
+        "note": "信息不足以确认长期趋势，需关注后续利润、估值及宏观因素变化。",
+        "generatedAt": "2026-11-24T06:54:17+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "CAD",
       "price": 124.27999877929688,
       "change": 8.25,
       "changePercent": 7.11,
-      "volume": 138725,
+      "volume": 138700,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-11-24T02:45:22+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:55+00:00",
       "dividendYield": 0.2253,
-      "fundamentalsUpdatedAt": "2026-11-24T02:45:22+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:55+00:00",
       "week52High": 144.14,
       "week52Low": 102.84,
       "week52PositionPercent": 51.9,
@@ -5797,7 +5796,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:45:22+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:55+00:00"
     },
     "ZQQ.TO": {
       "symbol": "ZQQ.TO",
@@ -5825,11 +5824,11 @@
       "price": 179.60000610351562,
       "change": 11.550003051757812,
       "changePercent": 6.87,
-      "volume": 274003,
+      "volume": 274000,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-11-24T02:45:25+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:57+00:00",
       "dividendYield": 0.2561,
-      "fundamentalsUpdatedAt": "2026-11-24T02:45:25+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:57+00:00",
       "week52High": 211.42,
       "week52Low": 155.32,
       "week52PositionPercent": 43.3,
@@ -5840,7 +5839,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:45:25+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:57+00:00"
     },
     "TEC.TO": {
       "symbol": "TEC.TO",
@@ -5851,28 +5850,28 @@
       "news": [],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "TD 全球科技龙头ETF TEC.TO近期遭遇下挫，日跌幅明显，价格处于波动可能放大阶段。基金层面未提供明确营收增长与未来估值指引，现有PE约23.46，股息率约0.077%，52周位置处于中高位区间。需关注宏观科技股行情、区域政策及汇率等外部因素对科技股龙头的影响。",
-        "trend": "中性",
+        "summary": "TD 全球科技龙头ETF（TEC.TO）近期上涨显著，日涨幅约7.7%，当前价格57.19，市盈率约25.27，股息率约0.0717。缺乏营收增速、ROE等关键财务信息，使趋势判断存在不确定性；若市场对科技股估值持续高位，波动可能放大。",
+        "trend": "偏多",
         "riskLevel": "中",
         "catalysts": [
-          "全球科技股周期性回暖或回落的信号",
-          "国际贸易与地缘政治变化对科技股估值的影响",
-          "ETF成分股权重变化及行业政策导向",
-          "汇率波动对以美元计价科技股的影响"
+          "近期科技股轮动或资金回流带动ETF价格上涨",
+          "全球科技行业新闻或政策变动对估值的潜在影响",
+          "股息率相对较低但波动性可能增加",
+          "52周位置在中位偏上，市场情绪回暖可能带来短期上涨动能"
         ],
-        "note": "当前信息缺乏营收/成长驱动的明确指示，趋势判断以价格与估值区间为主，后续新闻或财报可能改变情绪。",
-        "generatedAt": "2026-11-21T03:54:28+00:00",
+        "note": "信息缺乏具体营收增长、ROE等关键指标，若相关数据改善或市场情绪转变，趋势可能改变。",
+        "generatedAt": "2026-11-24T06:54:15+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "CAD",
       "price": 57.189998626708984,
       "change": 4.090000152587891,
       "changePercent": 7.7,
-      "volume": 283097,
+      "volume": 283100,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-11-24T02:45:27+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:52:59+00:00",
       "dividendYield": 0.0717,
-      "fundamentalsUpdatedAt": "2026-11-24T02:45:27+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:52:59+00:00",
       "pe": 25.272203,
       "week52High": 66.99,
       "week52Low": 46.13,
@@ -5884,7 +5883,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:45:27+00:00"
+      "newsUpdatedAt": "2026-11-24T06:52:59+00:00"
     },
     "XIT.TO": {
       "symbol": "XIT.TO",
@@ -5912,11 +5911,11 @@
       "price": 74.48999786376953,
       "change": 3.089996337890625,
       "changePercent": 4.33,
-      "volume": 17410,
+      "volume": 17400,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-11-24T02:45:30+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:53:02+00:00",
       "dividendYield": 0.0309,
-      "fundamentalsUpdatedAt": "2026-11-24T02:45:30+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:53:02+00:00",
       "pe": 28.8918,
       "week52High": 86.55,
       "week52Low": 58.78,
@@ -5928,7 +5927,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:45:30+00:00"
+      "newsUpdatedAt": "2026-11-24T06:53:02+00:00"
     },
     "XCHP.TO": {
       "symbol": "XCHP.TO",
@@ -5939,28 +5938,28 @@
       "news": [],
       "aiAnalysis": {
         "status": "ok",
-        "summary": "XCHP.TO 最近交易下跌明显，日跌幅达约-10.9%，估值水平（PE 约26.7）处于历史区间内，尚无明确营收增长等信息支撑趋势判断，当前信息显示市场情绪偏谨慎，需关注行业周期和市场波动带来的影响。",
-        "trend": "偏空",
+        "summary": "XCHP.TO 已近乎收盘价在高位波动，日涨幅显著，当前市盈率较高且分红率低，缺乏近期新闻驱动，趋势受市场情绪影响较大，需关注行业周期性及对科技股的资金回流变化。",
+        "trend": "偏多",
         "riskLevel": "中",
         "catalysts": [
-          "半导体行业周期波动可能放大ETF价格波动",
-          "全球半导体供需变化及产能调整",
-          "宏观环境对科技股的影响与资金流向",
-          "币种与市场波动对加拿大上市ETF的短期冲击"
+          "半导体行业周期性波动及需求改善迹象",
+          "资金对科技股轮动及ETF相关板块的偏好变化",
+          "若宏观股市波动加剧，带来情绪性上涨或回撤",
+          "ETF成分股权重调整或行业政策变化"
         ],
-        "note": "信息披露有限，缺乏营收增长/Forward PE 等关键指标，趋势判断存在不确定性。",
-        "generatedAt": "2026-11-21T03:54:31+00:00",
+        "note": "信息不足以判断长期基本面趋势，请关注后续公开披露的业绩与分红数据。",
+        "generatedAt": "2026-11-24T06:53:34+00:00",
         "model": "gpt-5-nano"
       },
       "currency": "CAD",
       "price": 104.98999786376953,
       "change": 13.049995422363281,
       "changePercent": 14.19,
-      "volume": 106650,
+      "volume": 106700,
       "marketCap": null,
-      "quoteUpdatedAt": "2026-11-24T02:45:32+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:53:04+00:00",
       "dividendYield": 0.0657,
-      "fundamentalsUpdatedAt": "2026-11-24T02:45:32+00:00",
+      "fundamentalsUpdatedAt": "2026-11-24T06:53:04+00:00",
       "pe": 30.520277,
       "week52High": 161.33,
       "week52Low": 66.95,
@@ -5972,7 +5971,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:45:32+00:00"
+      "newsUpdatedAt": "2026-11-24T06:53:04+00:00"
     },
     "CCO.TO": {
       "symbol": "CCO.TO",
@@ -6036,9 +6035,9 @@
       "price": 88.37000274658203,
       "change": 5.170005798339844,
       "changePercent": 6.21,
-      "volume": 1872490,
+      "volume": 1885900,
       "marketCap": 38488050550.457054,
-      "quoteUpdatedAt": "2026-11-24T02:44:14+00:00",
+      "quoteUpdatedAt": "2026-11-24T06:51:49+00:00",
       "revenue": 619064000.0,
       "revenueGrowth": 0.7337,
       "roe": 5.676,
@@ -6046,13 +6045,13 @@
       "dividendYield": 0.2716,
       "reportDate": "2026-09-30",
       "sector": "Energy",
-      "fundamentalsUpdatedAt": "2026-11-24T02:44:14+00:00",
-      "pe": 97.10989,
+      "fundamentalsUpdatedAt": "2026-11-24T06:51:49+00:00",
+      "pe": 102.75581,
       "forwardPe": 36.73069,
       "peg": 1.92,
       "profitMargin": 11.43,
       "operatingMargin": 12.89,
-      "eps": 0.91,
+      "eps": 0.86,
       "week52High": 182.72,
       "week52Low": 83.06,
       "week52PositionPercent": 5.3,
@@ -6063,7 +6062,7 @@
         "yfinance:news"
       ],
       "status": "ok",
-      "newsUpdatedAt": "2026-11-24T02:44:14+00:00"
+      "newsUpdatedAt": "2026-11-24T06:51:49+00:00"
     }
   }
 }
